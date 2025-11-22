@@ -1,0 +1,8 @@
+set encoding=utf-8
+set fileencodings=utf-8,iso-2022-jp,euc-jp,cp932
+set fileformats=unix,dos,mac
+
+syntax on
+
+inoremap <silent> jj <ESC>
+set number

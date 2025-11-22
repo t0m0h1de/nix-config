@@ -1,0 +1,11 @@
+[user]
+	email = Tomohide.Sawada@ibm.com
+	name = Tomohide Sawada
+[core]
+	editor = vim
+[includeIf "gitdir:~/workspace/jal/"]
+	path = ~/.jaldx.gitconfig
+[pull]
+	rebase = true
+[init]
+	defaultBranch = main

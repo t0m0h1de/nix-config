@@ -1,0 +1,47 @@
+format = """
+$python$nix_shell$username $directory$git_branch$git_status $character
+"""
+
+# シェルのプロンプトの間に空行を挿入する
+add_newline = true
+
+# 記号"❯"を記号"➜"に置き換える
+[character] # 設定対象のモジュール名は 'character'
+success_symbol = "[\\$](bright-green)"
+error_symbol = "[x](bold red)"
+vimcmd_symbol = "[\\$](bright-green)"
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style)"
+style = 'bold white'
+read_only = "(RO)"
+
+# パッケージ別
+
+[git_branch]
+format = ":[$symbol$branch(:$remote_branch)]($style)"
+symbol = ""
+style = "bold purple"
+
+[git_commit]
+tag_symbol = "\\($hash$tag\\)"
+
+[git_status]
+ahead = ">"
+behind = "<"
+diverged = "<>"
+renamed = "r"
+deleted = "x"
+
+[username]
+show_always=true
+style_user='bright-cyan'
+style_root='red'
+format='[$user]($style)'
+
+[nix_shell]
+disabled=false
+symbol='Nix '
+
+[python]
+format='\($virtualenv\) '
