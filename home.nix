@@ -5,7 +5,7 @@
   home.stateVersion = "25.05";
 
   # =================================================
-  # 1. パッケージのインストール (重複を削除！)
+  # 1. パッケージのインストール
   # =================================================
   home.packages = with pkgs; [
     # --- Cloud Native ---
@@ -20,14 +20,10 @@
     nodejs yarn cargo rustc bc
 
     # --- Essentials ---
-    # 【重要】以下のツールは下の programs.xx で有効化しているため、
-    # ここに書くと「重複エラー」になります。削除しました。
     # git      (削除 -> programs.git で管理)
     # tmux     (削除 -> programs.tmux で管理)
     # vim      (削除 -> programs.vim で管理)
     # starship (削除 -> programs.starship で管理)
-    
-    # sheldon は programs.sheldon を削除したので、ここに残してOKです！
     sheldon 
   ];
 
@@ -37,7 +33,7 @@
 
   # --- Vim ---
   programs.vim = {
-    enable = true; # ここで有効化しているのでパッケージも自動で入ります
+    enable = true;
     defaultEditor = true;
     extraConfig = builtins.readFile ./dotfiles/vimrc;
   };
@@ -91,7 +87,7 @@
     ];
   };
 
-  # 環境変数設定（前回の内容を維持）
+  # 環境変数設定
   home.sessionVariables = {
     EDITOR = "vim";
   };
