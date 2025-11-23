@@ -14,6 +14,7 @@
     # --- Tools ---
     jq yq-go glow jbang nmap
     nkf libiconv ffmpeg imagemagick
+    ghq
     
     # --- Langs ---
     nodejs yarn cargo rustc bc
