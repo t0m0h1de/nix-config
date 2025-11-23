@@ -102,4 +102,10 @@
   ];
 
   programs.home-manager.enable = true;
+
+  # direnv & nix-direnvを有効化
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
 }
