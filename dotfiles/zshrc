@@ -25,3 +25,15 @@ bindkey '^H' zaw-history
 # --- Plugin設定 ---
 # 注意: zsh-vi-mode プラグインが入っている前提
 ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
+
+# ghq + fzfのユーティリティ(リポジトリ一覧から選択して移動するための関数)
+function ghq-fzf() {
+  local src=$(ghq list | fzf --preview "ls -laTp $(ghq root)/{} | tail -n+2 | head -n 20")
+  if [ -n "$src" ]; then
+    BUFFER="cd $(ghq root)/$src"
+    zle accept-line
+  fi
+  zle -R -c
+}
+zle -N ghq-fzf
+bindkey '^g' ghq-fzf  # Ctrl+g で発動

@@ -14,7 +14,7 @@
     # --- Tools ---
     jq yq-go glow jbang nmap
     nkf libiconv ffmpeg imagemagick
-    gh ghq
+    gh ghq fzf
     
     # --- Langs ---
     nodejs yarn cargo rustc bc
@@ -85,6 +85,11 @@
       #   path = ~/work.gitconfig; 
       # }
     ];
+    extraConfig = {
+      ghq = {
+        root = "~/src";
+      };
+    };
   };
 
   # 環境変数設定
