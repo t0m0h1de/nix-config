@@ -2,13 +2,16 @@
 # My Custom Zsh Settings (Pure Shell Config)
 # ===============================================
 
+# nixの設定
+if [ -e ${HOME}/.nix-profile/etc/profile.d/nix.sh ]; then
+  . ${HOME}/.nix-profile/etc/profile.d/nix.sh;
+fi
+
 # --- 補完設定 (スタイルのみ) ---
 # compinit は Home Manager が自動実行済み
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 
 # --- ヒストリ設定 ---
-# 基本設定はHome Managerがデフォルトで行いますが、
-# こだわりのオプションがあればここで上書きできます
 setopt hist_ignore_dups
 setopt share_history
 
