@@ -15,6 +15,7 @@
     jq yq-go glow jbang nmap
     nkf libiconv ffmpeg imagemagick
     gh ghq fzf
+    nil nixpkgs-fmt
     
     # --- Langs ---
     nodejs yarn cargo rustc bc
