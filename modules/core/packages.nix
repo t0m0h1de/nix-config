@@ -10,6 +10,11 @@
     ghq
     fzf
 
+    delta
+    lazygit
+    bottom
+    diffnav
+    
     nil
     nixpkgs-fmt
 
