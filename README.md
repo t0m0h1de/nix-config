@@ -10,7 +10,7 @@ WSL (Fedora), Linux, macOS など、OSの違いを吸収し統一された開発
 * **Modern Shell:** Zsh + Starship + Sheldon (Plugin Manager)
 * **Dev Tools:**
     * **Cloud Native:** kubectl, helm, argocd, openshift, tektoncd
-    * **Langs:** Node.js, Rust, JBang
+    * **Langs/AI:** Node.js, Rust, JBang, Gemini CLI
     * **Utils:** jq, yq, glow, ffmpeg, nkf, etc.
 * **Config Management:** Vim, Tmux, Git 設定を外部ファイル (`dotfiles/`) として読み込み
 
@@ -67,6 +67,9 @@ export HUGGING_FACE_HUB_TOKEN="your_secret_token_here"
 
 # AWS Keys
 # export AWS_ACCESS_KEY_ID="path_to_key"
+
+# Bob installer URL (secret)
+# export BOB_INSTALL_URL="<bob_installer_url>"
 ```
 
 権限を変更しておく。
@@ -108,6 +111,59 @@ nix flake update
 home-manager switch --flake .#wsl
 ```
 
+### npm系CLIの運用方針
+
+このリポジトリでは、自己更新前提のCLIはNix管理に含めない。
+
+- Nix管理: OS共通で再現性を重視するツール（例: `codex`, `jq`, `git` など）
+- Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `bob`, `claude`, `cline`, `antigravity`）
+
+理由:
+
+- Nix配下（`/nix/store`）は不変
+- `npm -g` や `xxx update` は実体の上書きを前提
+- そのため自己更新CLIをNix管理すると権限エラーになりやすい
+
+#### 運用例
+
+1. `bob` は公式インストーラ（Windows側/ベンダー提供）でインストール・更新する
+2. `claude` / `cline` / `antigravity` は公式手順または `npm` で更新する
+3. `home-manager switch --flake .#wsl` 後はシェルを再起動し、`type -a bob` / `type -a claude` で解決先を確認する
+
+### CLI のインストール例（claude / bob）
+
+このリポジトリでは自己更新前提の CLI を Nix では配布しない。  
+`claude` は公式インストーラで導入する。
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+`bob` は `.secrets` に設定した `BOB_INSTALL_URL` を使って導入する。
+
+```bash
+curl -fsSL "$BOB_INSTALL_URL" | bash
+```
+
+このリポジトリの `dotfiles/zshrc` には、`claude` / `bob` が未インストール時のみ
+上記インストーラを実行する冪等な処理を入れている。
+（インタラクティブシェル時のみ、短い `curl` タイムアウト付き、再試行間隔あり）
+
+```bash
+export CLAUDE_AUTO_INSTALL=0  # 自動導入を無効化したい場合
+export BOB_AUTO_INSTALL=0
+export CLI_AUTO_INSTALL_CONNECT_TIMEOUT=3
+export CLI_AUTO_INSTALL_MAX_TIME=8
+export CLI_AUTO_INSTALL_RETRY_INTERVAL=21600
+```
+
+確認例:
+
+```bash
+claude --version
+bob --version
+```
+
 ## ⚙️ Git設定について
 
 特定のディレクトリ配下でのみ適用される設定 (`includeIf`) を採用している。
@@ -120,4 +176,3 @@ home-manager switch --flake .#wsl
 
   * **ホストのShellについて:** WSL/Linux側の `/bin/zsh` (または `/bin/bash`) は削除しないこと。Nix環境へのログインに必要となる。
   * **Git管理:** 新しい設定ファイルを追加した際は、必ず `git add` すること。Nix FlakesはGit管理外のファイルを認識しない。
-

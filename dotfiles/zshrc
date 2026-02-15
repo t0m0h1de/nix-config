@@ -21,6 +21,189 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias j!=jbang
 
+# --- AI CLI (Nix管理外) ---
+# bob / claude の自動導入（未インストール時のみ、インタラクティブシェル時のみ）
+# 無効化: export BOB_AUTO_INSTALL=0 / export CLAUDE_AUTO_INSTALL=0
+# タイムアウト調整: export CLI_AUTO_INSTALL_CONNECT_TIMEOUT=3 / export CLI_AUTO_INSTALL_MAX_TIME=8
+# インストーラ実行タイムアウト(秒): export CLI_AUTO_INSTALL_CMD_TIMEOUT=20
+# 再試行間隔(秒): export CLI_AUTO_INSTALL_RETRY_INTERVAL=21600
+# 失敗時の再試行間隔(秒): export CLI_AUTO_INSTALL_RETRY_INTERVAL_FAIL=300
+# 強制再試行: CLI_AUTO_INSTALL_FORCE=1 zsh -i -c exit
+# ログ: ~/.cache/cli-auto-install/auto-install.log
+if [[ $- == *i* ]]; then
+  _cli_auto_install_stamp_dir="$HOME/.cache/cli-auto-install"
+  _cli_auto_install_log_file="$_cli_auto_install_stamp_dir/auto-install.log"
+  _cli_auto_install_connect_timeout="${CLI_AUTO_INSTALL_CONNECT_TIMEOUT:-3}"
+  _cli_auto_install_max_time="${CLI_AUTO_INSTALL_MAX_TIME:-8}"
+  _cli_auto_install_cmd_timeout="${CLI_AUTO_INSTALL_CMD_TIMEOUT:-20}"
+  _cli_auto_install_retry_interval="${CLI_AUTO_INSTALL_RETRY_INTERVAL:-21600}"
+  _cli_auto_install_retry_interval_fail="${CLI_AUTO_INSTALL_RETRY_INTERVAL_FAIL:-300}"
+  _cli_auto_install_force="${CLI_AUTO_INSTALL_FORCE:-0}"
+  mkdir -p "$_cli_auto_install_stamp_dir" 2>/dev/null || true
+
+  _cli_auto_install_log() {
+    local message="$1"
+    local ts
+    ts="$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo unknown-time)"
+    printf '[%s] %s\n' "$ts" "$message" >> "$_cli_auto_install_log_file" 2>/dev/null || true
+  }
+
+  _cli_should_try_install() {
+    local stamp_file="$1"
+    local now raw last status elapsed interval
+    now="$(date +%s 2>/dev/null || echo 0)"
+    if [ "$_cli_auto_install_force" = "1" ]; then
+      _cli_auto_install_log "force retry: stamp=$stamp_file"
+      return 0
+    fi
+    if [ -f "$stamp_file" ]; then
+      raw="$(cat "$stamp_file" 2>/dev/null || echo 0)"
+      last="${raw%% *}"
+      status="${raw#* }"
+      # 旧形式(数値のみ)は失敗扱いとして短い間隔で再試行させる
+      if [ "$status" = "$raw" ]; then
+        status="fail"
+      fi
+      interval="$_cli_auto_install_retry_interval_fail"
+      if [ "$status" = "ok" ]; then
+        interval="$_cli_auto_install_retry_interval"
+      fi
+      elapsed=$((now - last))
+      if [ "$elapsed" -lt "$interval" ]; then
+        _cli_auto_install_log "skip retry: stamp=$stamp_file status=$status elapsed=${elapsed}s interval=${interval}s"
+        return 1
+      fi
+    fi
+    _cli_auto_install_log "allow retry: stamp=$stamp_file"
+    return 0
+  }
+
+  _cli_mark_install_result() {
+    local stamp_file="$1"
+    local result="$2"
+    local now
+    now="$(date +%s 2>/dev/null || echo 0)"
+    echo "$now $result" > "$stamp_file" 2>/dev/null || true
+  }
+
+  _cli_try_lock() {
+    local lock_dir="$1"
+    mkdir "$lock_dir" 2>/dev/null
+  }
+
+  _cli_unlock() {
+    local lock_dir="$1"
+    rmdir "$lock_dir" 2>/dev/null || true
+  }
+
+  _cli_run_install_script() {
+    local name="$1"
+    local url="$2"
+    local start end rc curl_rc runner_rc
+    local -a pipe_status
+
+    start="$(date +%s 2>/dev/null || echo 0)"
+    _cli_auto_install_log "$name: install start (connect_timeout=${_cli_auto_install_connect_timeout}s max_time=${_cli_auto_install_max_time}s cmd_timeout=${_cli_auto_install_cmd_timeout}s)"
+
+    if command -v timeout >/dev/null 2>&1; then
+      curl -fsSL --connect-timeout "$_cli_auto_install_connect_timeout" --max-time "$_cli_auto_install_max_time" \
+        "$url" 2>/dev/null | timeout "${_cli_auto_install_cmd_timeout}s" env CI=1 NO_UPDATE_NOTIFIER=1 bash >/dev/null 2>&1 </dev/null
+    else
+      _cli_auto_install_log "$name: timeout command not found; running without cmd timeout"
+      curl -fsSL --connect-timeout "$_cli_auto_install_connect_timeout" --max-time "$_cli_auto_install_max_time" \
+        "$url" 2>/dev/null | env CI=1 NO_UPDATE_NOTIFIER=1 bash >/dev/null 2>&1 </dev/null
+    fi
+
+    pipe_status=("${pipestatus[@]}")
+    curl_rc="${pipe_status[1]:-1}"
+    runner_rc="${pipe_status[2]:-1}"
+    if [ "$curl_rc" -eq 0 ] && [ "$runner_rc" -eq 0 ]; then
+      rc=0
+    else
+      rc=1
+    fi
+    end="$(date +%s 2>/dev/null || echo 0)"
+    _cli_auto_install_log "$name: install end (rc=${rc} curl_rc=${curl_rc} runner_rc=${runner_rc} elapsed=$((end - start))s)"
+    if [ "$runner_rc" -eq 124 ]; then
+      _cli_auto_install_log "$name: install timeout reached (${_cli_auto_install_cmd_timeout}s)"
+    fi
+    return "$rc"
+  }
+
+  # bob は未インストール時のみ公式スクリプトで自動導入（冪等）
+  # インストールURLは ~/.secrets の BOB_INSTALL_URL で渡す（リポジトリに直書きしない）
+  if [ "${BOB_AUTO_INSTALL:-1}" != "1" ]; then
+    _cli_auto_install_log "bob: disabled (BOB_AUTO_INSTALL=${BOB_AUTO_INSTALL:-1})"
+  elif command -v bob >/dev/null 2>&1; then
+    _cli_auto_install_log "bob: already installed"
+  elif [ -z "${BOB_INSTALL_URL:-}" ]; then
+    _cli_auto_install_log "bob: skipped (BOB_INSTALL_URL is empty)"
+  elif ! command -v curl >/dev/null 2>&1; then
+    _cli_auto_install_log "bob: skipped (curl not found)"
+  else
+    if _cli_should_try_install "$_cli_auto_install_stamp_dir/bob.last_try"; then
+      if _cli_try_lock "$_cli_auto_install_stamp_dir/bob.lock"; then
+        _cli_auto_install_log "bob: install scheduled in background"
+        {
+          if _cli_run_install_script "bob" "$BOB_INSTALL_URL"; then
+            _cli_mark_install_result "$_cli_auto_install_stamp_dir/bob.last_try" "ok"
+            hash -r 2>/dev/null || true
+            rehash 2>/dev/null || true
+            _cli_auto_install_log "bob: hash cache refreshed"
+          else
+            _cli_mark_install_result "$_cli_auto_install_stamp_dir/bob.last_try" "fail"
+          fi
+          _cli_unlock "$_cli_auto_install_stamp_dir/bob.lock"
+        } &!
+      else
+        _cli_auto_install_log "bob: skip (install already running)"
+      fi
+    fi
+  fi
+
+  # claude は未インストール時のみ公式スクリプトで自動導入（冪等）
+  if [ "${CLAUDE_AUTO_INSTALL:-1}" != "1" ]; then
+    _cli_auto_install_log "claude: disabled (CLAUDE_AUTO_INSTALL=${CLAUDE_AUTO_INSTALL:-1})"
+  elif command -v claude >/dev/null 2>&1; then
+    _cli_auto_install_log "claude: already installed"
+  elif ! command -v curl >/dev/null 2>&1; then
+    _cli_auto_install_log "claude: skipped (curl not found)"
+  else
+    if _cli_should_try_install "$_cli_auto_install_stamp_dir/claude.last_try"; then
+      if _cli_try_lock "$_cli_auto_install_stamp_dir/claude.lock"; then
+        _cli_auto_install_log "claude: install scheduled in background"
+        {
+          if _cli_run_install_script "claude" "https://claude.ai/install.sh"; then
+            _cli_mark_install_result "$_cli_auto_install_stamp_dir/claude.last_try" "ok"
+            hash -r 2>/dev/null || true
+            rehash 2>/dev/null || true
+            _cli_auto_install_log "claude: hash cache refreshed"
+          else
+            _cli_mark_install_result "$_cli_auto_install_stamp_dir/claude.last_try" "fail"
+          fi
+          _cli_unlock "$_cli_auto_install_stamp_dir/claude.lock"
+        } &!
+      else
+        _cli_auto_install_log "claude: skip (install already running)"
+      fi
+    fi
+  fi
+fi
+
+# bob は Windows 側インストーラの実体を優先（WSL経由）
+if [ -f "/mnt/c/Users/TomohideSawada/AppData/Local/Programs/IBM Bob/bin/bob.exe" ]; then
+  alias bob='/mnt/c/Users/TomohideSawada/AppData/Local/Programs/IBM Bob/bin/bob.exe'
+fi
+
+# claude はローカル/公式インストールを優先
+if [ -x "$HOME/.local/bin/claude" ]; then
+  alias claude="$HOME/.local/bin/claude"
+elif [ -x "/usr/local/bin/claude" ]; then
+  alias claude='/usr/local/bin/claude'
+elif [ -x "/usr/local/sbin/claude" ]; then
+  alias claude='/usr/local/sbin/claude'
+fi
+
 # --- キーバインド (Plugin依存) ---
 # 注意: zaw プラグインが入っている前提
 bindkey '^H' zaw-history
