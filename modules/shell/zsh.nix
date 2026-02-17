@@ -4,6 +4,11 @@
     enable = true;
 
     initExtra = ''
+      # nixの設定 (Sheldonより先に読み込む必要あり)
+      if [ -e ''${HOME}/.nix-profile/etc/profile.d/nix.sh ]; then
+        . ''${HOME}/.nix-profile/etc/profile.d/nix.sh;
+      fi
+
       # 秘密ファイルがあれば読み込む
       if [ -f "$HOME/.secrets" ]; then
         source "$HOME/.secrets"

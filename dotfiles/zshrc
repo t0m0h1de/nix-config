@@ -50,7 +50,7 @@ if [[ $- == *i* ]]; then
 
   _cli_should_try_install() {
     local stamp_file="$1"
-    local now raw last status elapsed interval
+    local now raw last install_status elapsed interval
     now="$(date +%s 2>/dev/null || echo 0)"
     if [ "$_cli_auto_install_force" = "1" ]; then
       _cli_auto_install_log "force retry: stamp=$stamp_file"
@@ -59,18 +59,18 @@ if [[ $- == *i* ]]; then
     if [ -f "$stamp_file" ]; then
       raw="$(cat "$stamp_file" 2>/dev/null || echo 0)"
       last="${raw%% *}"
-      status="${raw#* }"
+      install_status="${raw#* }"
       # 旧形式(数値のみ)は失敗扱いとして短い間隔で再試行させる
-      if [ "$status" = "$raw" ]; then
-        status="fail"
+      if [ "$install_status" = "$raw" ]; then
+        install_status="fail"
       fi
       interval="$_cli_auto_install_retry_interval_fail"
-      if [ "$status" = "ok" ]; then
+      if [ "$install_status" = "ok" ]; then
         interval="$_cli_auto_install_retry_interval"
       fi
       elapsed=$((now - last))
       if [ "$elapsed" -lt "$interval" ]; then
-        _cli_auto_install_log "skip retry: stamp=$stamp_file status=$status elapsed=${elapsed}s interval=${interval}s"
+        _cli_auto_install_log "skip retry: stamp=$stamp_file status=$install_status elapsed=${elapsed}s interval=${interval}s"
         return 1
       fi
     fi
