@@ -176,3 +176,17 @@ bob --version
 
   * **ホストのShellについて:** WSL/Linux側の `/bin/zsh` (または `/bin/bash`) は削除しないこと。Nix環境へのログインに必要となる。
   * **Git管理:** 新しい設定ファイルを追加した際は、必ず `git add` すること。Nix FlakesはGit管理外のファイルを認識しない。
+  * **WSL Fedora 42 以降の WSLg 警告について:** `home-manager switch` 実行時に `The user systemd session is degraded` として `wslg-session.service` 失敗が出る場合がある。`/run/user/$UID/pulse` のリンク作成が `tmpfiles` と `wslg-session.service` で重複し、`ln: ... are the same file` で失敗する既知ケース。GUI を使う場合でも通常は以下で解消できる。
+
+```bash
+systemctl --user mask --now wslg-session.service
+systemctl --user reset-failed
+systemctl --user is-system-running
+```
+
+必要なら元に戻せる:
+
+```bash
+systemctl --user unmask wslg-session.service
+systemctl --user start wslg-session.service
+```
