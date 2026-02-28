@@ -8,6 +8,7 @@
     nmap
     gh
     ghq
+    awscli2
     fzf
 
     delta
