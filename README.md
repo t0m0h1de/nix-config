@@ -111,6 +111,12 @@ nix flake update
 home-manager switch --flake .#wsl
 ```
 
+### パッケージの探し方
+
+```
+nix search nixpkgs <パッケージ名>
+```
+
 ### npm系CLIの運用方針
 
 このリポジトリでは、自己更新前提のCLIはNix管理に含めない。
@@ -132,7 +138,7 @@ home-manager switch --flake .#wsl
 
 ### CLI のインストール例（claude / bob）
 
-このリポジトリでは自己更新前提の CLI を Nix では配布しない。  
+このリポジトリでは自己更新前提の CLI を Nix では配布しない。
 `claude` は公式インストーラで導入する。
 
 ```bash

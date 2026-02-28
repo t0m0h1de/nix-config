@@ -15,7 +15,7 @@
     lazygit
     bottom
     diffnav
-    
+
     nil
     nixpkgs-fmt
 
