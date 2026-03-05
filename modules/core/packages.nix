@@ -7,6 +7,7 @@
     jbang
     nmap
     openssl
+    postgresql
     gh
     ghq
     awscli2
