@@ -6,6 +6,7 @@
     glow
     jbang
     nmap
+    openssl
     gh
     ghq
     awscli2
