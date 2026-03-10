@@ -27,5 +27,6 @@
     libiconv
     ffmpeg
     imagemagick
+    zulu17
   ];
 }
