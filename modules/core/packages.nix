@@ -22,6 +22,7 @@
 
     nil
     nixpkgs-fmt
+    uv
 
     nkf
     libiconv
