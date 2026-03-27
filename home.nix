@@ -7,7 +7,7 @@
     ./modules/core
     ./modules/dev
     ./modules/shell
-    ./modules/editors/vim.nix
+    ./modules/editors
   ];
 
   home.username = "t0m0h1de";

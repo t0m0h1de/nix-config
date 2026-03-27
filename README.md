@@ -25,7 +25,7 @@ WSL (Fedora), Linux, macOS など、OSの違いを吸収し統一された開発
 │   ├── core/           # 共通パッケージ・Git・基本設定 (OS別パッケージは lib.optionals で分岐)
 │   ├── dev/            # 開発ツール (k8s, langs, opentofu)
 │   ├── shell/          # Zsh・Starship・Sheldon・direnv
-│   └── editors/        # Vim
+│   └── editors/        # Vim / Neovim (lazy.nvim によるプラグイン管理)
 └── dotfiles/           # 設定ファイルの実体 (Nixから読み込まれる)
     ├── zshrc           # Zsh設定 (エイリアス・キーバインド等)
     ├── sheldon/        # Zshプラグイン管理
