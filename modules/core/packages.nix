@@ -5,6 +5,7 @@
     yq-go
     glow
     jbang
+    gnumake
     nmap
     openssl
     postgresql
