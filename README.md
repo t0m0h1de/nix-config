@@ -18,9 +18,14 @@ WSL (Fedora), Linux, macOS など、OSの違いを吸収し統一された開発
 
 ```text
 ~/nix-config/
-├── flake.nix           # エントリーポイント (依存関係と出力の定義)
-├── home.nix            # Home Manager 設定本体 (パッケージと設定の紐付け)
+├── flake.nix           # エントリーポイント (linux / darwin プロファイルを定義)
+├── home.nix            # Home Manager 設定本体 (Linux/Darwin 共通。OS差分は内部で吸収)
 ├── flake.lock          # バージョンロックファイル
+├── modules/
+│   ├── core/           # 共通パッケージ・Git・基本設定 (OS別パッケージは lib.optionals で分岐)
+│   ├── dev/            # 開発ツール (k8s, langs, terraform)
+│   ├── shell/          # Zsh・Starship・Sheldon・direnv
+│   └── editors/        # Vim
 └── dotfiles/           # 設定ファイルの実体 (Nixから読み込まれる)
     ├── zshrc           # Zsh設定 (エイリアス・キーバインド等)
     ├── sheldon/        # Zshプラグイン管理
@@ -29,7 +34,16 @@ WSL (Fedora), Linux, macOS など、OSの違いを吸収し統一された開発
     ├── vimrc           # Vim設定
     ├── tmux.conf       # Tmux設定
     └── starship.toml   # Starship設定
-````
+```
+
+### OS別パッケージ管理
+
+`modules/core/packages.nix` で `lib.optionals` を使い、OS専用パッケージを宣言的に管理している。
+
+| パッケージ | Linux | Darwin |
+|---|:---:|:---:|
+| buildah | ✅ | ❌ |
+| その他共通パッケージ | ✅ | ✅ |
 
 ## 🛠 セットアップ手順
 
@@ -84,9 +98,14 @@ chmod 600 ~/.secrets
 ※ 初回は `home-manager` コマンドがないため、`nix run` を経由する。
 
 ```bash
-# WSL環境の場合 (flake.nix内の "wsl" 定義を使用)
+# Linux/WSL環境の場合 (flake.nix内の "linux" 定義を使用)
 # -b backup オプションで既存の設定ファイルを自動バックアップして上書きする
-nix run home-manager/master -- switch --flake .#wsl -b backup
+nix run home-manager/master -- switch --flake .#linux -b backup
+```
+
+```bash
+# macOS (Darwin) の場合
+nix run home-manager/master -- switch --flake .#darwin -b backup
 ```
 
 ## 🔄 日々の運用
@@ -99,7 +118,8 @@ nix run home-manager/master -- switch --flake .#wsl -b backup
 
 ```bash
 # 2回目以降は home-manager コマンドが使用可能
-home-manager switch --flake .#wsl
+home-manager switch --flake .#linux   # Linux/WSL
+home-manager switch --flake .#darwin  # macOS
 ```
 
 ### パッケージの更新
@@ -108,7 +128,8 @@ home-manager switch --flake .#wsl
 
 ```bash
 nix flake update
-home-manager switch --flake .#wsl
+home-manager switch --flake .#linux   # Linux/WSL
+home-manager switch --flake .#darwin  # macOS
 ```
 
 ### パッケージの探し方
@@ -134,7 +155,7 @@ nix search nixpkgs <パッケージ名>
 
 1. `bob` は公式インストーラ（Windows側/ベンダー提供）でインストール・更新する
 2. `claude` / `cline` / `antigravity` は公式手順または `npm` で更新する
-3. `home-manager switch --flake .#wsl` 後はシェルを再起動し、`type -a bob` / `type -a claude` で解決先を確認する
+3. `home-manager switch --flake .#linux` (または `.#darwin`) 後はシェルを再起動し、`type -a bob` / `type -a claude` で解決先を確認する
 
 ### CLI のインストール例（claude / bob）
 

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
     jq
@@ -18,8 +18,6 @@
     bottom
     diffnav
 
-    buildah
-
     nil
     nixpkgs-fmt
     uv
@@ -29,5 +27,9 @@
     ffmpeg
     imagemagick
     zulu17
+  ]
+  # Linux専用パッケージ
+  ++ lib.optionals stdenv.isLinux [
+    buildah
   ];
 }

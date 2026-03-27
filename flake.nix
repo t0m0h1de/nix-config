@@ -9,15 +9,14 @@
   };
 
   outputs = { self, nixpkgs, home-manager, ... }: {
-    homeConfigurations."wsl" = home-manager.lib.homeManagerConfiguration {
+    homeConfigurations."linux" = home-manager.lib.homeManagerConfiguration {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      modules = [
-        ./home.nix
-        {
-          home.username = "t0m0h1de";
-          home.homeDirectory = "/home/t0m0h1de";
-        }
-      ];
+      modules = [ ./home.nix ];
+    };
+
+    homeConfigurations."darwin" = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      modules = [ ./home.nix ];
     };
   };
 }
