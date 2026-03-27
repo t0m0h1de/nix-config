@@ -51,8 +51,17 @@ return {
     dependencies = {
       "mason-org/mason.nvim",
       "mason-org/mason-lspconfig.nvim",
+      "hrsh7th/cmp-nvim-lsp",  -- LSPのcapabilitiesをcmp用に拡張
     },
     config = function()
+      -- cmp-nvim-lsp の capabilities をマージ (LSPにスニペット補完等を伝える)
+      local capabilities = vim.tbl_deep_extend(
+        "force",
+        vim.lsp.protocol.make_client_capabilities(),
+        require("cmp_nvim_lsp").default_capabilities()
+      )
+      vim.lsp.config("*", { capabilities = capabilities })
+
       -- ----------------------------------------------------------
       -- LSPアタッチ時のキーマップ設定 (新APIでも変わらず有効)
       -- ----------------------------------------------------------
