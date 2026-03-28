@@ -5,9 +5,11 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    event = { "BufReadPost", "BufNewFile" },
+    lazy = false,
     build = ":TSUpdate",  -- 更新時にパーサーを自動ビルド
-    main = "nvim-treesitter.configs",  -- require("nvim-treesitter.configs").setup() を使う
+    config = function(_, opts)
+      require("nvim-treesitter.config").setup(opts)
+    end,
     opts = {
       -- 常にインストールするパーサー
       ensure_installed = {
