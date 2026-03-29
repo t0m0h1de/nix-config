@@ -30,10 +30,12 @@ opt.backup   = false  -- バックアップなし
 opt.undofile = true   -- undoファイルを永続化
 
 -- 操作感
-opt.splitright = true  -- 縦分割は右に
-opt.splitbelow = true  -- 横分割は下に
-opt.mouse      = "a"   -- マウス有効
-opt.clipboard  = "unnamedplus"  -- システムクリップボードと共有 TODO: OSごとのクリップボード設定を調整
+opt.splitright  = true   -- 縦分割は右に
+opt.splitbelow  = true   -- 横分割は下に
+opt.mouse       = "a"    -- マウス有効
+opt.clipboard   = "unnamedplus"  -- システムクリップボードと共有 TODO: OSごとのクリップボード設定を調整
+opt.timeoutlen  = 300    -- キーシーケンスのタイムアウト (デフォルト1000ms: jjなどが遅く感じる原因)
+opt.updatetime  = 200    -- CursorHold等のイベント発火間隔 (デフォルト4000ms)
 
 -- 補完
 opt.completeopt = { "menuone", "noselect" }  -- nvim-cmp向け設定
