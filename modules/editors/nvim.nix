@@ -2,6 +2,7 @@
 {
   home.packages = with pkgs; [
     neovim
+    tree-sitter  # nvim-treesitter パーサーのコンパイルに必要
   ];
 
   # dotfiles/nvim/ を ~/.config/nvim にシンボリックリンク

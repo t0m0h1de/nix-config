@@ -55,3 +55,7 @@ require("lazy").setup({
     },
   },
 })
+
+-- lazy.nvim が rtp をリセットした後に site を追加する
+-- (treesitter パーサーのインストール先 ~/.local/share/nvim/site/parser/)
+vim.opt.rtp:prepend(vim.fn.stdpath("data") .. "/site")

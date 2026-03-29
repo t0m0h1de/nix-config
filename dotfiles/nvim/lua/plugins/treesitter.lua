@@ -1,14 +1,18 @@
 -- plugins/treesitter.lua - シンタックスハイライト / コード理解
 -- nvim-treesitter: ASTベースの正確なシンタックスハイライト
 -- テキストオブジェクト・インデント・折りたたみも提供
+--
+-- Note: stable ブランチ(v1.x)は Neovim 0.12+ 必須のため master ブランチを使用
+-- master ブランチは旧 API (nvim-treesitter.configs) を維持している
 
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "master",
     lazy = false,
-    build = ":TSUpdate",  -- 更新時にパーサーを自動ビルド
+    build = ":TSUpdate",
     config = function(_, opts)
-      require("nvim-treesitter.config").setup(opts)
+      require("nvim-treesitter.configs").setup(opts)
     end,
     opts = {
       -- 常にインストールするパーサー
@@ -21,6 +25,7 @@ return {
         "yaml", "toml",
         "bash",
         "markdown", "markdown_inline",
+        "nix",
       },
 
       -- 不足しているパーサーを自動インストール
