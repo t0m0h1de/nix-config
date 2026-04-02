@@ -37,6 +37,11 @@
       enable = true;
     };
 
+    plugins.tmux-navigator = {
+      # tmux と Neovim 間を Ctrl-hjkl でシームレス移動。
+      enable = true;
+    };
+
     extraConfigLua = ''
       -- OSC 52 を使うべき環境を判定する。
       -- 1) SSH セッション

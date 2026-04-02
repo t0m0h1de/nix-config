@@ -14,6 +14,7 @@
 - Added the `tokyonight` colorscheme and a minimal `treesitter` setup in nixvim.
 - Added a minimal `lualine` setup and aligned its theme with `tokyonight`.
 - Added a minimal `which-key` setup for key-hint popups.
+- Added `tmux-navigator` in nixvim for seamless pane navigation with tmux.
 - Enabled OSC 52 clipboard support in tmux (`set-clipboard` + `terminal-features`).
 - Added Neovim OSC 52 clipboard fallback logic for SSH/WSL/no-local-provider environments.
 
