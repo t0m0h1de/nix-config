@@ -4,7 +4,7 @@
   nixpkgs.config.allowUnfree = true;
 
   home.sessionVariables = {
-    EDITOR = "vim";
+    EDITOR = "nvim";
   };
 
   home.sessionPath = [

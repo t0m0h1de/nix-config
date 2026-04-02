@@ -3,7 +3,6 @@
   # Linux: Nixでvimをインストールして設定も管理
   programs.vim = lib.mkIf pkgs.stdenv.isLinux {
     enable = true;
-    defaultEditor = true;
     extraConfig = builtins.readFile ../../dotfiles/vimrc;
   };
 
