@@ -42,3 +42,8 @@ Home Managerのプロファイルは、[`flake.nix`](./flake.nix)の`homeConfigu
 ### 秘匿情報
 
 `~/.secrets`に記述し、`.zshrc`で読み込み、Git管理は禁止。
+
+## ルール
+- 作業前に `docs/progress.md` を読む
+- 作業後に `docs/progress.md` を更新する
+- 新規API追加時は ADR を確認する
