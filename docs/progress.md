@@ -13,6 +13,7 @@
 - Added inline comments to the minimal nixvim options and keymaps for readability.
 - Added the `tokyonight` colorscheme and a minimal `treesitter` setup in nixvim.
 - Added a minimal `lualine` setup and aligned its theme with `tokyonight`.
+- Added a minimal `which-key` setup for key-hint popups.
 - Enabled OSC 52 clipboard support in tmux (`set-clipboard` + `terminal-features`).
 - Added Neovim OSC 52 clipboard fallback logic for SSH/WSL/no-local-provider environments.
 

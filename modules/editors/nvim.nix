@@ -32,6 +32,11 @@
       };
     };
 
+    plugins.which-key = {
+      # leader キー候補の表示を有効化。
+      enable = true;
+    };
+
     extraConfigLua = ''
       -- OSC 52 を使うべき環境を判定する。
       -- 1) SSH セッション
