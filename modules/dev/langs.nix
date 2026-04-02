@@ -7,8 +7,6 @@
     cargo
     rustc
     bc
-    codex
-    gemini-cli
   ];
 
   # Declarative npm global prefix (replaces `npm config set prefix ~/.local`).
