@@ -12,6 +12,7 @@
 - Verified the `linux` Home Manager profile builds with `nix build .#homeConfigurations.linux.activationPackage --no-link`.
 - Added inline comments to the minimal nixvim options and keymaps for readability.
 - Added the `tokyonight` colorscheme and a minimal `treesitter` setup in nixvim.
+- Added a minimal `lualine` setup and aligned its theme with `tokyonight`.
 
 ## Next
 - Verify the updated nixvim configuration still evaluates cleanly.

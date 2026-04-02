@@ -21,6 +21,17 @@
       };
     };
 
+    plugins.lualine = {
+      # ステータスラインを導入。見た目は tokyonight に合わせる。
+      enable = true;
+      settings = {
+        options = {
+          theme = "tokyonight";
+          globalstatus = true;
+        };
+      };
+    };
+
     opts = {
       # 普段の編集で欲しい最低限の見た目。
       number = true;
