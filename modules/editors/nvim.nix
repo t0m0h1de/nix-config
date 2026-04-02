@@ -4,9 +4,22 @@
     enable = true;
     defaultEditor = true;
 
+    # 見た目は一旦 tokyonight に寄せる。
+    colorschemes.tokyonight.enable = true;
+    colorscheme = "tokyonight";
+
     # Leader は今後の拡張余地のためにだけ先に固定しておく。
     globals.mapleader = " ";
     globals.maplocalleader = " ";
+
+    plugins.treesitter = {
+      # AST ベースのハイライトとインデントを有効化。
+      enable = true;
+      settings = {
+        highlight.enable = true;
+        indent.enable = true;
+      };
+    };
 
     opts = {
       # 普段の編集で欲しい最低限の見た目。

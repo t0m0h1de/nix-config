@@ -11,9 +11,10 @@
 - Aligned the default editor settings to use `nvim`.
 - Verified the `linux` Home Manager profile builds with `nix build .#homeConfigurations.linux.activationPackage --no-link`.
 - Added inline comments to the minimal nixvim options and keymaps for readability.
+- Added the `tokyonight` colorscheme and a minimal `treesitter` setup in nixvim.
 
 ## Next
-- Add back only the Neovim features that are actually missed, one by one, through `nixvim`.
+- Verify the updated nixvim configuration still evaluates cleanly.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
