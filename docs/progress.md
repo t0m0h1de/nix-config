@@ -13,9 +13,11 @@
 - Added inline comments to the minimal nixvim options and keymaps for readability.
 - Added the `tokyonight` colorscheme and a minimal `treesitter` setup in nixvim.
 - Added a minimal `lualine` setup and aligned its theme with `tokyonight`.
+- Enabled OSC 52 clipboard support in tmux (`set-clipboard` + `terminal-features`).
+- Added Neovim OSC 52 clipboard fallback logic for SSH/WSL/no-local-provider environments.
 
 ## Next
-- Verify the updated nixvim configuration still evaluates cleanly.
+- Verify Home Manager configuration still evaluates cleanly after tmux updates.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
