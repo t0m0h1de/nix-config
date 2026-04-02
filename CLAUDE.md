@@ -1,59 +1,44 @@
-# CLAUDE.md
+# Agent Development Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このリポジトリでエージェントが動作するためのガイドライン
 
-## Commands
+## アーキテクチャ
 
-```bash
-# Apply configuration (first time)
-nix run home-manager/master -- switch --flake .#linux    # Linux/WSL
-nix run home-manager/master -- switch --flake .#darwin   # macOS
+[Home Manager](https://github.com/nix-community/home-manager)を利用したFlake構成。
+x86_64とaarch64など複数のCPUアーキテクチャ、linux, macOSなどの複数のOSをサポートし、OS固有の差分は `pkgs.stdenv` の条件分岐で処理する。
+具体的なサポート対象は[HomeManagerのプロファイル](#homemanagerのプロファイル)を参照。
 
-# Apply configuration (after home-manager is installed)
-home-manager switch --flake .#linux
-home-manager switch --flake .#darwin
+## 主要コマンド
 
-# Update flake inputs
-nix flake update
+* 設定の適用 (初回 / 更新)
+    * 初回(Home Managerが未インストールの場合): `nix run home-manager/master -- switch --flake .#<profile>`
+    * 更新: `home-manager switch --flake .#<profile>`
+* メンテナンス
+    * 依存関係の更新: `nix flake update`
+    * 整形: `nixpkgs-fmt <file.nix>`
 
-# Format Nix files
-nixpkgs-fmt <file.nix>
+## HomeManagerのプロファイル
 
-# Check flake outputs
-nix flake check
-```
+Home Managerのプロファイルは、[`flake.nix`](./flake.nix)の`homeConfigurations`を確認すること。
 
-## Architecture
+### モジュール構成
 
-This is a [Home Manager](https://github.com/nix-community/home-manager) flake-based dotfiles repo supporting two profiles:
-- `linux` — x86_64-linux (Linux/WSL)
-- `darwin` — aarch64-darwin (macOS)
+`home.nix`が以下の4モジュールを読み込む。
 
-Both profiles use the same `home.nix` root; platform differences are handled inline with `pkgs.stdenv.isDarwin` / `pkgs.stdenv.isLinux` conditionals.
+* core(`modules/core/`): 共通パッケージ、Git、環境変数
+* dev(`modules/dev/`): 各種プログラム言語, 開発ツール(例: K8s, OpenTofu)
+* shell(`modules/shell/`): シェル本体、シェルのプラグイン管理、拡張(例: Starship, Tmux, Sheldon, direnv)
+* editors(`modules/editors/`): Vim, Neovimなどのエディタ
 
-### Module Structure
+### 設定ファイル (Dotfiles) の扱い
 
-`home.nix` imports four top-level modules, each with a `default.nix` aggregator:
+各nixファイルで`builtins.readFile`で文字列として設定を読み込む、もしくは`xdg.configFile`で`dotfiles/`下をシンボリックリンクとして`~/.config`下に配置する。
 
-| Module | Path | Responsibility |
-|--------|------|----------------|
-| core | `modules/core/` | Common packages, git config, PATH/EDITOR setup |
-| dev | `modules/dev/` | Kubernetes tools, languages (Node/Rust), OpenTofu |
-| shell | `modules/shell/` | Zsh, Starship, Tmux, Sheldon, direnv |
-| editors | `modules/editors/` | Vim, Neovim (with lazy.nvim) |
+### ツール管理
 
-### Dotfile Handling Pattern
+* Nix管理: OS共通で再現性を重視するツール（例: `codex`, `jq`, `git` など）
+* Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `claude`, `cline`など）
 
-- **Inline content**: `builtins.readFile` used for single-file configs (e.g., tmux.conf, vimrc, zshrc)
-- **Directory symlinks**: `xdg.configFile` with `source = ./dotfiles/<dir>` for multi-file configs (e.g., Neovim's `dotfiles/nvim/`)
-- **Direct file placement**: `home.file` for home directory files
+### 秘匿情報
 
-### CLI Management Strategy
-
-- **Nix-managed**: Standard tools, LSP servers, formatters, linters
-- **Vendor-managed** (installed via public installers in zshrc): Self-updating CLIs like `claude`, `bob` (neovim version manager), `cline`
-- **npm-managed**: Global npm packages configured via `.npmrc` with custom prefix
-
-### Secrets
-
-`~/.secrets` is sourced from `.zshrc` at shell startup for tokens/environment variables — never committed.
+`~/.secrets`に記述し、`.zshrc`で読み込み、Git管理は禁止。
