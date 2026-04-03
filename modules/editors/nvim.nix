@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   programs.nixvim = {
     enable = true;
@@ -57,6 +57,44 @@
       enable = true;
     };
 
+    plugins.cmp = {
+      # 補完UIを有効化。ソースは cmp-* プラグインを明示的に有効化する。
+      enable = true;
+      autoEnableSources = true;
+      settings = {
+        completion = {
+          completeopt = "menu,menuone,noinsert";
+        };
+        mapping = {
+          "<C-n>" = "cmp.mapping.select_next_item()";
+          "<C-p>" = "cmp.mapping.select_prev_item()";
+          "<C-Space>" = "cmp.mapping.complete()";
+          "<CR>" = "cmp.mapping.confirm({ select = true })";
+        };
+        sources = [
+          { name = "nvim_lsp"; }
+          { name = "path"; }
+          { name = "buffer"; }
+        ];
+      };
+    };
+
+    plugins.lsp = {
+      # LSP を有効化。まずは Python (pyright) から導入する。
+      enable = true;
+      servers = {
+        pyright = {
+          enable = true;
+          package = pkgs.pyright;
+          extraOptions = {
+            capabilities = {
+              __raw = ''require("cmp_nvim_lsp").default_capabilities()'';
+            };
+          };
+        };
+      };
+    };
+
     extraConfigLua = ''
       -- OSC 52 を使うべき環境を判定する。
       -- 1) SSH セッション
@@ -77,6 +115,15 @@
       if is_ssh or is_wsl or not has_local_clipboard_tool then
         vim.g.clipboard = "osc52"
       end
+
+      -- LSP がアタッチされたバッファだけで基本キーマップを有効化。
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(event)
+          local opts = { buffer = event.buf, silent = true }
+          vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+          vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+        end,
+      })
     '';
 
     opts = {

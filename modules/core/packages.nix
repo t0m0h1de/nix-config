@@ -13,6 +13,8 @@
     ghq
     awscli2
     fzf
+    ripgrep
+    fd
 
     delta
     lazygit

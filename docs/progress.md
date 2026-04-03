@@ -21,9 +21,15 @@
 - Added `<leader>ff`, `<leader>fg`, `<leader>fb` keymaps for file find/live grep/file browser.
 - Re-verified the `linux` Home Manager profile builds with `nix build .#homeConfigurations.linux.activationPackage --no-link`.
 - Explicitly enabled `plugins.web-devicons` in nixvim to resolve telescope auto-enable deprecation warning.
+- Added minimal Python LSP setup in nixvim by enabling `plugins.lsp.servers.pyright`.
+- Added `ripgrep` and `fd` to `home.packages` so Telescope search features work out of the box.
+- Enabled `nvim-cmp` in nixvim with basic selection/confirm keybindings (`<C-n>`, `<C-p>`, `<C-Space>`, `<CR>`).
+- Added basic LSP keymaps (`gd`, `gr`) via `LspAttach` autocmd.
+- Explicitly enabled cmp sources (`cmp-nvim-lsp`, `cmp-buffer`, `cmp-path`) to make completion candidates appear reliably.
+- Added explicit `plugins.cmp.settings.sources` and wired `pyright` capabilities through `cmp_nvim_lsp.default_capabilities()`.
 
 ## Next
-- Verify Home Manager configuration still evaluates cleanly after incremental nixvim plugin additions.
+- Verify Python LSP behavior (diagnostics/jump/completion) in a real project after activation.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
