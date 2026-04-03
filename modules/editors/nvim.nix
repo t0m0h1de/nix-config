@@ -57,6 +57,16 @@
       enable = true;
     };
 
+    plugins.gitsigns = {
+      # 行単位のGit差分表示とhunk操作を有効化。
+      enable = true;
+    };
+
+    plugins.diffview = {
+      # ファイル差分ビューを有効化。
+      enable = true;
+    };
+
     plugins.cmp = {
       # 補完UIを有効化。ソースは cmp-* プラグインを明示的に有効化する。
       enable = true;
@@ -202,6 +212,36 @@
         mode = "n";
         key = "<leader>fb";
         action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>";
+      }
+      {
+        # gitsigns: 次のhunkへ移動。
+        mode = "n";
+        key = "]h";
+        action = "<cmd>Gitsigns next_hunk<cr>";
+      }
+      {
+        # gitsigns: 前のhunkへ移動。
+        mode = "n";
+        key = "[h";
+        action = "<cmd>Gitsigns prev_hunk<cr>";
+      }
+      {
+        # gitsigns: 現在hunkの差分プレビュー。
+        mode = "n";
+        key = "<leader>hp";
+        action = "<cmd>Gitsigns preview_hunk<cr>";
+      }
+      {
+        # diffview: 差分ビューを開く。
+        mode = "n";
+        key = "<leader>do";
+        action = "<cmd>DiffviewOpen<cr>";
+      }
+      {
+        # diffview: 差分ビューを閉じる。
+        mode = "n";
+        key = "<leader>dc";
+        action = "<cmd>DiffviewClose<cr>";
       }
       {
         # Visual mode でインデント後も選択を維持。

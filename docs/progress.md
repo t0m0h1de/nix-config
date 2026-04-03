@@ -27,9 +27,11 @@
 - Added basic LSP keymaps (`gd`, `gr`) via `LspAttach` autocmd.
 - Explicitly enabled cmp sources (`cmp-nvim-lsp`, `cmp-buffer`, `cmp-path`) to make completion candidates appear reliably.
 - Added explicit `plugins.cmp.settings.sources` and wired `pyright` capabilities through `cmp_nvim_lsp.default_capabilities()`.
+- Enabled `gitsigns` and `diffview` in nixvim.
+- Added lean Git keymaps: `]h`, `[h`, `<leader>hp`, `<leader>do`, `<leader>dc`.
 
 ## Next
-- Verify Python LSP behavior (diagnostics/jump/completion) in a real project after activation.
+- Verify Python LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
