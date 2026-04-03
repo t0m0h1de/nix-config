@@ -37,6 +37,21 @@
       enable = true;
     };
 
+    plugins.web-devicons = {
+      # telescope が参照するアイコン表示を明示的に有効化（auto-enable廃止対応）。
+      enable = true;
+    };
+
+    plugins.telescope = {
+      # ファイル/文字列検索の UI と、file-browser 拡張を有効化。
+      enable = true;
+      extensions = {
+        file-browser = {
+          enable = true;
+        };
+      };
+    };
+
     plugins.tmux-navigator = {
       # tmux と Neovim 間を Ctrl-hjkl でシームレス移動。
       enable = true;
@@ -122,6 +137,24 @@
         mode = "n";
         key = "<Esc>";
         action = "<cmd>nohlsearch<cr>";
+      }
+      {
+        # ファイル名ベースで検索。
+        mode = "n";
+        key = "<leader>ff";
+        action = "<cmd>Telescope find_files<cr>";
+      }
+      {
+        # ripgrep で全文検索。
+        mode = "n";
+        key = "<leader>fg";
+        action = "<cmd>Telescope live_grep<cr>";
+      }
+      {
+        # 現在ファイルのディレクトリを起点にブラウズ。
+        mode = "n";
+        key = "<leader>fb";
+        action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>";
       }
       {
         # Visual mode でインデント後も選択を維持。

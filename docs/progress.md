@@ -17,9 +17,13 @@
 - Added `tmux-navigator` in nixvim for seamless pane navigation with tmux.
 - Enabled OSC 52 clipboard support in tmux (`set-clipboard` + `terminal-features`).
 - Added Neovim OSC 52 clipboard fallback logic for SSH/WSL/no-local-provider environments.
+- Added `telescope` and enabled the `file-browser` extension in nixvim.
+- Added `<leader>ff`, `<leader>fg`, `<leader>fb` keymaps for file find/live grep/file browser.
+- Re-verified the `linux` Home Manager profile builds with `nix build .#homeConfigurations.linux.activationPackage --no-link`.
+- Explicitly enabled `plugins.web-devicons` in nixvim to resolve telescope auto-enable deprecation warning.
 
 ## Next
-- Verify Home Manager configuration still evaluates cleanly after tmux updates.
+- Verify Home Manager configuration still evaluates cleanly after incremental nixvim plugin additions.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
