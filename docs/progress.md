@@ -29,6 +29,8 @@
 - Added explicit `plugins.cmp.settings.sources` and wired `pyright` capabilities through `cmp_nvim_lsp.default_capabilities()`.
 - Enabled `gitsigns` and `diffview` in nixvim.
 - Added lean Git keymaps: `]h`, `[h`, `<leader>hp`, `<leader>do`, `<leader>dc`.
+- Migrated Home Manager Git options in `modules/core/git.nix` from deprecated `userName`/`userEmail`/`extraConfig` to `programs.git.settings`.
+- Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link`; Git rename warnings are gone (only existing zsh deprecation warning remains).
 
 ## Next
 - Verify Python LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.

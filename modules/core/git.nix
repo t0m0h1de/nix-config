@@ -2,18 +2,19 @@
 {
   programs.git = {
     enable = true;
-    userName = "Tomohide Sawada";
-    userEmail = "Tomohide.Sawada@ibm.com";
+    settings = {
+      user = {
+        name = "Tomohide Sawada";
+        email = "Tomohide.Sawada@ibm.com";
+      };
 
-    includes = [
-      { path = ../../dotfiles/gitconfig; }
-
-    ];
-
-    extraConfig = {
       ghq = {
         root = "~/src";
       };
     };
+
+    includes = [
+      { path = ../../dotfiles/gitconfig; }
+    ];
   };
 }
