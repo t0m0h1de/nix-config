@@ -3,7 +3,7 @@
   programs.zsh = {
     enable = true;
 
-    initExtra = ''
+    initContent = ''
       # nixの設定 (Sheldonより先に読み込む必要あり)
       if [ -e ''${HOME}/.nix-profile/etc/profile.d/nix.sh ]; then
         . ''${HOME}/.nix-profile/etc/profile.d/nix.sh;

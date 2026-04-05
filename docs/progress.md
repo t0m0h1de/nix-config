@@ -31,10 +31,11 @@
 - Added lean Git keymaps: `]h`, `[h`, `<leader>hp`, `<leader>do`, `<leader>dc`.
 - Migrated Home Manager Git options in `modules/core/git.nix` from deprecated `userName`/`userEmail`/`extraConfig` to `programs.git.settings`.
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link`; Git rename warnings are gone (only existing zsh deprecation warning remains).
+- Replaced deprecated `programs.zsh.initExtra` with `programs.zsh.initContent` in `modules/shell/zsh.nix`.
+- Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link`; zsh deprecation warning is resolved.
 
 ## Next
 - Verify Python LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
-- There is an unrelated existing evaluation warning about `programs.zsh.initExtra` being deprecated in favor of `programs.zsh.initContent`.
