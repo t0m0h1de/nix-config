@@ -90,12 +90,51 @@
     };
 
     plugins.lsp = {
-      # LSP を有効化。まずは Python (pyright) から導入する。
+      # LSP を有効化。Python / Web / Scala の基本言語を導入する。
       enable = true;
       servers = {
         pyright = {
           enable = true;
           package = pkgs.pyright;
+          extraOptions = {
+            capabilities = {
+              __raw = ''require("cmp_nvim_lsp").default_capabilities()'';
+            };
+          };
+        };
+        html = {
+          enable = true;
+          extraOptions = {
+            capabilities = {
+              __raw = ''require("cmp_nvim_lsp").default_capabilities()'';
+            };
+          };
+        };
+        cssls = {
+          enable = true;
+          extraOptions = {
+            capabilities = {
+              __raw = ''require("cmp_nvim_lsp").default_capabilities()'';
+            };
+          };
+        };
+        ts_ls = {
+          # TypeScript / JavaScript / React (jsx, tsx) を 1 つのサーバーで扱う。
+          enable = true;
+          filetypes = [
+            "javascript"
+            "javascriptreact"
+            "typescript"
+            "typescriptreact"
+          ];
+          extraOptions = {
+            capabilities = {
+              __raw = ''require("cmp_nvim_lsp").default_capabilities()'';
+            };
+          };
+        };
+        metals = {
+          enable = true;
           extraOptions = {
             capabilities = {
               __raw = ''require("cmp_nvim_lsp").default_capabilities()'';
@@ -140,10 +179,10 @@
       # 普段の編集で欲しい最低限の見た目。
       number = true;
       relativenumber = true;
-      signcolumn = "yes";  # 行番号の左側に、LSPの警告やGitの変更印を出す隙間を常に確保
+      signcolumn = "yes"; # 行番号の左側に、LSPの警告やGitの変更印を出す隙間を常に確保
       wrap = true;
-      scrolloff = 8;  # カーソル移動時、画面の上下に常に8行確保
-      termguicolors = true;  # 24bit フルカラーを有効
+      scrolloff = 8; # カーソル移動時、画面の上下に常に8行確保
+      termguicolors = true; # 24bit フルカラーを有効
 
       # インデントは 2 スペースに統一。
       expandtab = true;
@@ -242,18 +281,6 @@
         mode = "n";
         key = "<leader>dc";
         action = "<cmd>DiffviewClose<cr>";
-      }
-      {
-        # Visual mode でインデント後も選択を維持。
-        mode = "v";
-        key = "<";
-        action = "<gv>";
-      }
-      {
-        # Visual mode でインデント後も選択を維持。
-        mode = "v";
-        key = ">";
-        action = ">gv";
       }
       {
         # Terminal buffer から素早く normal mode に戻る。

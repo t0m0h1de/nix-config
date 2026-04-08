@@ -33,9 +33,13 @@
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link`; Git rename warnings are gone (only existing zsh deprecation warning remains).
 - Replaced deprecated `programs.zsh.initExtra` with `programs.zsh.initContent` in `modules/shell/zsh.nix`.
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link`; zsh deprecation warning is resolved.
+- Added Neovim LSP servers for `html`, `ts_ls` (TypeScript/JavaScript/React), and `metals` (Scala), with `cmp_nvim_lsp` capabilities.
+- Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link` after adding Web/Scala LSPs.
+- Added Neovim `cssls` (CSS Language Server) with `cmp_nvim_lsp` capabilities.
+- Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link` after adding CSS LSP.
 
 ## Next
-- Verify Python LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.
+- Verify Python/Web/Scala LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
