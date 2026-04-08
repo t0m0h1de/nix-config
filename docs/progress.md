@@ -38,10 +38,12 @@
 - Added Neovim `cssls` (CSS Language Server) with `cmp_nvim_lsp` capabilities.
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link` after adding CSS LSP.
 - Added `bubblewrap` to Linux-only Home Manager packages in `modules/core/packages.nix` so Codex can find system `bwrap` on PATH.
+- Added tmux pane resize keybindings with `prefix + H/J/K/L` (`resize-pane` with repeat enabled) in `dotfiles/tmux.conf`.
 
 ## Next
 - Verify Python/Web/Scala LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.
 - Re-verify the `linux` Home Manager profile evaluation after adding `bubblewrap`.
+- Verify tmux pane resize behavior (`prefix + H/J/K/L`) after activation.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
