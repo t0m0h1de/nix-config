@@ -34,5 +34,6 @@
   # Linux専用パッケージ
   ++ lib.optionals stdenv.isLinux [
     buildah
+    bubblewrap
   ];
 }
