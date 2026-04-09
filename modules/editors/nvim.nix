@@ -48,6 +48,15 @@
       extensions = {
         file-browser = {
           enable = true;
+          settings = {
+            # file_browser で隠しファイルと gitignore 対象も表示する。
+            hidden = {
+              file_browser = true;
+              folder_browser = true;
+            };
+            no_ignore = true;
+            respect_gitignore = false;
+          };
         };
       };
     };
