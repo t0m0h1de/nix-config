@@ -1,7 +1,7 @@
 # Progress Log
 
 ## Current Task
-- Replace the custom Lua-based Neovim setup with a minimal nixvim-based configuration.
+- Enable `Ctrl + r` fuzzy history search in zsh with `fzf`.
 
 ## Done
 - Read the current Home Manager and Neovim setup.
@@ -41,12 +41,10 @@
 - Added tmux pane resize keybindings with `prefix + H/J/K/L` (`resize-pane` with repeat enabled) in `dotfiles/tmux.conf`.
 - Updated Telescope `file-browser` settings in nixvim to show hidden files and gitignored files (`hidden.file_browser/folder_browser = true`, `no_ignore = true`, `respect_gitignore = false`).
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link` after Telescope file-browser option changes.
+- Enabled Home Manager `programs.fzf.enableZshIntegration` so zsh gets the standard `Ctrl + r` `fzf` history widget.
 
 ## Next
-- Verify Python/Web/Scala LSP behavior (diagnostics/jump/completion) and Git workflow keymaps after activation.
-- Re-verify the `linux` Home Manager profile evaluation after adding `bubblewrap`.
-- Verify tmux pane resize behavior (`prefix + H/J/K/L`) after activation.
-- Verify Telescope file-browser behavior for hidden and gitignored files after activation.
+- Run `home-manager switch --flake .#<profile>` and verify `Ctrl + r` opens the `fzf` history search widget in zsh.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
