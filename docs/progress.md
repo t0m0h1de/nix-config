@@ -1,7 +1,7 @@
 # Progress Log
 
 ## Current Task
-- Enable `Ctrl + r` fuzzy history search in zsh with `fzf`.
+- None
 
 ## Done
 - Read the current Home Manager and Neovim setup.
@@ -42,6 +42,7 @@
 - Updated Telescope `file-browser` settings in nixvim to show hidden files and gitignored files (`hidden.file_browser/folder_browser = true`, `no_ignore = true`, `respect_gitignore = false`).
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link` after Telescope file-browser option changes.
 - Enabled Home Manager `programs.fzf.enableZshIntegration` so zsh gets the standard `Ctrl + r` `fzf` history widget.
+- Fixed `Ctrl + r` fzf history search not working: moved `ZVM_VI_INSERT_ESCAPE_BINDKEY` and `zvm_after_init` hook to `zsh.nix` before Sheldon init, so fzf keybindings are re-applied after `zsh-vi-mode` resets them.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify `Ctrl + r` opens the `fzf` history search widget in zsh.

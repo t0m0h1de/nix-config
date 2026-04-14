@@ -14,6 +14,12 @@
         source "$HOME/.secrets"
       fi
 
+      # zsh-vi-mode の設定 (Sheldon でロードされる前に定義が必要)
+      ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
+      zvm_after_init() {
+        source <(fzf --zsh)
+      }
+
       # Sheldon の初期化
       eval "$(sheldon source)"
 

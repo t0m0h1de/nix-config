@@ -209,8 +209,8 @@ fi
 bindkey '^H' zaw-history
 
 # --- Plugin設定 ---
-# 注意: zsh-vi-mode プラグインが入っている前提
-ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
+# zsh-vi-mode の設定 (ZVM_VI_INSERT_ESCAPE_BINDKEY, zvm_after_init) は
+# Sheldon より前に定義する必要があるため zsh.nix 側で設定
 
 # ghq + fzfのユーティリティ(リポジトリ一覧から選択して移動するための関数)
 function ghq-fzf() {
