@@ -82,11 +82,13 @@
       autoEnableSources = true;
       settings = {
         completion = {
-          completeopt = "menu,menuone,noinsert";
+          # noinsert を外し、選択中候補がバッファへ反映される挙動にする。
+          completeopt = "menu,menuone";
         };
         mapping = {
-          "<C-n>" = "cmp.mapping.select_next_item()";
-          "<C-p>" = "cmp.mapping.select_prev_item()";
+          # Tab で次候補、Shift-Tab で前候補。連打で候補送りする。
+          "<Tab>" = "cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert })";
+          "<S-Tab>" = "cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert })";
           "<C-Space>" = "cmp.mapping.complete()";
           "<CR>" = "cmp.mapping.confirm({ select = true })";
         };
@@ -95,6 +97,15 @@
           { name = "path"; }
           { name = "buffer"; }
         ];
+      };
+    };
+
+    plugins.copilot-lua = {
+      # GitHub Copilot を有効化（nvim-cmp と干渉しやすいUIは無効化）。
+      enable = true;
+      settings = {
+        panel.enabled = false;
+        suggestion.enabled = false;
       };
     };
 
