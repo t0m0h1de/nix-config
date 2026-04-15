@@ -131,7 +131,7 @@ nix search nixpkgs <パッケージ名>
 このリポジトリでは、自己更新前提のCLIはNix管理に含めない。
 
 - Nix管理: OS共通で再現性を重視するツール（例: `codex`, `jq`, `git` など）
-- Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `codex`, `claude`, `cline`, `antigravity`）
+- Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `codex`, `gemini-cli`, `copilot`, `jules`, `claude`, `cline`, `antigravity`）
 
 理由:
 
@@ -141,31 +141,31 @@ nix search nixpkgs <パッケージ名>
 
 #### 運用例
 
-1. `codex` は公式インストーラ（ベンダー提供）でインストール・更新する
-2. `claude` / `cline` / `antigravity` は公式手順または `npm` で更新する
-3. `home-manager switch --flake .#linux` (または `.#darwin`) 後はシェルを再起動し、`type -a bob` / `type -a claude` で解決先を確認する
+1. `home-manager switch --flake .#linux` (または `.#darwin`) 後はシェルを再起動する
+2. AI CLI は zsh alias から `npx` で起動する
+3. `type -a codex` / `type -a claude` などで alias の解決先を確認する
 
-### CLI のインストール例（claude）
+### AI CLI alias
 
-このリポジトリでは自己更新前提の CLI を Nix では配布しない。
-`claude` は公式インストーラで導入する。
-
-```bash
-curl -fsSL https://claude.ai/install.sh | bash
-```
+このリポジトリでは AI CLI を zsh alias で `npx` 起動する。
+そのため Node.js / npm が利用可能であることを前提とする。
 
 ```bash
-export CLAUDE_AUTO_INSTALL=0  # 自動導入を無効化したい場合
-export CLI_AUTO_INSTALL_CONNECT_TIMEOUT=3
-export CLI_AUTO_INSTALL_MAX_TIME=8
-export CLI_AUTO_INSTALL_RETRY_INTERVAL=21600
+codex='npx @openai/codex'
+gemini-cli='npx @google/gemini-cli'
+copilot='npx @github/copilot'
+jules='npx @google/jules'
+claude='npx @anthropic-ai/claude-code'
 ```
 
 確認例:
 
 ```bash
+type -a codex
 claude --version
 ```
+
+`bob` は deprecated 扱いのため、この設定ではサポートしない。
 
 ## ⚙️ Git設定について
 

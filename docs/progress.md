@@ -1,7 +1,7 @@
 # Progress Log
 
 ## Current Task
-- None
+- Simplify AI CLI zsh config to `npx`-only aliases.
 
 ## Done
 - Read the current Home Manager and Neovim setup.
@@ -43,9 +43,14 @@
 - Re-verified `linux` Home Manager profile evaluation with `nix build .#homeConfigurations.linux.activationPackage --no-link` after Telescope file-browser option changes.
 - Enabled Home Manager `programs.fzf.enableZshIntegration` so zsh gets the standard `Ctrl + r` `fzf` history widget.
 - Fixed `Ctrl + r` fzf history search not working: moved `ZVM_VI_INSERT_ESCAPE_BINDKEY` and `zvm_after_init` hook to `zsh.nix` before Sheldon init, so fzf keybindings are re-applied after `zsh-vi-mode` resets them.
+- Added `npx`-based zsh aliases for `codex`, `gemini-cli`, `copilot`, and `jules`.
+- Removed Bob/Claude auto-install logic and local binary priority handling from zsh config.
+- Changed `claude` to always use the `npx @anthropic-ai/claude-code` alias.
+- Left `bob` unsupported in zsh config because it is deprecated.
+- Updated README AI CLI documentation to match the new `npx`-only alias approach.
 
 ## Next
-- Run `home-manager switch --flake .#<profile>` and verify `Ctrl + r` opens the `fzf` history search widget in zsh.
+- Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.
