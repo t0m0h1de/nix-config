@@ -306,16 +306,34 @@
         action = "<cmd>Gitsigns next_hunk<cr>";
       }
       {
+        # 次の診断（エラー/警告）へ移動。
+        mode = "n";
+        key = "]d";
+        action = "<cmd>lua vim.diagnostic.goto_next()<cr>";
+      }
+      {
         # gitsigns: 前のhunkへ移動。
         mode = "n";
         key = "[h";
         action = "<cmd>Gitsigns prev_hunk<cr>";
       }
       {
+        # 前の診断（エラー/警告）へ移動。
+        mode = "n";
+        key = "[d";
+        action = "<cmd>lua vim.diagnostic.goto_prev()<cr>";
+      }
+      {
         # gitsigns: 現在hunkの差分プレビュー。
         mode = "n";
         key = "<leader>hp";
         action = "<cmd>Gitsigns preview_hunk<cr>";
+      }
+      {
+        # カーソル位置の診断詳細をフロート表示。
+        mode = "n";
+        key = "<leader>e";
+        action = "<cmd>lua vim.diagnostic.open_float()<cr>";
       }
       {
         # diffview: 差分ビューを開く。
