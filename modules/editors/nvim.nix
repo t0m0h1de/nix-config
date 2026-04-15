@@ -35,6 +35,49 @@
           theme = "tokyonight";
           globalstatus = true;
         };
+        sections = {
+          lualine_c = [
+            {
+              __unkeyed-1 = "filename";
+              file_status = true;
+              newfile_status = true;
+              path = 1;
+              symbols = {
+                modified = " ●";
+                readonly = "[RO]";
+                unnamed = "[No Name]";
+                newfile = "[New]";
+              };
+            }
+          ];
+        };
+      };
+    };
+
+    plugins.auto-save = {
+      # フォーカスロスト時に、通常ファイルだけ自動保存する。
+      enable = true;
+      settings = {
+        enabled = true;
+        trigger_events = {
+          immediate_save = [ "FocusLost" ];
+          defer_save = [ ];
+          cancel_deferred_save = [ ];
+        };
+        condition = ''
+          function(buf)
+            if vim.api.nvim_buf_get_name(buf) == "" then
+              return false
+            end
+            if vim.bo[buf].buftype ~= "" then
+              return false
+            end
+            if not vim.bo[buf].modifiable or vim.bo[buf].readonly then
+              return false
+            end
+            return true
+          end
+        '';
       };
     };
 
@@ -219,6 +262,7 @@
           vim.bo.smartindent = true
         end,
       })
+
     '';
 
     opts = {
