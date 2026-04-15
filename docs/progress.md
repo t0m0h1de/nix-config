@@ -48,6 +48,8 @@
 - Changed `claude` to always use the `npx @anthropic-ai/claude-code` alias.
 - Left `bob` unsupported in zsh config because it is deprecated.
 - Updated README AI CLI documentation to match the new `npx`-only alias approach.
+- Added Neovim `nvim-autopairs` with Tree-sitter awareness so typing brackets and quotes inserts the closing pair automatically.
+- Disabled the plugin's default `<CR>` mapping so it does not interfere with the existing `nvim-cmp` confirm keybinding.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.

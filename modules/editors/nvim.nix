@@ -98,6 +98,15 @@
       };
     };
 
+    plugins."nvim-autopairs" = {
+      # 開き括弧やクオート入力時に、自動で閉じ文字も補完する。
+      enable = true;
+      settings = {
+        check_ts = true;
+        map_cr = false;
+      };
+    };
+
     plugins.lsp = {
       # LSP を有効化。Python / Web / Scala の基本言語を導入する。
       enable = true;
