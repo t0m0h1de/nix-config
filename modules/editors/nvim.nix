@@ -17,7 +17,13 @@
       enable = true;
       settings = {
         highlight.enable = true;
-        indent.enable = true;
+        indent = {
+          enable = true;
+          # TODO: 2026/4にnvim-treesitterに一悶着あったので、そこが解決されたあと、下記部分が修正されたか確認する
+          # Scala は treesitter indent が崩れることがあるため Vim 標準インデントへフォールバック。
+          # Scalaはnvim-treesitter側でindentが0に指定されている可能性が高い
+          disable = [ "scala" ];
+        };
       };
     };
 
@@ -202,6 +208,17 @@
           vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
         end,
       })
+
+      -- Scala では treesitter の indentexpr が期待通りに動かないため、
+      -- ローカルで無効化して autoindent/smartindent を使う。
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "scala",
+        callback = function()
+          vim.bo.indentexpr = ""
+          vim.bo.autoindent = true
+          vim.bo.smartindent = true
+        end,
+      })
     '';
 
     opts = {
@@ -217,6 +234,7 @@
       expandtab = true;
       shiftwidth = 2;
       tabstop = 2;
+      autoindent = true;
       smartindent = true;
 
       # 検索は普段は大文字小文字を無視しつつ、大文字を含めたら厳密一致。

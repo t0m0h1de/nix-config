@@ -53,6 +53,9 @@
 - Expanded README with concrete day-to-day Nix operations (`nix search`, `nix eval`, `nix path-info`, `nix shell`, `nix flake show`).
 - Enabled `plugins.copilot-lua` in nixvim and disabled its `panel/suggestion` UI to avoid overlap with the current `nvim-cmp` flow.
 - Updated nvim-cmp keybindings to use `<Tab>/<S-Tab>` for completion navigation and changed `completeopt` to `menu,menuone` so selected candidates are inserted while cycling.
+- Enabled `autoindent` in nixvim opts so newline keeps the previous line indentation baseline.
+- Disabled treesitter indent for Scala (`indent.disable = [ "scala" ]`) so Scala buffers fall back to Vim's auto/smart indent behavior.
+- Added a Scala `FileType` autocmd to force `indentexpr = ""` and re-enable `autoindent/smartindent`, because treesitter indentexpr was still being set in Scala buffers.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.
