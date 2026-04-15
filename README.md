@@ -120,10 +120,40 @@ home-manager switch --flake .#linux   # Linux/WSL
 home-manager switch --flake .#darwin  # macOS
 ```
 
-### パッケージの探し方
+### よく使う Nix コマンド
 
+#### パッケージを探す
+
+```bash
+# キーワードで検索
+nix search nixpkgs ripgrep
+
+# 正規表現で絞り込み
+nix search nixpkgs 'python3[0-9]+Packages\.wheel$'
 ```
-nix search nixpkgs <パッケージ名>
+
+#### パッケージ情報を確認する
+
+```bash
+# パッケージの説明を確認
+nix eval --raw nixpkgs#ripgrep.meta.description
+
+# どの derivation が解決されるか確認
+nix path-info nixpkgs#ripgrep
+```
+
+#### インストールせずに一時的に使う
+
+```bash
+# 一時シェルでコマンド実行
+nix shell nixpkgs#ripgrep -c rg --version
+```
+
+#### Flake の出力を確認する
+
+```bash
+# このリポジトリで利用可能な出力を確認
+nix flake show
 ```
 
 ### npm系CLIの運用方針
@@ -164,8 +194,6 @@ claude='npx @anthropic-ai/claude-code'
 type -a codex
 claude --version
 ```
-
-`bob` は deprecated 扱いのため、この設定ではサポートしない。
 
 ## ⚙️ Git設定について
 
