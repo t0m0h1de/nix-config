@@ -60,6 +60,8 @@
 - Replaced custom autosave/statusline logic with plugin-native settings:
   - enabled `plugins.auto-save` and limited autosave trigger to `FocusLost`
   - switched lualine to `filename` component status symbols (modified/readonly/newfile) instead of custom Lua text.
+- Set `plugins.cmp.settings.preselect = "cmp.PreselectMode.None"` so first `<Tab>` selects the first completion candidate instead of jumping to the second.
+- Added `noselect` to `plugins.cmp.settings.completion.completeopt` so completion menu no longer pre-selects the first item before pressing `<Tab>`.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.

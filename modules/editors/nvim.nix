@@ -130,9 +130,11 @@
       enable = true;
       autoEnableSources = true;
       settings = {
+        # 最初の候補を事前選択しない。最初の Tab で 1 件目を選択する。
+        preselect = "cmp.PreselectMode.None";
         completion = {
-          # noinsert を外し、選択中候補がバッファへ反映される挙動にする。
-          completeopt = "menu,menuone";
+          # 先頭候補の自動選択を防ぎ、最初の Tab で1件目を選べるようにする。
+          completeopt = "menu,menuone,noselect";
         };
         mapping = {
           # Tab で次候補、Shift-Tab で前候補。連打で候補送りする。
