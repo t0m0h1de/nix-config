@@ -62,6 +62,12 @@
   - switched lualine to `filename` component status symbols (modified/readonly/newfile) instead of custom Lua text.
 - Set `plugins.cmp.settings.preselect = "cmp.PreselectMode.None"` so first `<Tab>` selects the first completion candidate instead of jumping to the second.
 - Added `noselect` to `plugins.cmp.settings.completion.completeopt` so completion menu no longer pre-selects the first item before pressing `<Tab>`.
+- Enabled `plugins.treesitter.grammarPackages = pkgs.vimPlugins.nvim-treesitter.allGrammars` and removed the Scala indent fallback workaround comments to test Scala Tree-sitter indent behavior directly.
+- Fixed nix build error in Neovim treesitter grammar configuration by switching grammar source to `pkgs.vimPlugins.nvim-treesitter.builtGrammars` (instead of `config.plugins...`) and adding `scala` to the pinned grammar list.
+- Added a local Tree-sitter query override at `~/.config/nvim/queries/scala/indents.scm` via Home Manager so Scala gets bracket-based Tree-sitter indentation even though upstream Scala queries do not currently ship `indents.scm`.
+- Updated the local Scala `indents.scm` override to use `@indent.branch` for closing delimiters and `(#set! indent.immediate 1)` for opening delimiters, so Tree-sitter indent can increase/decrease indentation on newline and closing bracket lines.
+- Forced `nvim-treesitter` to load at startup (`autoLoad = true`, `lazyLoad.enable = false`) so `:TS*` commands and module behavior can be debugged reliably.
+- Switched the Scala local `indents.scm` override from token-based begin rules to node-based begin rules (`template_body`, `block`) after confirming Scala AST shape, so newline indent can derive from enclosing syntax nodes.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.

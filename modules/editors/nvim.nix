@@ -1,5 +1,26 @@
 { pkgs, ... }:
 {
+  xdg.configFile."nvim/queries/scala/indents.scm".text = ''
+    ; scala は upstream の nvim-treesitter query に indents.scm が無いため、
+    ; 最低限のノードベースインデントをローカル override で提供する。
+    [
+      (template_body)
+      (block)
+    ] @indent.begin
+
+    [
+      "}"
+      ")"
+      "]"
+    ] @indent.branch
+
+    [
+      "}"
+      ")"
+      "]"
+    ] @indent.end
+  '';
+
   programs.nixvim = {
     enable = true;
     defaultEditor = true;
@@ -15,14 +36,31 @@
     plugins.treesitter = {
       # AST ベースのハイライトとインデントを有効化。
       enable = true;
+      # デバッグしやすくするため起動時ロードを強制する。
+      autoLoad = true;
+      lazyLoad.enable = false;
+      # Nix 管理で parser を固定するため、全 Grammar を導入する。
+      grammarPackages = pkgs.vimPlugins.nvim-treesitter.allGrammars;
+      # 特定の言語だけ入れる場合は以下を使用する
+      # grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [
+      #   bash
+      #   json
+      #   lua
+      #   make
+      #   markdown
+      #   nix
+      #   regex
+      #   scala
+      #   toml
+      #   vim
+      #   vimdoc
+      #   xml
+      #   yaml
+      # ];
       settings = {
         highlight.enable = true;
         indent = {
           enable = true;
-          # TODO: 2026/4にnvim-treesitterに一悶着あったので、そこが解決されたあと、下記部分が修正されたか確認する
-          # Scala は treesitter indent が崩れることがあるため Vim 標準インデントへフォールバック。
-          # Scalaはnvim-treesitter側でindentが0に指定されている可能性が高い
-          disable = [ "scala" ];
         };
       };
     };
@@ -251,17 +289,6 @@
           local opts = { buffer = event.buf, silent = true }
           vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
           vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-        end,
-      })
-
-      -- Scala では treesitter の indentexpr が期待通りに動かないため、
-      -- ローカルで無効化して autoindent/smartindent を使う。
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "scala",
-        callback = function()
-          vim.bo.indentexpr = ""
-          vim.bo.autoindent = true
-          vim.bo.smartindent = true
         end,
       })
 
