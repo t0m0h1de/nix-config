@@ -53,7 +53,7 @@ bindkey '^g' ghq-fzf  # Ctrl+g で発動
 # 通常ディレクトリ移動用コマンド:
 # - 引数あり: 普通に cd
 # - 引数なし: カレント配下を fzf で選んで cd
-function c-nav() {
+function cd-nav() {
   if [ "$#" -gt 0 ]; then
     cd "$@"
     return
@@ -69,6 +69,4 @@ function c-nav() {
     cd "$dir"
   fi
 }
-
-# `c` は abbr 展開で `c-nav` を呼ぶ
-abbr c='c-nav'
+abbr cdn='cd-nav'
