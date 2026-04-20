@@ -68,6 +68,7 @@
 - Updated the local Scala `indents.scm` override to use `@indent.branch` for closing delimiters and `(#set! indent.immediate 1)` for opening delimiters, so Tree-sitter indent can increase/decrease indentation on newline and closing bracket lines.
 - Forced `nvim-treesitter` to load at startup (`autoLoad = true`, `lazyLoad.enable = false`) so `:TS*` commands and module behavior can be debugged reliably.
 - Switched the Scala local `indents.scm` override from token-based begin rules to node-based begin rules (`template_body`, `block`) after confirming Scala AST shape, so newline indent can derive from enclosing syntax nodes.
+- Improved Neovim split visibility by setting explicit `fillchars` for window separators and applying a stronger `WinSeparator` highlight color.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.
