@@ -29,12 +29,14 @@ alias jules='npx @google/jules'
 alias claude='npx @anthropic-ai/claude-code'
 
 # --- キーバインド (Plugin依存) ---
-# 注意: zaw プラグインが入っている前提
-bindkey '^H' zaw-history
+# 注意: zaw が有効な環境でのみ Ctrl+h を zaw-history に割り当てる
+if zle -l | grep -qx 'zaw-history'; then
+  bindkey '^H' zaw-history
+fi
 
 # --- Plugin設定 ---
 # zsh-vi-mode の設定 (ZVM_VI_INSERT_ESCAPE_BINDKEY, zvm_after_init) は
-# Sheldon より前に定義する必要があるため zsh.nix 側で設定
+# プラグイン読み込みより前に定義する必要があるため zsh.nix 側で設定
 
 # ghq + fzfのユーティリティ(リポジトリ一覧から選択して移動するための関数)
 function ghq-fzf() {
@@ -47,3 +49,26 @@ function ghq-fzf() {
 }
 zle -N ghq-fzf
 bindkey '^g' ghq-fzf  # Ctrl+g で発動
+
+# 通常ディレクトリ移動用コマンド:
+# - 引数あり: 普通に cd
+# - 引数なし: カレント配下を fzf で選んで cd
+function c-nav() {
+  if [ "$#" -gt 0 ]; then
+    cd "$@"
+    return
+  fi
+
+  local dir
+  dir=$(
+    fd --type d --hidden --follow --exclude .git --exclude node_modules . "$PWD" 2>/dev/null \
+      | fzf --prompt='dir> ' --preview='ls -la {} | head -n 40'
+  )
+
+  if [ -n "$dir" ]; then
+    cd "$dir"
+  fi
+}
+
+# `c` は abbr 展開で `c-nav` を呼ぶ
+abbr c='c-nav'

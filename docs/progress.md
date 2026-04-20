@@ -70,9 +70,32 @@
 - Switched the Scala local `indents.scm` override from token-based begin rules to node-based begin rules (`template_body`, `block`) after confirming Scala AST shape, so newline indent can derive from enclosing syntax nodes.
 - Improved Neovim split visibility by setting explicit `fillchars` for window separators and applying a stronger `WinSeparator` highlight color.
 - Enabled zsh `interactivecomments` in Home Manager init content so `#` works as comment in interactive zsh sessions.
+- Restored `Ctrl + g` zsh widget to `ghq`-only repository picker behavior.
+- Added a short `c` zsh command for normal directory moves: `c <path>` works like `cd`, and plain `c` opens an `fzf` directory picker under the current path.
+- Changed zsh shortcut style to `short alias -> descriptive function` for `c` and AI CLI commands (`codex`, `gemini-cli`, `copilot`, `jules`, `claude`).
+- Added `zsh-abbr` plugin in Sheldon and migrated shell shortcuts from `alias` to `abbr` (fish-like on-type expansion), including `c` and AI CLI shortcuts.
+- Reduced `abbr` usage to only `c` and restored other shortcuts (`ls`/`ll`/`la`/`j!` and AI CLI commands) back to standard `alias` for better maintainability.
+- Switched `c` back to a `zsh-abbr` shortcut by moving its implementation to `c-nav` and defining `abbr c='c-nav'`.
+- Fixed `abbr command not found` risk in zsh startup by guarding `abbr` usage with `command -v abbr` and falling back to `alias c='c-nav'` when `zsh-abbr` is not loaded yet.
+- Confirmed repo config includes `zsh-abbr` in Sheldon (`dotfiles/sheldon/plugins.toml`), and `dotfiles/zshrc` intentionally falls back to `alias c='c-nav'` when `abbr` is unavailable.
+- Diagnosed current environment: `sheldon source` does not include `zsh-abbr` (only other plugins are sourced), and `~/.local/share/sheldon/repos/github.com/olets/zsh-abbr` is missing, so `abbr` is not defined.
+- Removed Sheldon management from Home Manager (`modules/shell/tools.nix`), deleted `dotfiles/sheldon/plugins.toml`, and migrated zsh plugins to `programs.zsh.plugins`.
+- Added Home Manager-managed zsh plugins: `zsh-vi-mode`, `zsh-autosuggestions`, `zsh-completions`; removed `zaw` from plugin list because `pkgs.zaw` is unavailable.
+- Simplified `c` shortcut to always use `alias c='c-nav'` (no `abbr` dependency).
+- Made `Ctrl+h` → `zaw-history` binding conditional (`zle -l` check) so startup remains safe even without `zaw`.
+- Updated README directory overview to remove Sheldon references.
+- Verified Home Manager evaluation/build after migration:
+  - `nix build .#homeConfigurations.darwin.activationPackage --no-link` succeeded.
+  - `nix eval .#homeConfigurations.linux.activationPackage.drvPath` succeeded.
+- Reintroduced `zsh-abbr` under Home Manager plugin management (`programs.zsh.plugins`) using `pkgs."zsh-abbr"` and `share/zsh/zsh-abbr/zsh-abbr.plugin.zsh`.
+- Changed `c` command setup back to abbr expansion (`abbr c='c-nav'`) with alias fallback when `abbr` is unavailable.
+- Re-verified `darwin` Home Manager profile builds with `nix build .#homeConfigurations.darwin.activationPackage --no-link` after re-enabling abbr.
+- Removed `c` alias fallback and made `abbr c='c-nav'` mandatory now that `zsh-abbr` is Home Manager-managed.
+- Re-verified `darwin` Home Manager profile builds with `nix build .#homeConfigurations.darwin.activationPackage --no-link` after removing fallback.
 
 ## Next
-- Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.
+- Run `home-manager switch --flake .#<profile>` and verify zsh plugin behavior without Sheldon.
+- Verify zsh directory navigation behavior after switch (`Ctrl + g` for ghq repos, `c` for normal directory navigation).
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.

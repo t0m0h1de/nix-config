@@ -17,11 +17,10 @@ Nix Flakes + Home Manager を利用した開発環境定義リポジトリ。
 ├── modules/
 │   ├── core/           # 共通パッケージ・Git・基本設定 (OS別パッケージはlib.optionals で分岐)
 │   ├── dev/            # 開発ツール (k8s, langs, opentofu)
-│   ├── shell/          # Zsh・Starship・Sheldon・direnv
+│   ├── shell/          # Zsh・Starship・direnv
 │   └── editors/        # Vim / Neovim (nixvimによる管理)
 └── dotfiles/           # 設定ファイルの実体 (Nixから読み込まれる)
     ├── zshrc           # Zsh設定 (エイリアス・キーバインド等)
-    ├── sheldon/        # Zshプラグイン管理
     ├── gitconfig       # Git共通設定
     ├── work.gitconfig  # 業務/特定プロジェクト用Git設定 (includeIfで読み込み)
     ├── vimrc           # Vim設定
