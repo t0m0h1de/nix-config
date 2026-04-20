@@ -14,6 +14,9 @@
         source "$HOME/.secrets"
       fi
 
+      # 対話シェルでも `#` をコメントとして扱う。
+      setopt interactivecomments
+
       # zsh-vi-mode の設定 (Sheldon でロードされる前に定義が必要)
       ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
       zvm_after_init() {

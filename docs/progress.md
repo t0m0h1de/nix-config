@@ -69,6 +69,7 @@
 - Forced `nvim-treesitter` to load at startup (`autoLoad = true`, `lazyLoad.enable = false`) so `:TS*` commands and module behavior can be debugged reliably.
 - Switched the Scala local `indents.scm` override from token-based begin rules to node-based begin rules (`template_body`, `block`) after confirming Scala AST shape, so newline indent can derive from enclosing syntax nodes.
 - Improved Neovim split visibility by setting explicit `fillchars` for window separators and applying a stronger `WinSeparator` highlight color.
+- Enabled zsh `interactivecomments` in Home Manager init content so `#` works as comment in interactive zsh sessions.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify the `npx`-based AI CLI aliases resolve as expected in zsh.
