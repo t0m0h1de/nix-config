@@ -1,9 +1,11 @@
 # Progress Log
 
 ## Current Task
-- Fix fzf so `i` remains typeable in filter mode.
+- Remove fzf filter/nav modal keybind customization and return to defaults.
 
 ## Done
+- Removed custom `FZF_*_OPTS` modal keybind/prompt settings from `modules/shell/fzf.nix` and reverted to default fzf behavior.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after removing fzf modal settings.
 - Added `desc` labels to Neovim `<leader>H/J/K/L` Lua keymaps in `modules/editors/nvim.nix` so which-key can display resize action descriptions.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding keymap descriptions for which-key.
 - Reworked Neovim pane resize mappings in `modules/editors/nvim.nix` to be current-pane-aware via Lua (`<leader>H/J/K/L` now flips `+/-` by neighbor existence in each direction).
