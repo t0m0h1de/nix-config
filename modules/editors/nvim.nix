@@ -304,6 +304,62 @@
         end,
       })
 
+      -- <leader>H/J/K/L で、カレントウィンドウ基準の方向リサイズを行う。
+      -- 例: 5<leader>L で 15 カラム分リサイズ。
+      local resize_step = 3
+      local function resize_with_direction(direction)
+        local amount = resize_step * vim.v.count1
+        local current = vim.fn.winnr()
+
+        if direction == "left" then
+          if vim.fn.winnr("h") ~= current then
+            vim.cmd("vertical resize +" .. amount)
+          else
+            vim.cmd("vertical resize -" .. amount)
+          end
+          return
+        end
+
+        if direction == "right" then
+          if vim.fn.winnr("l") ~= current then
+            vim.cmd("vertical resize +" .. amount)
+          else
+            vim.cmd("vertical resize -" .. amount)
+          end
+          return
+        end
+
+        if direction == "down" then
+          if vim.fn.winnr("j") ~= current then
+            vim.cmd("resize +" .. amount)
+          else
+            vim.cmd("resize -" .. amount)
+          end
+          return
+        end
+
+        if direction == "up" then
+          if vim.fn.winnr("k") ~= current then
+            vim.cmd("resize +" .. amount)
+          else
+            vim.cmd("resize -" .. amount)
+          end
+        end
+      end
+
+      vim.keymap.set("n", "<leader>H", function()
+        resize_with_direction("left")
+      end, { silent = true, desc = "Resize Pane Left" })
+      vim.keymap.set("n", "<leader>L", function()
+        resize_with_direction("right")
+      end, { silent = true, desc = "Resize Pane Right" })
+      vim.keymap.set("n", "<leader>J", function()
+        resize_with_direction("down")
+      end, { silent = true, desc = "Resize Pane Down" })
+      vim.keymap.set("n", "<leader>K", function()
+        resize_with_direction("up")
+      end, { silent = true, desc = "Resize Pane Up" })
+
     '';
 
     opts = {

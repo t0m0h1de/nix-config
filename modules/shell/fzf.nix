@@ -2,14 +2,14 @@
 let
   # Use quoted --bind payloads so fzf shell-integration option parsing
   # behaves consistently across widgets.
-  modalEscBindOpt = "--bind='esc:ignore+rebind(j,k)+change-prompt(Nav> )'";
+  modalEscBindOpt = "--bind='esc:ignore+rebind(i,j,k)+change-prompt(Nav> )'";
   fzfDefaultOpts = [
     "--prompt='Filter> '"
     "--bind='j:down'"
     "--bind='k:up'"
-    "--bind='start:unbind(j,k)+change-prompt(Filter> )'"
+    "--bind='start:unbind(i,j,k)+change-prompt(Filter> )'"
     modalEscBindOpt
-    "--bind='i:unbind(j,k)+change-prompt(Filter> )'"
+    "--bind='i:unbind(i,j,k)+change-prompt(Filter> )'"
   ];
 in
 {
