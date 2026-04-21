@@ -69,4 +69,6 @@ function cd-nav() {
     cd "$dir"
   fi
 }
-abbr cdn='cd-nav'
+# Force redefine quietly so repeated sourcing (e.g. nested shells in tmux)
+# stays idempotent without duplicate definitions.
+abbr --force --quiet cdn='cd-nav'
