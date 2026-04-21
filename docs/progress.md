@@ -94,6 +94,24 @@
 - Re-verified `darwin` Home Manager profile builds with `nix build .#homeConfigurations.darwin.activationPackage --no-link` after removing fallback.
 - Made `dotfiles/zshrc` abbreviation setup idempotent by changing `abbr cdn='cd-nav'` to `abbr --force --quiet cdn='cd-nav'`, preventing duplicate registration/error spam when shells are re-sourced (e.g. in tmux).
 - Changed `cd-nav` directory discovery root from `"$PWD"` to `.` so `fzf` candidates are shown as relative paths instead of full paths.
+- Added global `programs.fzf.defaultOptions` keybinds for modal navigation/search behavior (`j/k` move, `i` filter mode, `esc` nav mode) with prompt switching, so the same behavior applies across fzf usage including `Ctrl + r`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath`.
+- Fixed fzf `Esc` key bind behavior by changing prompt strings from `Filter: / Nav: ` to `Filter> / Nav> ` in `modules/shell/fzf.nix`, so the custom `esc` binding is parsed/applied instead of falling back to default `abort`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf prompt/bind update.
+- Hardened fzf `Esc` handling by binding both `esc` and `ctrl-[` to `ignore+rebind(j,k)+change-prompt(Nav> )` in `modules/shell/fzf.nix`, so terminal/tmux keycode differences no longer trigger default `abort`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the Esc/Ctrl-[ binding update.
+- Applied the Esc/Ctrl-[ override bind to Home Manager widget-specific options (`historyWidgetOptions`, `fileWidgetOptions`, `changeDirWidgetOptions`) in addition to `defaultOptions`, to avoid being overridden by fzf integration-specific binds.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding widget-level fzf bind overrides.
+- Exported `FZF_DEFAULT_OPTS` / `FZF_CTRL_R_OPTS` / `FZF_CTRL_T_OPTS` / `FZF_ALT_C_OPTS` via `home.sessionVariables` in `modules/shell/fzf.nix` so fzf widget behavior is guaranteed to be present in the shell environment.
+- Normalized fzf prompt strings to no-trailing-space form (`Filter>`, `Nav>`) and reused a single bind string constant for consistency.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after session variable export changes.
+- Switched fzf keybind configuration to environment-variable-only management (`FZF_*_OPTS`) by removing `programs.fzf.defaultOptions` and widget option overrides from `modules/shell/fzf.nix`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after moving fzf keybinds to env-vars only.
+- Identified root cause: `fzf 0.70.0` rejects `ctrl-[` in `--bind` (`unsupported key: ctrl-[`), which invalidated the bind expression and prevented `esc` override from taking effect.
+- Removed `ctrl-[` from the fzf bind expression and kept `esc:ignore+rebind(j,k)+change-prompt(Nav>)` only.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after fixing unsupported fzf key token.
+- Switched `FZF_DEFAULT_OPTS` bind/prompt expressions to quoted payload style (e.g. `--bind='esc:...'`) in `modules/shell/fzf.nix`, matching the known-good runtime export format observed in shell.
+- Re-verified rendered `home.sessionVariables.FZF_DEFAULT_OPTS` and Home Manager evaluation after the quoted fzf options update.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify zsh plugin behavior without Sheldon.
