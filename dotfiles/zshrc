@@ -61,7 +61,7 @@ function cd-nav() {
 
   local dir
   dir=$(
-    fd --type d --hidden --follow --exclude .git --exclude node_modules . "$PWD" 2>/dev/null \
+    fd --type d --hidden --follow --exclude .git --exclude node_modules . . 2>/dev/null \
       | fzf --prompt='dir> ' --preview='ls -la {} | head -n 40'
   )
 

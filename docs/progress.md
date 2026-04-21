@@ -93,6 +93,7 @@
 - Removed `c` alias fallback and made `abbr c='c-nav'` mandatory now that `zsh-abbr` is Home Manager-managed.
 - Re-verified `darwin` Home Manager profile builds with `nix build .#homeConfigurations.darwin.activationPackage --no-link` after removing fallback.
 - Made `dotfiles/zshrc` abbreviation setup idempotent by changing `abbr cdn='cd-nav'` to `abbr --force --quiet cdn='cd-nav'`, preventing duplicate registration/error spam when shells are re-sourced (e.g. in tmux).
+- Changed `cd-nav` directory discovery root from `"$PWD"` to `.` so `fzf` candidates are shown as relative paths instead of full paths.
 
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify zsh plugin behavior without Sheldon.
