@@ -4,6 +4,10 @@
 - Remove fzf filter/nav modal keybind customization and return to defaults.
 
 ## Done
+- Simplified README Copilot section by removing the initial `home-manager switch` / `nvim` startup step and keeping only Neovim-side auth/status operations.
+- Added README instructions for Neovim GitHub Copilot onboarding (`:Copilot auth`, `:Copilot status`, signout/signin/info) and clarified that this repo uses `copilot-cmp` with `panel/suggestion` disabled.
+- Added `copilot-cmp` integration in `modules/editors/nvim.nix` and registered `copilot` in `nvim-cmp` sources while keeping `copilot-lua` `panel/suggestion` disabled.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `copilot-cmp`.
 - Removed custom `FZF_*_OPTS` modal keybind/prompt settings from `modules/shell/fzf.nix` and reverted to default fzf behavior.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after removing fzf modal settings.
 - Added `desc` labels to Neovim `<leader>H/J/K/L` Lua keymaps in `modules/editors/nvim.nix` so which-key can display resize action descriptions.

@@ -182,6 +182,7 @@
           "<CR>" = "cmp.mapping.confirm({ select = true })";
         };
         sources = [
+          { name = "copilot"; }
           { name = "nvim_lsp"; }
           { name = "path"; }
           { name = "buffer"; }
@@ -196,6 +197,11 @@
         panel.enabled = false;
         suggestion.enabled = false;
       };
+    };
+
+    plugins.copilot-cmp = {
+      # Copilot の候補を nvim-cmp の source として統合する。
+      enable = true;
     };
 
     plugins."nvim-autopairs" = {

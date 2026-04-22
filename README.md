@@ -194,6 +194,38 @@ type -a codex
 claude --version
 ```
 
+### Neovim の GitHub Copilot セットアップ
+
+このリポジトリの Neovim は `copilot.lua` + `copilot-cmp` で、Copilot を `nvim-cmp` の候補として使う構成。
+`panel` / `suggestion` は意図的に無効化している。
+
+1. Neovim 内で認証する。
+
+```vim
+:Copilot auth
+```
+
+ブラウザでデバイス認証を完了する。
+
+2. 状態を確認する。
+
+```vim
+:Copilot status
+```
+
+必要時の操作:
+
+```vim
+:Copilot auth info
+:Copilot auth signout
+:Copilot auth signin
+```
+
+認証情報の保存先:
+
+- Linux/macOS: `~/.config/github-copilot/apps.json`
+- Windows: `~/AppData/Local/github-copilot/apps.json`
+
 ## ⚙️ Git設定について
 
 特定のディレクトリ配下でのみ適用される設定 (`includeIf`) を採用している。
