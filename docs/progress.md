@@ -4,6 +4,11 @@
 - Remove fzf filter/nav modal keybind customization and return to defaults.
 
 ## Done
+- Updated `modules/core/ssh.nix` GitHub host options to set `AddKeysToAgent yes` on all OSes and `UseKeychain yes` only on macOS via `pkgs.stdenv.isDarwin`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding OS-conditional SSH options.
+- Added Home Manager SSH config management via `modules/core/ssh.nix` (`programs.ssh`), including default `github.com` key settings and `Include ~/.ssh/config.d/*.conf` for local unmanaged overrides.
+- Imported the new SSH module from `modules/core/default.nix`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding SSH config management.
 - Simplified README Copilot section by removing the initial `home-manager switch` / `nvim` startup step and keeping only Neovim-side auth/status operations.
 - Added README instructions for Neovim GitHub Copilot onboarding (`:Copilot auth`, `:Copilot status`, signout/signin/info) and clarified that this repo uses `copilot-cmp` with `panel/suggestion` disabled.
 - Added `copilot-cmp` integration in `modules/editors/nvim.nix` and registered `copilot` in `nvim-cmp` sources while keeping `copilot-lua` `panel/suggestion` disabled.
