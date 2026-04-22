@@ -1,10 +1,10 @@
 [user]
-	email = Tomohide.Sawada@ibm.com
+	email = ma1n.tmrev01ut10n@gmail.com
 	name = Tomohide Sawada
 [core]
 	editor = vim
-[includeIf "gitdir:~/workspace/jal/"]
-	path = ~/.jaldx.gitconfig
+[includeIf "gitdir:~/workspace/xxx/"]
+	path = ~/.xxx.gitconfig
 [pull]
 	rebase = true
 [init]
