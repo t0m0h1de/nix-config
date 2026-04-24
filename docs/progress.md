@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Remove fzf filter/nav modal keybind customization and return to defaults.
+- Update `cd-nav` so an optional path argument is used as the fzf search root.
 
 ## Done
+- Updated `dotfiles/zshrc` `cd-nav` behavior: it now accepts zero or one argument, validates the root directory, and always opens `fzf` for directory selection under the specified root (or `.` when omitted).
+- Added `cd-nav` usage/error handling in `dotfiles/zshrc` for invalid argument count and non-existent directory.
+- Verified shell syntax with `zsh -n dotfiles/zshrc` after the `cd-nav` changes.
 - Updated `modules/core/ssh.nix` GitHub host options to set `AddKeysToAgent yes` on all OSes and `UseKeychain yes` only on macOS via `pkgs.stdenv.isDarwin`.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding OS-conditional SSH options.
 - Added Home Manager SSH config management via `modules/core/ssh.nix` (`programs.ssh`), including default `github.com` key settings and `Include ~/.ssh/config.d/*.conf` for local unmanaged overrides.
@@ -38,6 +41,7 @@
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify zsh plugin behavior without Sheldon.
 - Verify zsh directory navigation behavior after switch (`Ctrl + g` for ghq repos, `c` for normal directory navigation).
+- Verify `cd-nav <path>` interactive selection starts from the provided root.
 
 ## Notes
 - The new setup intentionally starts from a near-blank Neovim so it is easier to rebuild gradually.

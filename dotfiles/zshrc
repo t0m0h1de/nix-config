@@ -51,18 +51,27 @@ zle -N ghq-fzf
 bindkey '^g' ghq-fzf  # Ctrl+g で発動
 
 # 通常ディレクトリ移動用コマンド:
-# - 引数あり: 普通に cd
+# - 引数あり: 指定パス配下を fzf で選んで cd
 # - 引数なし: カレント配下を fzf で選んで cd
 function cd-nav() {
-  if [ "$#" -gt 0 ]; then
-    cd "$@"
-    return
+  if [ "$#" -gt 1 ]; then
+    echo "usage: cd-nav [root-path]" >&2
+    return 1
   fi
+
+  local root=${1:-.}
+  if [ ! -d "$root" ]; then
+    echo "cd-nav: no such directory: $root" >&2
+    return 1
+  fi
+
+  local root_abs
+  root_abs=$(cd "$root" 2>/dev/null && pwd -P) || return 1
 
   local dir
   dir=$(
-    fd --type d --hidden --follow --exclude .git --exclude node_modules . . 2>/dev/null \
-      | fzf --prompt='dir> ' --preview='ls -la {} | head -n 40'
+    fd --type d --hidden --follow --exclude .git --exclude node_modules . "$root_abs" 2>/dev/null \
+      | fzf --prompt="dir> " --preview='ls -la {} | head -n 40'
   )
 
   if [ -n "$dir" ]; then
