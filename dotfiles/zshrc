@@ -70,12 +70,13 @@ function cd-nav() {
 
   local dir
   dir=$(
-    fd --type d --hidden --follow --exclude .git --exclude node_modules . "$root_abs" 2>/dev/null \
+    cd "$root_abs" 2>/dev/null || exit 1
+    fd --type d --hidden --follow --exclude .git --exclude node_modules . . 2>/dev/null \
       | fzf --prompt="dir> " --preview='ls -la {} | head -n 40'
   )
 
   if [ -n "$dir" ]; then
-    cd "$dir"
+    cd "$root_abs/$dir"
   fi
 }
 # Force redefine quietly so repeated sourcing (e.g. nested shells in tmux)

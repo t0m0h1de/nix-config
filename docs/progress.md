@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Update `cd-nav` so an optional path argument is used as the fzf search root.
+- Update `cd-nav` display so fzf candidates are shown as root-relative paths.
 
 ## Done
+- Updated `dotfiles/zshrc` `cd-nav` directory listing to run under the resolved root directory, so fzf now displays relative paths (`./...`) instead of absolute paths.
+- Kept `cd-nav` root argument behavior while resolving the selected relative entry back to an absolute path for `cd`.
+- Re-verified shell syntax with `zsh -n dotfiles/zshrc` after the relative-path display update.
 - Updated `dotfiles/zshrc` `cd-nav` behavior: it now accepts zero or one argument, validates the root directory, and always opens `fzf` for directory selection under the specified root (or `.` when omitted).
 - Added `cd-nav` usage/error handling in `dotfiles/zshrc` for invalid argument count and non-existent directory.
 - Verified shell syntax with `zsh -n dotfiles/zshrc` after the `cd-nav` changes.
@@ -39,6 +42,7 @@
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify `cd-nav` shows root-relative paths for both `cd-nav` and `cd-nav <path>`.
 - Run `home-manager switch --flake .#<profile>` and verify zsh plugin behavior without Sheldon.
 - Verify zsh directory navigation behavior after switch (`Ctrl + g` for ghq repos, `c` for normal directory navigation).
 - Verify `cd-nav <path>` interactive selection starts from the provided root.
