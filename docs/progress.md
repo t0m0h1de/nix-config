@@ -1,9 +1,11 @@
 # Progress Log
 
 ## Current Task
-- Update `cd-nav` display so fzf candidates are shown as root-relative paths.
+- Persist Scala `case` indentation behavior in Neovim by disabling `=case` reindent trigger.
 
 ## Done
+- Added a Scala `FileType` autocmd in `modules/editors/nvim.nix` to apply `setlocal indentkeys-==case`, preventing auto reindent when typing `case`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the Scala `indentkeys` autocmd change.
 - Updated `dotfiles/zshrc` `cd-nav` directory listing to run under the resolved root directory, so fzf now displays relative paths (`./...`) instead of absolute paths.
 - Kept `cd-nav` root argument behavior while resolving the selected relative entry back to an absolute path for `cd`.
 - Re-verified shell syntax with `zsh -n dotfiles/zshrc` after the relative-path display update.
@@ -42,6 +44,7 @@
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify Scala editing no longer reindents on `case` input.
 - Run `home-manager switch --flake .#<profile>` and verify `cd-nav` shows root-relative paths for both `cd-nav` and `cd-nav <path>`.
 - Run `home-manager switch --flake .#<profile>` and verify zsh plugin behavior without Sheldon.
 - Verify zsh directory navigation behavior after switch (`Ctrl + g` for ghq repos, `c` for normal directory navigation).

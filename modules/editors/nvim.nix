@@ -310,6 +310,15 @@
         end,
       })
 
+      -- Scala で "case" 入力時の自動再インデントを抑制する。
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "scala",
+        callback = function()
+          vim.cmd("setlocal indentkeys-==case")
+          -- vim.cmd("setlocal indentkeys-==xxxx")
+        end,
+      })
+
       -- <leader>H/J/K/L で、カレントウィンドウ基準の方向リサイズを行う。
       -- 例: 5<leader>L で 15 カラム分リサイズ。
       local resize_step = 3
