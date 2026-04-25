@@ -310,12 +310,12 @@
         end,
       })
 
-      -- Scala で "case" 入力時の自動再インデントを抑制する。
+      -- Scala で "case" / "=>" 入力時の自動再インデントを抑制する。
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "scala",
         callback = function()
           vim.cmd("setlocal indentkeys-==case")
-          -- vim.cmd("setlocal indentkeys-==xxxx")
+          vim.cmd("setlocal indentkeys-=<>>")
         end,
       })
 
