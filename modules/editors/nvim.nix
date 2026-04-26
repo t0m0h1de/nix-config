@@ -148,6 +148,11 @@
       };
     };
 
+    plugins.oil = {
+      # Neovim 内でディレクトリを編集できるファイルブラウザを有効化。
+      enable = true;
+    };
+
     plugins.tmux-navigator = {
       # tmux と Neovim 間を Ctrl-hjkl でシームレス移動。
       enable = true;
@@ -454,6 +459,12 @@
         mode = "n";
         key = "<leader>fb";
         action = "<cmd>Telescope file_browser path=%:p:h select_buffer=true<cr>";
+      }
+      {
+        # oil.nvim で現在ファイルのディレクトリを開く。
+        mode = "n";
+        key = "<leader>fo";
+        action = "<cmd>Oil --float %:p:h<cr>";
       }
       {
         # gitsigns: 次のhunkへ移動。

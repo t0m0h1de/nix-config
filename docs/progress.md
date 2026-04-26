@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Persist Scala `case` / `=>` indentation behavior in Neovim by disabling related `indentkeys` reindent triggers.
+- Try `oil.nvim` in Neovim by adding it to nixvim plugins and a launch keymap.
 
 ## Done
+- Added `plugins.oil.enable = true` to `modules/editors/nvim.nix` to install/enable `oil.nvim` via nixvim.
+- Added Neovim keymap `<leader>fo` in `modules/editors/nvim.nix` to open `oil.nvim` in float mode at the current file's directory (`:Oil --float %:p:h`).
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `oil.nvim`.
 - Extended the Scala `FileType` autocmd in `modules/editors/nvim.nix` to also apply `setlocal indentkeys-=<>>`, preventing auto reindent when typing `=>` (`>`).
 - Added a Scala `FileType` autocmd in `modules/editors/nvim.nix` to apply `setlocal indentkeys-==case`, preventing auto reindent when typing `case`.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the Scala `indentkeys` autocmd change.
@@ -45,6 +48,7 @@
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify `<leader>fo` opens `oil.nvim` for the current file directory.
 - Run `home-manager switch --flake .#<profile>` and verify Scala editing no longer reindents on `=>` input.
 - Run `home-manager switch --flake .#<profile>` and verify Scala editing no longer reindents on `case` input.
 - Run `home-manager switch --flake .#<profile>` and verify `cd-nav` shows root-relative paths for both `cd-nav` and `cd-nav <path>`.
