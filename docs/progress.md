@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Try `oil.nvim` in Neovim by adding it to nixvim plugins and a launch keymap.
+- Add `vimade` to Neovim plugins via nixvim and verify Home Manager evaluation.
 
 ## Done
+- Added `plugins.vimade.enable = true` to `modules/editors/nvim.nix` to install/enable `vimade` via nixvim.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `vimade`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `vimade`.
 - Added `plugins.oil.enable = true` to `modules/editors/nvim.nix` to install/enable `oil.nvim` via nixvim.
 - Added Neovim keymap `<leader>fo` in `modules/editors/nvim.nix` to open `oil.nvim` in float mode at the current file's directory (`:Oil --float %:p:h`).
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `oil.nvim`.

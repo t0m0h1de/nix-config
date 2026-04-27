@@ -153,6 +153,21 @@
       enable = true;
     };
 
+    plugins.vimade = {
+      # 非アクティブウィンドウを薄く表示して、フォーカス中のペインを見分けやすくする。
+      enable = true;
+      settings = {
+        # recipe = [
+        #   "duo"
+        #   {
+        #     animate = true;
+        #   }
+        # ];
+        fadelevel = 0.6;
+        ncmode = "windows";
+      };
+    };
+
     plugins.tmux-navigator = {
       # tmux と Neovim 間を Ctrl-hjkl でシームレス移動。
       enable = true;
