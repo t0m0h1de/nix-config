@@ -163,7 +163,7 @@
         #     animate = true;
         #   }
         # ];
-        fadelevel = 0.6;
+        fadelevel = 0.7;
         ncmode = "windows";
       };
     };
@@ -402,6 +402,7 @@
       number = true;
       relativenumber = true;
       signcolumn = "yes"; # 行番号の左側に、LSPの警告やGitの変更印を出す隙間を常に確保
+      winbar = "%f %m"; # 各ウィンドウ上部にファイル名と変更有無を表示
       wrap = true;
       scrolloff = 8; # カーソル移動時、画面の上下に常に8行確保
       termguicolors = true; # 24bit フルカラーを有効

@@ -1,9 +1,16 @@
 # Progress Log
 
 ## Current Task
-- Remove `barbar` and switch buffer/file-history navigation to Telescope floating pickers.
+- Exclude `winbar` highlight groups from `vimade` fading so window file names stay readable.
 
 ## Done
+- Updated `plugins.vimade.settings.style` in `modules/editors/nvim.nix` to exclude `WinBar`/`WinBarNC` from fading via `vimade.style.exclude`.
+- Kept `vimade` fade behavior for other highlights with `vimade.style.fade` (`value = 0.6`).
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after updating `vimade` style exclusion.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after updating `vimade` style exclusion.
+- Added `opts.winbar = "%f %m"` to `modules/editors/nvim.nix` to show file path and modified flag in each window's winbar.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `winbar`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `winbar`.
 - Removed `plugins.barbar` from `modules/editors/nvim.nix`.
 - Removed `barbar` keymaps from `modules/editors/nvim.nix` (`BufferNext/Previous/Goto/Last/Close/Move*` mappings).
 - Added Telescope keymaps in `modules/editors/nvim.nix`: `<leader>bb` (`:Telescope buffers sort_mru=true ignore_current_buffer=true`) and `<leader>fr` (`:Telescope oldfiles cwd_only=true`).
