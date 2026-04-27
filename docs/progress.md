@@ -1,9 +1,21 @@
 # Progress Log
 
 ## Current Task
-- Add `vimade` to Neovim plugins via nixvim and verify Home Manager evaluation.
+- Remove `barbar` and switch buffer/file-history navigation to Telescope floating pickers.
 
 ## Done
+- Removed `plugins.barbar` from `modules/editors/nvim.nix`.
+- Removed `barbar` keymaps from `modules/editors/nvim.nix` (`BufferNext/Previous/Goto/Last/Close/Move*` mappings).
+- Added Telescope keymaps in `modules/editors/nvim.nix`: `<leader>bb` (`:Telescope buffers sort_mru=true ignore_current_buffer=true`) and `<leader>fr` (`:Telescope oldfiles cwd_only=true`).
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after replacing `barbar` with Telescope keymaps.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after replacing `barbar` with Telescope keymaps.
+- Updated `barbar` navigation keymaps in `modules/editors/nvim.nix`: `<leader>bn`/`<leader>bp` -> `<leader>n`/`<leader>p`.
+- Added direct `barbar` buffer jump keymaps in `modules/editors/nvim.nix`: `<leader>1`..`<leader>9` (`:BufferGoto N`) and `<leader>0` (`:BufferLast`).
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after updating `barbar` keymaps.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after updating `barbar` keymaps.
+- Added Neovim keymaps for `barbar` in `modules/editors/nvim.nix`: `<leader>bn` (`:BufferNext`), `<leader>bp` (`:BufferPrevious`), `<leader>bc` (`:BufferClose`), `<leader>b>` (`:BufferMoveNext`), `<leader>b<` (`:BufferMovePrevious`).
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `barbar` keymaps.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `barbar` keymaps.
 - Added `plugins.vimade.enable = true` to `modules/editors/nvim.nix` to install/enable `vimade` via nixvim.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `vimade`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `vimade`.

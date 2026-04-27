@@ -482,6 +482,18 @@
         action = "<cmd>Oil --float %:p:h<cr>";
       }
       {
+        # 開いているバッファ一覧を MRU 順で表示して選択する。
+        mode = "n";
+        key = "<leader>bb";
+        action = "<cmd>Telescope buffers sort_mru=true ignore_current_buffer=true<cr>";
+      }
+      {
+        # 最近開いたファイル履歴から選択して開く。
+        mode = "n";
+        key = "<leader>fr";
+        action = "<cmd>Telescope oldfiles cwd_only=true<cr>";
+      }
+      {
         # gitsigns: 次のhunkへ移動。
         mode = "n";
         key = "]h";
