@@ -1,9 +1,33 @@
 # Progress Log
 
 ## Current Task
-- Exclude `winbar` highlight groups from `vimade` fading so window file names stay readable.
+- Make `nvim-metals` use Nix-managed Metals binary directly.
 
 ## Done
+- Set `metals_config.settings.metalsBinaryPath = "${pkgs.metals}/bin/metals"` in `modules/editors/nvim.nix` so `nvim-metals` uses the Nix-managed binary instead of cache-based install detection.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after setting `metalsBinaryPath`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after setting `metalsBinaryPath`.
+- Added `coursier` to `home.packages` in `modules/dev/langs.nix` to satisfy `nvim-metals` prerequisite checks.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `coursier`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `coursier`.
+- Removed temporary safe overrides for `nvim-metals` user commands from `modules/editors/nvim.nix` and returned to plain plugin commands.
+- Relaxed Scala project marker detection in `modules/editors/nvim.nix` so `.scala-build` can be either a file or directory.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after removing command wrappers.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after removing command wrappers.
+- Added explanatory Lua comments in `modules/editors/nvim.nix` for `nvim-metals` project-root detection and attach behavior.
+- Added `sbt` to `home.packages` in `modules/dev/langs.nix`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after Lua comments and `sbt` package updates.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after Lua comments and `sbt` package updates.
+- Restricted `nvim-metals` attach conditions in `modules/editors/nvim.nix` to `scala`/`sbt`/`java` buffers that resolve to a project root containing `build.sbt`, `.scala-build`, or `project/`.
+- Added Scala project root detection helper in `modules/editors/nvim.nix` and pass detected `root_dir` to `require("metals").initialize_or_attach`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding conditional `nvim-metals` startup.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding conditional `nvim-metals` startup.
+- Added `pkgs.vimPlugins.nvim-metals` to `programs.nixvim.extraPlugins` in `modules/editors/nvim.nix`.
+- Added `pkgs.metals` to `programs.nixvim.extraPackages` in `modules/editors/nvim.nix`.
+- Replaced custom Metals `workspace/executeCommand` wrappers with `nvim-metals` attach flow (`require("metals").bare_config()` + `initialize_or_attach`) on `scala` / `sbt` / `java` `FileType`.
+- Removed `plugins.lsp.servers.metals` from `modules/editors/nvim.nix` to avoid duplicate Metals client startup.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after switching to `nvim-metals`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after switching to `nvim-metals`.
 - Updated `plugins.vimade.settings.style` in `modules/editors/nvim.nix` to exclude `WinBar`/`WinBarNC` from fading via `vimade.style.exclude`.
 - Kept `vimade` fade behavior for other highlights with `vimade.style.fade` (`value = 0.6`).
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after updating `vimade` style exclusion.
@@ -70,6 +94,13 @@
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify `nvim-metals` welcome/install warnings are gone when opening Scala files.
+- Run `home-manager switch --flake .#<profile>` and verify `cs --help` works.
+- Run `:MetalsInstall` once if `nvim-metals` still reports missing Metals after Coursier is available.
+- Run `home-manager switch --flake .#<profile>` and verify plain `nvim-metals` workflow: open Scala project file, wait for Metals attach, then run `:MetalsImportBuild`.
+- Run `home-manager switch --flake .#<profile>` and verify `sbt` is available in shell (`sbt --version`).
+- Run `home-manager switch --flake .#<profile>` and verify `nvim-metals` attaches for `scala`/`sbt`/`java` only when `build.sbt`, `.scala-build`, or `project/` exists in the project root.
+- Run `home-manager switch --flake .#<profile>` and verify `nvim-metals` commands (`:MetalsImportBuild`, `:MetalsDoctor`) from a Scala workspace.
 - Run `home-manager switch --flake .#<profile>` and verify `<leader>fo` opens `oil.nvim` for the current file directory.
 - Run `home-manager switch --flake .#<profile>` and verify Scala editing no longer reindents on `=>` input.
 - Run `home-manager switch --flake .#<profile>` and verify Scala editing no longer reindents on `case` input.

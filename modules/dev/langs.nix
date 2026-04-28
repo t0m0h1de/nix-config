@@ -4,6 +4,8 @@
     gcc
     nodejs_latest
     yarn
+    coursier
+    sbt
     cargo
     rustc
     bc
