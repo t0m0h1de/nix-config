@@ -1,9 +1,13 @@
 # Progress Log
 
 ## Current Task
-- Make `nvim-metals` use Nix-managed Metals binary directly.
+- Add `jdk17` and `JAVA_HOME` for sbt/Metals runtime consistency.
 
 ## Done
+- Added `jdk17` to `home.packages` in `modules/dev/langs.nix`.
+- Added `home.sessionVariables.JAVA_HOME = "${pkgs.jdk17}/lib/openjdk"` in `modules/dev/langs.nix`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `jdk17` and `JAVA_HOME`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `jdk17` and `JAVA_HOME`.
 - Set `metals_config.settings.metalsBinaryPath = "${pkgs.metals}/bin/metals"` in `modules/editors/nvim.nix` so `nvim-metals` uses the Nix-managed binary instead of cache-based install detection.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after setting `metalsBinaryPath`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after setting `metalsBinaryPath`.
@@ -94,6 +98,8 @@
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify `java -version` shows JDK 17.
+- Run `home-manager switch --flake .#<profile>` and verify `echo $JAVA_HOME` points to `${pkgs.jdk17}/lib/openjdk`.
 - Run `home-manager switch --flake .#<profile>` and verify `nvim-metals` welcome/install warnings are gone when opening Scala files.
 - Run `home-manager switch --flake .#<profile>` and verify `cs --help` works.
 - Run `:MetalsInstall` once if `nvim-metals` still reports missing Metals after Coursier is available.
