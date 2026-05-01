@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Add `jdk17` and `JAVA_HOME` for sbt/Metals runtime consistency.
+- Add a Neovim keymap to list all diagnostics.
 
 ## Done
+- Added Neovim keymap `<leader>E` in `modules/editors/nvim.nix` to open all diagnostics with `:Telescope diagnostics` (in addition to `<leader>e` float-at-cursor).
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `<leader>E` diagnostics keymap.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `<leader>E` diagnostics keymap.
 - Added `jdk17` to `home.packages` in `modules/dev/langs.nix`.
 - Added `home.sessionVariables.JAVA_HOME = "${pkgs.jdk17}/lib/openjdk"` in `modules/dev/langs.nix`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `jdk17` and `JAVA_HOME`.

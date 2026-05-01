@@ -602,6 +602,12 @@
         action = "<cmd>lua vim.diagnostic.open_float()<cr>";
       }
       {
+        # 全バッファの診断一覧を Telescope で表示。
+        mode = "n";
+        key = "<leader>E";
+        action = "<cmd>Telescope diagnostics<cr>";
+      }
+      {
         # diffview: 差分ビューを開く。
         mode = "n";
         key = "<leader>do";
