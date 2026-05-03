@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Evaluate introducing `snacks.nvim` for Neovim.
+- Add a keymap to show Snacks notifier history.
 
 ## Done
+- Added Neovim keymap `<leader>un` in `modules/editors/nvim.nix` to open `Snacks.notifier.show_history()`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `<leader>un`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `<leader>un`.
 - Enabled `plugins.snacks` in `modules/editors/nvim.nix` with minimal settings (`bigfile`, `notifier`, `quickfile`, `statuscolumn`, `words`) to start phased adoption.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after enabling `snacks.nvim`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after enabling `snacks.nvim`.

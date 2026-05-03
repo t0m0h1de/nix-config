@@ -614,6 +614,12 @@
         action = "<cmd>lua vim.diagnostic.open_float()<cr>";
       }
       {
+        # snacks.nvim の通知履歴を表示する。
+        mode = "n";
+        key = "<leader>un";
+        action = "<cmd>lua Snacks.notifier.show_history()<cr>";
+      }
+      {
         # 全バッファの診断一覧を Telescope で表示。
         mode = "n";
         key = "<leader>E";
