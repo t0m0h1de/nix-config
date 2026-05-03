@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Add a Neovim keymap to list all diagnostics.
+- Evaluate introducing `snacks.nvim` for Neovim.
 
 ## Done
+- Enabled `plugins.snacks` in `modules/editors/nvim.nix` with minimal settings (`bigfile`, `notifier`, `quickfile`, `statuscolumn`, `words`) to start phased adoption.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after enabling `snacks.nvim`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after enabling `snacks.nvim`.
 - Added Neovim keymap `<leader>E` in `modules/editors/nvim.nix` to open all diagnostics with `:Telescope diagnostics` (in addition to `<leader>e` float-at-cursor).
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `<leader>E` diagnostics keymap.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `<leader>E` diagnostics keymap.

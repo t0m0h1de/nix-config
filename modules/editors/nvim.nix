@@ -159,6 +159,18 @@
       enable = true;
     };
 
+    plugins.snacks = {
+      # snacks.nvim を最小構成で有効化し、段階的移行の検証基盤を作る。
+      enable = true;
+      settings = {
+        bigfile.enabled = true;
+        notifier.enabled = true;
+        quickfile.enabled = true;
+        statuscolumn.enabled = true;
+        words.enabled = true;
+      };
+    };
+
     plugins.vimade = {
       # 非アクティブウィンドウを薄く表示して、フォーカス中のペインを見分けやすくする。
       enable = true;
