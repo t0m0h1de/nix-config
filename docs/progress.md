@@ -1,9 +1,12 @@
 # Progress Log
 
 ## Current Task
-- Add a keymap to show Snacks notifier history.
+- Enable Snacks indent visualization.
 
 ## Done
+- Enabled `plugins.snacks.settings.indent.enabled = true` in `modules/editors/nvim.nix` to improve indent guides visualization.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after enabling Snacks indent.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after enabling Snacks indent.
 - Added Neovim keymap `<leader>un` in `modules/editors/nvim.nix` to open `Snacks.notifier.show_history()`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `<leader>un`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `<leader>un`.
