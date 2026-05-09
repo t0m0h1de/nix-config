@@ -1,9 +1,14 @@
 # Progress Log
 
 ## Current Task
-- Enable Snacks indent visualization.
+- Add `zenn-cli` via external flake input (`nix-zenn-cli`).
 
 ## Done
+- Added `inputs.nix-zenn-cli.url = "github:t0m0h1de/nix-zenn-cli"` to `flake.nix`.
+- Added a shared `mkPkgs` function in `flake.nix` and applied an overlay that exposes `nix-zenn-cli.packages.${system}.default` as `pkgs.zenn-cli` for both Linux and Darwin Home Manager profiles.
+- Added `zenn-cli` to `home.packages` in `modules/core/packages.nix`.
+- Evaluated Home Manager with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after integrating `nix-zenn-cli`.
+- Evaluated Home Manager with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after integrating `nix-zenn-cli`.
 - Enabled `plugins.snacks.settings.indent.enabled = true` in `modules/editors/nvim.nix` to improve indent guides visualization.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after enabling Snacks indent.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after enabling Snacks indent.
@@ -110,6 +115,7 @@
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify `zenn --version`.
 - Run `home-manager switch --flake .#<profile>` and verify `java -version` shows JDK 17.
 - Run `home-manager switch --flake .#<profile>` and verify `echo $JAVA_HOME` points to `${pkgs.jdk17}/lib/openjdk`.
 - Run `home-manager switch --flake .#<profile>` and verify `nvim-metals` welcome/install warnings are gone when opening Scala files.

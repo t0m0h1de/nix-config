@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nix-zenn-cli.url = "github:t0m0h1de/nix-zenn-cli";
     
     nixvim = {
       url = "github:nix-community/nixvim";
@@ -15,9 +16,19 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixvim, ... }: {
+  outputs = { self, nixpkgs, home-manager, nixvim, nix-zenn-cli, ... }:
+  let
+    mkPkgs = system: import nixpkgs {
+      inherit system;
+      overlays = [
+        (final: _: {
+          zenn-cli = nix-zenn-cli.packages.${final.system}.default;
+        })
+      ];
+    };
+  in {
     homeConfigurations."linux" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = mkPkgs "x86_64-linux";
       modules = [
         nixvim.homeModules.nixvim
         ./home.nix
@@ -25,7 +36,7 @@
     };
 
     homeConfigurations."darwin" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      pkgs = mkPkgs "aarch64-darwin";
       modules = [
         nixvim.homeModules.nixvim
         ./home.nix

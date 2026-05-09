@@ -24,6 +24,7 @@
     nil
     nixpkgs-fmt
     uv
+    zenn-cli
 
     nkf
     libiconv
