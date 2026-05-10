@@ -1,5 +1,6 @@
 format = """
-$python$nix_shell$username $directory$git_branch$git_status $character
+$python$nix_shell$username $directory$git_branch$git_status
+$character
 """
 
 # シェルのプロンプトの間に空行を挿入する
