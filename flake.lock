@@ -46,11 +46,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1778228805,
-        "narHash": "sha256-QAddhMvfu36yjme98yaNji18XtJav9kxGtdQhRNHvWE=",
+        "lastModified": 1779111893,
+        "narHash": "sha256-f4AzjJ2n3yy0eXsqxQ3EV3TjZubO2boRUWua8/7Ix8I=",
         "owner": "t0m0h1de",
         "repo": "nix-zenn-cli",
-        "rev": "96630a422cdda7bdd21d810ead78709063fd4df1",
+        "rev": "06c50632738a1ed8ce226e4ec4700f753bcc8d9e",
         "type": "github"
       },
       "original": {

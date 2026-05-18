@@ -114,6 +114,7 @@
 - Re-verified rendered `home.sessionVariables.FZF_DEFAULT_OPTS` and Home Manager evaluation after the quoted fzf options update.
 - Fixed fzf modal keybind behavior in `modules/shell/fzf.nix`: `esc` now rebinds `i/j/k`, and both `start` and `i` transitions unbind `i` so `i` is typeable in Filter mode.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after the fzf `i` key handling fix.
+- Updated flake input `nix-zenn-cli` via `nix flake update nix-zenn-cli` and refreshed `flake.lock` to commit `06c50632738a1ed8ce226e4ec4700f753bcc8d9e` (2026-05-18).
 ## Next
 - Run `home-manager switch --flake .#<profile>` and verify `zenn --version`.
 - Run `home-manager switch --flake .#<profile>` and verify `java -version` shows JDK 17.
