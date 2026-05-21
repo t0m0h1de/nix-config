@@ -25,6 +25,7 @@
     nixpkgs-fmt
     uv
     zenn-cli
+    zed-editor
 
     nkf
     libiconv
