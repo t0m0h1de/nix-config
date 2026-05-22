@@ -6,6 +6,7 @@ final: prev:
   roots = final.buildGoModule rec {
     pname = "roots";
     version = "0.4.1";
+    subPackages = [ "." ];
 
     src = final.fetchFromGitHub {
       owner = "k1LoW";

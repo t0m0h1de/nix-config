@@ -4,6 +4,9 @@
 - Add `roots` (`k1LoW/roots`) via local `buildGoModule` overlay.
 
 ## Done
+- Investigated missing `roots` command after successful `home-manager switch` on darwin.
+- Confirmed `roots` is included in evaluated `homeConfigurations.darwin.config.home.packages` but not available in `~/.nix-profile/bin`.
+- Fixed `roots` overlay build target by adding `subPackages = [ "." ];` in `overlays/default.nix` to ensure the main binary is installed.
 - Extracted custom package overlays from `flake.nix` into `overlays/default.nix` for easier future overlay management.
 - Updated `flake.nix` to import a single `customOverlay` from `./overlays` and apply it via `mkPkgs`.
 - Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after overlay refactor.
@@ -130,6 +133,8 @@
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `zed-editor`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `zed-editor`.
 ## Next
+- Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
+- Run `roots --help` (or `roots --version`) after switch.
 - Run `home-manager switch --flake .#<profile>` and verify `roots --version` (or `roots --help`).
 - Run `home-manager switch --flake .#<profile>` and verify `zenn --version`.
 - Run `home-manager switch --flake .#<profile>` and verify `java -version` shows JDK 17.
