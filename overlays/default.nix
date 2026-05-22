@@ -1,0 +1,32 @@
+{ nix-zenn-cli }:
+final: prev:
+{
+  zenn-cli = nix-zenn-cli.packages.${final.system}.default;
+
+  roots = final.buildGoModule rec {
+    pname = "roots";
+    version = "0.4.1";
+
+    src = final.fetchFromGitHub {
+      owner = "k1LoW";
+      repo = "roots";
+      rev = "v${version}";
+      hash = "sha256-ACMRfWY/lhc3C/KVhuUyS1rgkSHGWPxZrmYt+pXupJI=";
+    };
+
+    vendorHash = "sha256-uxcT5VzlTCxxnx09p13mot0wVbbas/otoHdg7QSDt4E=";
+
+    ldflags = [
+      "-s"
+      "-w"
+      "-X main.version=${version}"
+    ];
+
+    meta = with prev.lib; {
+      description = "Git worktree utility for handling root repositories";
+      homepage = "https://github.com/k1LoW/roots";
+      license = licenses.mit;
+      mainProgram = "roots";
+    };
+  };
+}

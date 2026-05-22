@@ -1,9 +1,20 @@
 # Progress Log
 
 ## Current Task
-- Add `zenn-cli` via external flake input (`nix-zenn-cli`).
+- Add `roots` (`k1LoW/roots`) via local `buildGoModule` overlay.
 
 ## Done
+- Extracted custom package overlays from `flake.nix` into `overlays/default.nix` for easier future overlay management.
+- Updated `flake.nix` to import a single `customOverlay` from `./overlays` and apply it via `mkPkgs`.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after overlay refactor.
+- Re-verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after overlay refactor.
+- Added `roots` package definition to `flake.nix` overlay using `buildGoModule` (version `0.4.1`) sourced from `k1LoW/roots` tag `v0.4.1`.
+- Resolved and fixed `roots` source hash in `flake.nix` (`sha256-ACMRfWY/lhc3C/KVhuUyS1rgkSHGWPxZrmYt+pXupJI=`).
+- Resolved and fixed `roots` Go modules vendor hash in `flake.nix` (`sha256-uxcT5VzlTCxxnx09p13mot0wVbbas/otoHdg7QSDt4E=`).
+- Added `roots` to `home.packages` in `modules/core/packages.nix`.
+- Verified `roots` package build with `nix build --impure --expr '(let flake = builtins.getFlake (toString ./.); in flake.homeConfigurations.darwin.pkgs.roots)'`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `roots`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `roots`.
 - Added `inputs.nix-zenn-cli.url = "github:t0m0h1de/nix-zenn-cli"` to `flake.nix`.
 - Added a shared `mkPkgs` function in `flake.nix` and applied an overlay that exposes `nix-zenn-cli.packages.${system}.default` as `pkgs.zenn-cli` for both Linux and Darwin Home Manager profiles.
 - Added `zenn-cli` to `home.packages` in `modules/core/packages.nix`.
@@ -119,6 +130,7 @@
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `zed-editor`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `zed-editor`.
 ## Next
+- Run `home-manager switch --flake .#<profile>` and verify `roots --version` (or `roots --help`).
 - Run `home-manager switch --flake .#<profile>` and verify `zenn --version`.
 - Run `home-manager switch --flake .#<profile>` and verify `java -version` shows JDK 17.
 - Run `home-manager switch --flake .#<profile>` and verify `echo $JAVA_HOME` points to `${pkgs.jdk17}/lib/openjdk`.

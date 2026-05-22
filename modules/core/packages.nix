@@ -25,6 +25,7 @@
     nixpkgs-fmt
     uv
     zenn-cli
+    roots
     zed-editor
 
     nkf
