@@ -47,6 +47,16 @@
         source <(fzf --zsh)
       }
 
+      # ホーム下の *.gitconfig を ~/.gitconfig-extras に集約する
+      _regen_gitconfig_extras() {
+        local out="$HOME/.gitconfig-extras"
+        : > "$out"
+        for f in "$HOME"/*.gitconfig; do
+          [[ -f "$f" ]] && printf '[include]\n\tpath = %s\n' "$f" >> "$out"
+        done
+      }
+      _regen_gitconfig_extras
+
       # 外部の zshrc を読み込む
       ${builtins.readFile ../../dotfiles/zshrc}
     '';

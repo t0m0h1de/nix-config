@@ -3,8 +3,8 @@
 	name = Tomohide Sawada
 [core]
 	editor = vim
-[includeIf "gitdir:~/workspace/xxx/"]
-	path = ~/.xxx.gitconfig
+[include]
+	path = ~/.gitconfig-extras
 [pull]
 	rebase = true
 [init]
