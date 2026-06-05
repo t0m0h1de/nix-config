@@ -51,7 +51,7 @@
       _regen_gitconfig_extras() {
         local out="$HOME/.gitconfig-extras"
         : > "$out"
-        for f in "$HOME"/*.gitconfig; do
+        for f in "$HOME"/*.gitconfig(DN); do
           [[ -f "$f" ]] && printf '[include]\n\tpath = %s\n' "$f" >> "$out"
         done
       }
