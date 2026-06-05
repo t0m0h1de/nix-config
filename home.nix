@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, isWork ? false, ... }:
 
 {
   home.stateVersion = "25.05";
@@ -10,10 +10,12 @@
     ./modules/editors
   ];
 
-  home.username = "t0m0h1de";
+  home.username = lib.mkDefault (
+    if isWork then "tomohide.sawada" else "t0m0h1de"
+  );
   home.homeDirectory = lib.mkDefault (
     if pkgs.stdenv.isDarwin
-    then "/Users/t0m0h1de"
-    else "/home/t0m0h1de"
+    then "/Users/${config.home.username}"
+    else "/home/${config.home.username}"
   );
 }

@@ -39,5 +39,14 @@
         ./home.nix
       ];
     };
+    
+    homeConfigurations."work" = home-manager.lib.homeManagerConfiguration {
+      pkgs = mkPkgs "aarch64-darwin";
+      extraSpecialArgs = { isWork = true; };
+      modules = [
+        nixvim.homeModules.nixvim
+        ./home.nix
+      ];
+    };
   };
 }
