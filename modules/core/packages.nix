@@ -27,6 +27,7 @@
     zenn-cli
     roots
     zed-editor
+    mise
 
     nkf
     libiconv
