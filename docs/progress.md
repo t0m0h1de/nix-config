@@ -136,6 +136,9 @@
 - Added `overmind`, `gettext`, `pre-commit` to `home.packages` in `modules/core/packages.nix`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding the 3 packages.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding the 3 packages.
+- Added Takumi Guard PyPI environment variables (`PIP_INDEX_URL`, `UV_INDEX_URL`, `UV_EXCLUDE_NEWER`) to `programs.zsh.initContent` in `modules/shell/zsh.nix` after `~/.secrets` sourcing, so `TAKUMI_GUARD_API_KEY` is available at runtime.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding Takumi Guard env vars.
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
