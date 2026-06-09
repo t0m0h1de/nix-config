@@ -88,3 +88,4 @@ function cd-nav() {
 # stays idempotent without duplicate definitions.
 abbr --force --quiet cdn='cd-nav'
 abbr --force --quiet kube='kubectl'
+abbr --force --quiet kub='kubectl'
