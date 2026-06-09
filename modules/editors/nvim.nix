@@ -301,23 +301,20 @@
     };
 
     extraConfigLua = ''
-      -- OSC 52 を使うべき環境を判定する。
-      -- 1) SSH セッション
-      -- 2) WSL 環境
-      -- 3) ローカル clipboard provider が見つからない環境
-      local has_local_clipboard_tool =
-        vim.fn.executable("pbcopy") == 1
-        or vim.fn.executable("wl-copy") == 1
-        or vim.fn.executable("xclip") == 1
-        or vim.fn.executable("xsel") == 1
-        or vim.fn.executable("win32yank.exe") == 1
-        or vim.fn.executable("clip.exe") == 1
-
       local is_ssh = vim.env.SSH_TTY ~= nil
       local is_wsl = vim.env.WSL_INTEROP ~= nil or vim.env.WSL_DISTRO_NAME ~= nil
 
-      -- tmux の set-clipboard と合わせて、必要な環境では OSC 52 を使う。
-      if is_ssh or is_wsl or not has_local_clipboard_tool then
+      if vim.fn.has("mac") == 1 and not is_ssh and not is_wsl then
+        -- macOS: tmux 経由でも pbcopy/pbpaste を確実に使うため明示指定する。
+        -- Nix 管理の Neovim は PATH が制限されることがあり、自動検出が失敗する場合がある。
+        vim.g.clipboard = {
+          name = "macOS",
+          copy  = { ["+"] = "pbcopy",  ["*"] = "pbcopy"  },
+          paste = { ["+"] = "pbpaste", ["*"] = "pbpaste" },
+          cache_enabled = false,
+        }
+      elseif is_ssh or is_wsl then
+        -- SSH / WSL: ローカルツールが使えないため OSC 52 にフォールバック。
         vim.g.clipboard = "osc52"
       end
 
