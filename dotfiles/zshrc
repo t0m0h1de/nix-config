@@ -21,6 +21,11 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias j!=jbang
 
+# --- gcloud (公式インストーラー管理) ---
+if [ -d "$HOME/.gcloud/google-cloud-sdk/bin" ]; then
+  export PATH="$HOME/.gcloud/google-cloud-sdk/bin:$PATH"
+fi
+
 # --- AI CLI aliases (npx経由) ---
 alias codex='npx @openai/codex'
 alias gemini-cli='npx @google/gemini-cli'
