@@ -9,19 +9,15 @@
       # 個別環境での自由な追記はここに置く（Git 管理外推奨）。
       Include ~/.ssh/config.d/*.conf
     '';
-    matchBlocks = {
+    settings = {
       "*" = { };
       "github.com" = {
-        user = "git";
-        identityFile = "~/.ssh/github.com";
-        identitiesOnly = true;
-        extraOptions =
-          {
-            AddKeysToAgent = "yes";
-          }
-          // lib.optionalAttrs pkgs.stdenv.isDarwin {
-            UseKeychain = "yes";
-          };
+        User = "git";
+        IdentityFile = "~/.ssh/github.com";
+        IdentitiesOnly = true;
+        AddKeysToAgent = "yes";
+      } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        UseKeychain = "yes";
       };
     };
   };
