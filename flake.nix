@@ -26,6 +26,7 @@
   in {
     homeConfigurations."linux" = home-manager.lib.homeManagerConfiguration {
       pkgs = mkPkgs "x86_64-linux";
+      extraSpecialArgs = { isWork = false; };
       modules = [
         nixvim.homeModules.nixvim
         ./home.nix
@@ -34,6 +35,7 @@
 
     homeConfigurations."darwin" = home-manager.lib.homeManagerConfiguration {
       pkgs = mkPkgs "aarch64-darwin";
+      extraSpecialArgs = { isWork = false; };
       modules = [
         nixvim.homeModules.nixvim
         ./home.nix

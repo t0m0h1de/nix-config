@@ -28,6 +28,9 @@
     roots
     zed-editor
     mise
+    overmind
+    gettext
+    pre-commit
 
     nkf
     libiconv

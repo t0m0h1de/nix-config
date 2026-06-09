@@ -132,6 +132,10 @@
 - Added `zed-editor` to `home.packages` in `modules/core/packages.nix`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding `zed-editor`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `zed-editor`.
+- Fixed `isWork` missing error caused by home-manager update: added `extraSpecialArgs = { isWork = false; }` to `linux` and `darwin` profiles in `flake.nix`.
+- Added `overmind`, `gettext`, `pre-commit` to `home.packages` in `modules/core/packages.nix`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding the 3 packages.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding the 3 packages.
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
