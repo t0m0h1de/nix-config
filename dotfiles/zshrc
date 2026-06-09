@@ -87,3 +87,4 @@ function cd-nav() {
 # Force redefine quietly so repeated sourcing (e.g. nested shells in tmux)
 # stays idempotent without duplicate definitions.
 abbr --force --quiet cdn='cd-nav'
+abbr --force --quiet kube='kubectl'
