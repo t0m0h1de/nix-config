@@ -3,6 +3,20 @@ final: prev:
 {
   zenn-cli = nix-zenn-cli.packages.${final.system}.default;
 
+  kube-tmux = final.stdenv.mkDerivation {
+    pname = "kube-tmux";
+    version = "unstable";
+    src = final.fetchFromGitHub {
+      owner = "jonmosco";
+      repo = "kube-tmux";
+      rev = "master";
+      hash = "sha256-l1wjg2ReWKCI7h/K11vvX2ykYTs/mVD+tfz/mQsjn/E=";
+    };
+    installPhase = ''
+      install -Dm755 kube.tmux $out/bin/kube.tmux
+    '';
+  };
+
   roots = final.buildGoModule rec {
     pname = "roots";
     version = "0.4.1";

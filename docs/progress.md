@@ -139,6 +139,13 @@
 - Added Takumi Guard PyPI environment variables (`PIP_INDEX_URL`, `UV_INDEX_URL`, `UV_EXCLUDE_NEWER`) to `programs.zsh.initContent` in `modules/shell/zsh.nix` after `~/.secrets` sourcing, so `TAKUMI_GUARD_API_KEY` is available at runtime.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding Takumi Guard env vars.
 
+- Added `kube-tmux` (jonmosco/kube-tmux) to `overlays/default.nix` via `fetchFromGitHub` (hash: `sha256-l1wjg2ReWKCI7h/K11vvX2ykYTs/mVD+tfz/mQsjn/E=`).
+- Updated `modules/shell/tmux.nix` to append `status-right` config that calls `${pkgs.kube-tmux}/bin/kube.tmux 250 cyan default` so the current k8s context/namespace is shown in the tmux status bar.
+- Verified `kube-tmux` builds with `nix build --impure --expr '...'` and `result/bin/kube.tmux` exists.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding kube-tmux.
+- Added `kubie` to `home.packages` in `modules/dev/k8s.nix` for per-shell Kubernetes context switching.
+- Added `~/.kube/kubie.yaml` via `home.file` in `modules/dev/k8s.nix` with `behavior.selector: fzf` so `kubie ctx` uses fzf for fuzzy context selection.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding kubie fzf selector config.
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
