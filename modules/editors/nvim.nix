@@ -160,6 +160,23 @@
       enable = true;
     };
 
+    plugins.nvim-tree = {
+      # サイドバー型ファイルエクスプローラーを有効化。
+      enable = true;
+      settings = {
+        git.enable = true;
+        renderer = {
+          group_empty = true;
+          highlight_git = "icon";
+          icons.show.git = true;
+        };
+        view = {
+          width = 30;
+          side = "left";
+        };
+      };
+    };
+
     plugins.snacks = {
       # snacks.nvim を最小構成で有効化し、段階的移行の検証基盤を作る。
       enable = true;
@@ -623,6 +640,13 @@
         mode = "n";
         key = "<leader>E";
         action = "<cmd>Telescope diagnostics<cr>";
+      }
+      {
+        # nvim-tree: ファイルツリーをトグル。
+        mode = "n";
+        key = "<leader>ft";
+        action = "<cmd>NvimTreeToggle<cr>";
+        options.desc = "Toggle File Tree";
       }
       {
         # diffview: 差分ビューを開く。
