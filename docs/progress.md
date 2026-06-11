@@ -149,6 +149,9 @@
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
+- Fixed `window-picker` module-not-found error: moved `nvim-window-picker` from `plugins.nvim-window-picker` (broken — plugin not added to runtimepath) to `extraPlugins` and setup via `extraConfigLua`.
+- Added `plugins.nvim-window-picker` to `modules/editors/nvim.nix` with `floating-big-letter` hint style and filter rules to exclude nvim-tree/terminal windows.
+- Wired `nvim-window-picker` into `nvim-tree` via `actions.open_file.window_picker.picker.__raw` so file open uses the picker UI.
 - Added `plugins.nvim-tree` to `modules/editors/nvim.nix` with git integration, icon highlight, and 30-column left sidebar.
 - Added keymap `<leader>ft` in `modules/editors/nvim.nix` to toggle nvim-tree (`:NvimTreeToggle`).
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding nvim-tree.

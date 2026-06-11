@@ -27,6 +27,7 @@
     nixpkgs.source = pkgs.path;
     extraPlugins = with pkgs.vimPlugins; [
       nvim-metals
+      nvim-window-picker
     ];
     extraPackages = with pkgs; [
       metals
@@ -174,6 +175,10 @@
           width = 30;
           side = "left";
         };
+        actions.open_file.window_picker = {
+          enable = true;
+          picker.__raw = "function() return require('window-picker').pick_window() end";
+        };
       };
     };
 
@@ -318,6 +323,19 @@
     };
 
     extraConfigLua = ''
+      -- nvim-window-picker: ウィンドウ選択UIの初期化（nvim-tree と連携）。
+      require("window-picker").setup({
+        hint = "floating-big-letter",
+        filter_rules = {
+          include_current_win = false,
+          autoselect_one = true,
+          bo = {
+            filetype = { "nvim-tree", "NvimTree", "qf", "notify" },
+            buftype = { "terminal", "quickfix" },
+          },
+        },
+      })
+
       local is_ssh = vim.env.SSH_TTY ~= nil
       local is_wsl = vim.env.WSL_INTEROP ~= nil or vim.env.WSL_DISTRO_NAME ~= nil
 
