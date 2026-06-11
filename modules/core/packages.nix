@@ -33,6 +33,7 @@
     gettext
     pre-commit
 
+    watch
     nkf
     libiconv
     ffmpeg

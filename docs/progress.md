@@ -149,6 +149,8 @@
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
+- Added `watch` to `home.packages` in `modules/core/packages.nix`.
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding watch.
 - Added `gwq` (d-kuro/gwq v0.1.1) to `overlays/default.nix` via `buildGoModule` and to `home.packages` in `modules/core/packages.nix`.
 - Added `~/.config/gwq/config.toml` via `xdg.configFile` in `modules/core/git.nix`: basedir=`~/src` (same as ghq root), naming template=`{{.Host}}/{{.Owner}}/{{.Repository}}+{{.Branch}}`.
 - Updated `ghq-fzf` in `dotfiles/zshrc` to merge `gwq list` output with `ghq list`, dedup with `sort -u`, so Ctrl+g lists both repos and gwq worktrees.
