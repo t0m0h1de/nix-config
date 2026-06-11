@@ -43,11 +43,22 @@ fi
 # zsh-vi-mode の設定 (ZVM_VI_INSERT_ESCAPE_BINDKEY, zvm_after_init) は
 # プラグイン読み込みより前に定義する必要があるため zsh.nix 側で設定
 
-# ghq + fzfのユーティリティ(リポジトリ一覧から選択して移動するための関数)
+# ghq + fzf: リポジトリ・gwq worktree 一覧から選択して cd する
 function ghq-fzf() {
-  local src=$(ghq list | fzf --preview "ls -laTp $(ghq root)/{} | tail -n+2 | head -n 20")
+  local ghq_root
+  ghq_root=$(ghq root)
+
+  local entries
+  entries=$(
+    ghq list
+    # gwq が管理する worktree も列挙する（gwq list はフルパスを返すので相対化する）
+    gwq list 2>/dev/null | sed "s|^${ghq_root}/||"
+  )
+
+  local src
+  src=$(echo "$entries" | sort -u | fzf --preview "ls -laTp ${ghq_root}/{} | tail -n+2 | head -n 20")
   if [ -n "$src" ]; then
-    BUFFER="cd $(ghq root)/$src"
+    BUFFER="cd ${ghq_root}/$src"
     zle accept-line
   fi
   zle -R -c

@@ -11,6 +11,7 @@
     postgresql
     gh
     ghq
+    gwq
     awscli2
     fzf
     ripgrep

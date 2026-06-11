@@ -149,6 +149,10 @@
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
+- Added `gwq` (d-kuro/gwq v0.1.1) to `overlays/default.nix` via `buildGoModule` and to `home.packages` in `modules/core/packages.nix`.
+- Added `~/.config/gwq/config.toml` via `xdg.configFile` in `modules/core/git.nix`: basedir=`~/src` (same as ghq root), naming template=`{{.Host}}/{{.Owner}}/{{.Repository}}+{{.Branch}}`.
+- Updated `ghq-fzf` in `dotfiles/zshrc` to merge `gwq list` output with `ghq list`, dedup with `sort -u`, so Ctrl+g lists both repos and gwq worktrees.
+- Removed hand-rolled `gwt-add` function from `dotfiles/zshrc` (replaced by `gwq add`).
 - Fixed `window-picker` module-not-found error: moved `nvim-window-picker` from `plugins.nvim-window-picker` (broken — plugin not added to runtimepath) to `extraPlugins` and setup via `extraConfigLua`.
 - Added `plugins.nvim-window-picker` to `modules/editors/nvim.nix` with `floating-big-letter` hint style and filter rules to exclude nvim-tree/terminal windows.
 - Wired `nvim-window-picker` into `nvim-tree` via `actions.open_file.window_picker.picker.__raw` so file open uses the picker UI.

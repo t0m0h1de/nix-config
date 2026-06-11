@@ -17,6 +17,28 @@ final: prev:
     '';
   };
 
+  gwq = final.buildGoModule rec {
+    pname = "gwq";
+    version = "0.1.1";
+    subPackages = [ "cmd/gwq" ];
+
+    src = final.fetchFromGitHub {
+      owner = "d-kuro";
+      repo = "gwq";
+      rev = "v${version}";
+      hash = "sha256-MfCYFbODWnfPxx+6sLlcMT6tqghgILHB13+ccYqVjBA=";
+    };
+
+    vendorHash = "sha256-4K01Xf1EXl/NVX1loQ76l1bW8QglBAQdvlZSo7J4NPI=";
+
+    meta = with prev.lib; {
+      description = "Git worktree manager inspired by ghq";
+      homepage = "https://github.com/d-kuro/gwq";
+      license = licenses.mit;
+      mainProgram = "gwq";
+    };
+  };
+
   roots = final.buildGoModule rec {
     pname = "roots";
     version = "0.4.1";
