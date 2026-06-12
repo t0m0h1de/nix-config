@@ -660,11 +660,11 @@
         action = "<cmd>Telescope diagnostics<cr>";
       }
       {
-        # nvim-tree: ファイルツリーをトグル。
+        # nvim-tree: ファイルツリーをトグル。開くとき現在のバッファのファイルにフォーカスする。
         mode = "n";
         key = "<leader>ft";
-        action = "<cmd>NvimTreeToggle<cr>";
-        options.desc = "Toggle File Tree";
+        action = "<cmd>NvimTreeFindFileToggle<cr>";
+        options.desc = "Toggle File Tree (focus current file)";
       }
       {
         # diffview: 差分ビューを開く。
