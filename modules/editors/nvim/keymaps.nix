@@ -72,7 +72,7 @@
         # 次の診断（エラー/警告）へ移動。
         mode = "n";
         key = "]d";
-        action = "<cmd>lua vim.diagnostic.goto_next()<cr>";
+        action = "<cmd>lua vim.diagnostic.jump({ count = 1 })<cr>";
       }
       {
         # gitsigns: 前のhunkへ移動。
@@ -84,7 +84,7 @@
         # 前の診断（エラー/警告）へ移動。
         mode = "n";
         key = "[d";
-        action = "<cmd>lua vim.diagnostic.goto_prev()<cr>";
+        action = "<cmd>lua vim.diagnostic.jump({ count = -1 })<cr>";
       }
       {
         # gitsigns: 現在hunkの差分プレビュー。

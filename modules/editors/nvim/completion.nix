@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   programs.nixvim = {
     plugins.cmp = {
@@ -40,6 +40,14 @@
     plugins.copilot-cmp = {
       # Copilot の候補を nvim-cmp の source として統合する。
       enable = true;
+      # upstream がアーカイブ済みで `client.is_stopped()`（ドット呼び出し）の
+      # deprecation 警告が修正されないため、コロン呼び出しにパッチする。
+      package = pkgs.vimPlugins.copilot-cmp.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace lua/copilot_cmp/source.lua \
+            --replace-fail "self.client.is_stopped()" "self.client:is_stopped()"
+        '';
+      });
     };
 
     plugins.nvim-autopairs = {

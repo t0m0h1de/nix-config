@@ -4,6 +4,9 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- Fixed Neovim deprecation warnings (v0.12): replaced `vim.diagnostic.goto_next/goto_prev` keymaps with `vim.diagnostic.jump({ count = ±1 })` in `nvim/keymaps.nix`.
+- Patched `copilot-cmp` (archived upstream) via `overrideAttrs postPatch` in `nvim/completion.nix`: `self.client.is_stopped()` → `self.client:is_stopped()` (dot-call triggers the deprecation shim).
+- Audited all installed plugins for deprecated APIs: `tbl_flatten`/`tbl_islist` hits are version-guarded compat fallbacks (never fire on 0.12). Remaining upstream dot-calls only fire on rarely-used commands: nvim-lspconfig `pyright.lua` (`:LspPyrightOrganizeImports`) and nvim-metals `tvp/init.lua` (Tree View). A future `nix flake update` may pick up upstream fixes.
 - Refactored `flake.nix`: replaced 3 nearly-identical `homeConfigurations` with a `mkHome { system, isWork }` helper; drvPath unchanged.
 - Split 689-line `modules/editors/nvim.nix` into `modules/editors/nvim/` (default/options/keymaps/plugins/completion/lsp/scala); verified generated Lua config and keymap count match pre-split.
 - Deduplicated LSP `capabilities` definition (4 servers) into a shared `cmpCapabilities` in `nvim/lsp.nix`.
