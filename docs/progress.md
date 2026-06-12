@@ -1,9 +1,15 @@
 # Progress Log
 
 ## Current Task
-- Add `tmux-fzf` plugin via `programs.tmux.plugins`.
+- Repository-wide refactoring (completed).
 
 ## Done
+- Refactored `flake.nix`: replaced 3 nearly-identical `homeConfigurations` with a `mkHome { system, isWork }` helper; drvPath unchanged.
+- Split 689-line `modules/editors/nvim.nix` into `modules/editors/nvim/` (default/options/keymaps/plugins/completion/lsp/scala); verified generated Lua config and keymap count match pre-split.
+- Deduplicated LSP `capabilities` definition (4 servers) into a shared `cmpCapabilities` in `nvim/lsp.nix`.
+- Removed commented-out dead code (treesitter grammar list, vimade recipe).
+- Removed unused `pkgs` module args (common.nix, git.nix, starship.nix) and unneeded quoted attr `pkgs."zsh-abbr"`.
+- Verified all profiles evaluate (`linux` / `darwin` / `work`) and ran `nixpkgs-fmt` across the repo.
 - Investigated missing `roots` command after successful `home-manager switch` on darwin.
 - Confirmed `roots` is included in evaluated `homeConfigurations.darwin.config.home.packages` but not available in `~/.nix-profile/bin`.
 - Fixed `roots` overlay build target by adding `subPackages = [ "." ];` in `overlays/default.nix` to ensure the main binary is installed.
