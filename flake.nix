@@ -17,38 +17,25 @@
   };
 
   outputs = { self, nixpkgs, home-manager, nixvim, nix-zenn-cli, ... }:
-  let
-    customOverlay = import ./overlays { inherit nix-zenn-cli; };
-    mkPkgs = system: import nixpkgs {
-      inherit system;
-      overlays = [ customOverlay ];
+    let
+      customOverlay = import ./overlays { inherit nix-zenn-cli; };
+      mkHome = { system, isWork ? false }: home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ customOverlay ];
+        };
+        extraSpecialArgs = { inherit isWork; };
+        modules = [
+          nixvim.homeModules.nixvim
+          ./home.nix
+        ];
+      };
+    in
+    {
+      homeConfigurations = {
+        linux = mkHome { system = "x86_64-linux"; };
+        darwin = mkHome { system = "aarch64-darwin"; };
+        work = mkHome { system = "aarch64-darwin"; isWork = true; };
+      };
     };
-  in {
-    homeConfigurations."linux" = home-manager.lib.homeManagerConfiguration {
-      pkgs = mkPkgs "x86_64-linux";
-      extraSpecialArgs = { isWork = false; };
-      modules = [
-        nixvim.homeModules.nixvim
-        ./home.nix
-      ];
-    };
-
-    homeConfigurations."darwin" = home-manager.lib.homeManagerConfiguration {
-      pkgs = mkPkgs "aarch64-darwin";
-      extraSpecialArgs = { isWork = false; };
-      modules = [
-        nixvim.homeModules.nixvim
-        ./home.nix
-      ];
-    };
-    
-    homeConfigurations."work" = home-manager.lib.homeManagerConfiguration {
-      pkgs = mkPkgs "aarch64-darwin";
-      extraSpecialArgs = { isWork = true; };
-      modules = [
-        nixvim.homeModules.nixvim
-        ./home.nix
-      ];
-    };
-  };
 }
