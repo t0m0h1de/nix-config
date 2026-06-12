@@ -179,6 +179,8 @@
 - Verified: session `nix-config@main`, window `zsh` (automatic-rename).
 - Identified that this macOS machine must use `.#work` profile (isWork=true → home.username=tomohide.sawada); `.#darwin` profile uses t0m0h1de and fails activation.
 
+- Reverted `ghq-fzf` in `dotfiles/zshrc` to show only `ghq list` output on Ctrl+g (removed `gwq list` merge).
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
