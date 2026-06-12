@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 {
   # gwq の worktree 保存先を ghq root と同じ ~/src に統一し、
   # ディレクトリ名を host/owner/repo+branch 形式にする。

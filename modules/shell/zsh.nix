@@ -22,7 +22,7 @@
       }
       {
         name = "zsh-abbr";
-        src = pkgs."zsh-abbr";
+        src = pkgs.zsh-abbr;
         file = "share/zsh/zsh-abbr/zsh-abbr.plugin.zsh";
       }
     ];
