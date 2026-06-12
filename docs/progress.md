@@ -149,6 +149,7 @@
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
+- Added `after-new-session` and `after-new-window` hooks in `dotfiles/tmux.conf` to set window name to `#{b:pane_current_path}` (basename only) on session/window creation.
 - Added `watch` to `home.packages` in `modules/core/packages.nix`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding watch.
 - Added `gwq` (d-kuro/gwq v0.1.1) to `overlays/default.nix` via `buildGoModule` and to `home.packages` in `modules/core/packages.nix`.
