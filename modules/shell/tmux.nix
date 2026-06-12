@@ -3,6 +3,9 @@
   programs.tmux = {
     enable = true;
     mouse = true;
+    plugins = [
+      pkgs.tmuxPlugins.tmux-fzf
+    ];
     extraConfig = (builtins.readFile ../../dotfiles/tmux.conf) + ''
 
       # ステータスバー

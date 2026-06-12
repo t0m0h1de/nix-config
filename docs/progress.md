@@ -1,7 +1,7 @@
 # Progress Log
 
 ## Current Task
-- Add `roots` (`k1LoW/roots`) via local `buildGoModule` overlay.
+- Add `tmux-fzf` plugin via `programs.tmux.plugins`.
 
 ## Done
 - Investigated missing `roots` command after successful `home-manager switch` on darwin.
@@ -149,6 +149,8 @@
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
+- Added `pkgs.tmuxPlugins.tmux-fzf` to `programs.tmux.plugins` in `modules/shell/tmux.nix` (default keybind: `prefix + F`).
+- Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding tmux-fzf.
 - Added `after-new-session` and `after-new-window` hooks in `dotfiles/tmux.conf` to set window name to `#{b:pane_current_path}` (basename only) on session/window creation.
 - Added `watch` to `home.packages` in `modules/core/packages.nix`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding watch.
