@@ -149,9 +149,13 @@
 - Added `abbr --force --quiet kube='kubectl'` to `dotfiles/zshrc` so typing `kube<Space>` expands to `kubectl` via zsh-abbr.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding `kube` abbreviation.
 
+- Fixed `invalid environment variable` / `syntax error` in `dotfiles/tmux.conf`: replaced `${r:-#{pane_current_path}}` with `if [ -z "$r" ]; then r=...` (tmux 3.2+ treats `${VAR:-...}` as own variable expansion), and escaped all inner double-quotes as `\"` inside single-quoted `set-hook` arguments.
 - Added `pkgs.tmuxPlugins.tmux-fzf` to `programs.tmux.plugins` in `modules/shell/tmux.nix` (default keybind: `prefix + F`).
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding tmux-fzf.
 - Added `after-new-session` and `after-new-window` hooks in `dotfiles/tmux.conf` to set window name to `#{b:pane_current_path}` (basename only) on session/window creation.
+- Updated `after-new-session` hook in `dotfiles/tmux.conf` to also rename session to `#{pane_current_path}` (full path) on session creation.
+- Reworked window naming hooks in `dotfiles/tmux.conf`: window name now shows git repo basename on main/master, or `repo@branch-leaf` on feature branches (e.g. `project@improve-readability` from `feature/improve-readability`); falls back to directory basename outside git repos.
+- Fixed broken session/window naming hooks in `dotfiles/tmux.conf`: replaced `rename-window "#(command)"` with `run-shell "... tmux rename-window -t #{window_id} ..."` because `rename-window`/`rename-session` do not evaluate `#()` format expressions — only `run-shell` passes `#{...}` expansions to the shell for execution.
 - Added `watch` to `home.packages` in `modules/core/packages.nix`.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` and linux after adding watch.
 - Added `gwq` (d-kuro/gwq v0.1.1) to `overlays/default.nix` via `buildGoModule` and to `home.packages` in `modules/core/packages.nix`.
@@ -165,6 +169,15 @@
 - Added keymap `<leader>ft` in `modules/editors/nvim.nix` to toggle nvim-tree (`:NvimTreeToggle`).
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.darwin.activationPackage.drvPath` after adding nvim-tree.
 - Verified Home Manager evaluation with `nix eval .#homeConfigurations.linux.activationPackage.drvPath` after adding nvim-tree.
+
+- Diagnosed root cause of broken tmux session/window naming hooks: `run-shell "cmd1; cmd2"` does not propagate shell variables between semicolon-separated commands.
+- Refactored `after-new-session` hook into `pkgs.writeShellScript "tmux-name-session"` in `modules/shell/tmux.nix`; nix store path embedded via Nix interpolation.
+- Session name: `repo@branch` (git-untracked → directory basename; `.` → `_` for tmux separator safety).
+- repo name is taken from `git worktree list | head -1` (main worktree) to avoid gwq worktree `+branch` suffix duplication.
+- Window name: reverted to `automatic-rename on` (shows running command name like `zsh`, `nvim`).
+- Removed `after-new-window` hook and `automatic-rename off` from `dotfiles/tmux.conf`.
+- Verified: session `nix-config@main`, window `zsh` (automatic-rename).
+- Identified that this macOS machine must use `.#work` profile (isWork=true → home.username=tomohide.sawada); `.#darwin` profile uses t0m0h1de and fails activation.
 
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
