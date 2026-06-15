@@ -36,6 +36,10 @@ in
     mouse = true;
     plugins = [
       pkgs.tmuxPlugins.tmux-fzf
+      # continuum は resurrect に依存し、かつ最後に読み込む必要がある。
+      # 保存インターバル・キーバインドはデフォルト(15分 / prefix+C-s 保存, prefix+C-r 復元)。
+      pkgs.tmuxPlugins.resurrect
+      pkgs.tmuxPlugins.continuum
     ];
     extraConfig = (builtins.readFile ../../dotfiles/tmux.conf) + ''
 
