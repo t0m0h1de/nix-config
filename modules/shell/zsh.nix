@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   programs.zsh = {
     enable = true;
@@ -27,43 +27,53 @@
       }
     ];
 
-    initContent = ''
-      # nixの設定
-      if [ -e ''${HOME}/.nix-profile/etc/profile.d/nix.sh ]; then
-        . ''${HOME}/.nix-profile/etc/profile.d/nix.sh;
-      fi
+    initContent = lib.mkMerge [
+      # compinit より前に実行する必要がある設定（mkOrder 550 = before compinit）。
+      (lib.mkOrder 550 ''
+        # Homebrew formula(docker など)が提供する zsh 補完を fpath に追加する。
+        # docker は brew 管理(Nix管理外)なので、補完も brew のディレクトリを参照して追従させる。
+        if [ -d /opt/homebrew/share/zsh/site-functions ]; then
+          fpath+=(/opt/homebrew/share/zsh/site-functions)
+        fi
+      '')
+      ''
+        # nixの設定
+        if [ -e ''${HOME}/.nix-profile/etc/profile.d/nix.sh ]; then
+          . ''${HOME}/.nix-profile/etc/profile.d/nix.sh;
+        fi
 
-      # 秘密ファイルがあれば読み込む
-      if [ -f "$HOME/.secrets" ]; then
-        source "$HOME/.secrets"
-      fi
+        # 秘密ファイルがあれば読み込む
+        if [ -f "$HOME/.secrets" ]; then
+          source "$HOME/.secrets"
+        fi
 
-      # Takumi Guard PyPI
-      export PIP_INDEX_URL="https://token:''${TAKUMI_GUARD_API_KEY}@pypi.flatt.tech/simple/"
-      export UV_INDEX_URL="https://token:''${TAKUMI_GUARD_API_KEY}@pypi.flatt.tech/simple/"
-      export UV_EXCLUDE_NEWER="3 days"
+        # Takumi Guard PyPI
+        export PIP_INDEX_URL="https://token:''${TAKUMI_GUARD_API_KEY}@pypi.flatt.tech/simple/"
+        export UV_INDEX_URL="https://token:''${TAKUMI_GUARD_API_KEY}@pypi.flatt.tech/simple/"
+        export UV_EXCLUDE_NEWER="3 days"
 
-      # 対話シェルでも `#` をコメントとして扱う。
-      setopt interactivecomments
+        # 対話シェルでも `#` をコメントとして扱う。
+        setopt interactivecomments
 
-      # zsh-vi-mode の設定 (プラグインロード前に定義が必要)
-      ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
-      zvm_after_init() {
-        source <(fzf --zsh)
-      }
+        # zsh-vi-mode の設定 (プラグインロード前に定義が必要)
+        ZVM_VI_INSERT_ESCAPE_BINDKEY=jj
+        zvm_after_init() {
+          source <(fzf --zsh)
+        }
 
-      # ホーム下の *.gitconfig を ~/.gitconfig-extras に集約する
-      _regen_gitconfig_extras() {
-        local out="$HOME/.gitconfig-extras"
-        : > "$out"
-        for f in "$HOME"/*.gitconfig(DN); do
-          [[ -f "$f" ]] && printf '[include]\n\tpath = %s\n' "$f" >> "$out"
-        done
-      }
-      _regen_gitconfig_extras
+        # ホーム下の *.gitconfig を ~/.gitconfig-extras に集約する
+        _regen_gitconfig_extras() {
+          local out="$HOME/.gitconfig-extras"
+          : > "$out"
+          for f in "$HOME"/*.gitconfig(DN); do
+            [[ -f "$f" ]] && printf '[include]\n\tpath = %s\n' "$f" >> "$out"
+          done
+        }
+        _regen_gitconfig_extras
 
-      # 外部の zshrc を読み込む
-      ${builtins.readFile ../../dotfiles/zshrc}
-    '';
+        # 外部の zshrc を読み込む
+        ${builtins.readFile ../../dotfiles/zshrc}
+      ''
+    ];
   };
 }
