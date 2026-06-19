@@ -3,6 +3,39 @@ final: prev:
 {
   zenn-cli = nix-zenn-cli.packages.${final.system}.default;
 
+  terragrunt = final.buildGoModule rec {
+    pname = "terragrunt";
+    version = "0.99.5";
+
+    # テスト用サブパッケージのビルドを避け、メインバイナリのみをビルドする。
+    subPackages = [ "." ];
+
+    src = final.fetchFromGitHub {
+      owner = "gruntwork-io";
+      repo = "terragrunt";
+      rev = "v${version}";
+      hash = "sha256-VlJRuW8TAlwszp2GzVC/7FY1jhq/7NHi/i5xPnw1nec=";
+    };
+
+    vendorHash = "sha256-wOCiZ4/fiKmdXcKS+AXLld1oMZzjbHBZWfxoFgJ5/to=";
+
+    # テストはネットワーク/クラウド資格情報を要求するためスキップする。
+    doCheck = false;
+
+    ldflags = [
+      "-s"
+      "-w"
+      "-X github.com/gruntwork-io/go-commons/version.Version=v${version}"
+    ];
+
+    meta = with prev.lib; {
+      description = "Thin wrapper for Terraform/OpenTofu for keeping configurations DRY";
+      homepage = "https://github.com/gruntwork-io/terragrunt";
+      license = licenses.mit;
+      mainProgram = "terragrunt";
+    };
+  };
+
   kube-tmux = final.stdenv.mkDerivation {
     pname = "kube-tmux";
     version = "unstable";
