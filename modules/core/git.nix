@@ -15,7 +15,7 @@
     settings = {
       user = {
         name = "Tomohide Sawada";
-        email = "Tomohide.Sawada@ibm.com";
+        email = "ma1n.tmrev01ut10n@gmail.com";
       };
 
       ghq = {
