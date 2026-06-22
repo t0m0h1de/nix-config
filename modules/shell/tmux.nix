@@ -35,7 +35,16 @@ in
     enable = true;
     mouse = true;
     plugins = [
-      pkgs.tmuxPlugins.tmux-fzf
+      # tmux-fzf のセッション一覧を最終アタッチ時刻の降順(MRU)にする。
+      # 本体に順序設定が無いため session.sh の list-sessions をソート版に差し替える。
+      (pkgs.tmuxPlugins.tmux-fzf.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace scripts/session.sh \
+            --replace-fail \
+              'sessions=$(tmux list-sessions | grep -v "^$current_session: ")' \
+              'sessions=$(tmux list-sessions -F "#{session_last_attached} #{session_name}: #{session_windows} windows#{?session_attached, (attached),}" | sort -rn | cut -d" " -f2- | grep -v "^$current_session: ")'
+        '';
+      }))
       # continuum は resurrect に依存し、かつ最後に読み込む必要がある。
       # 保存インターバル・キーバインドはデフォルト(15分 / prefix+C-s 保存, prefix+C-r 復元)。
       pkgs.tmuxPlugins.resurrect
