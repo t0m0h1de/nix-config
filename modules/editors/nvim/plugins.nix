@@ -161,6 +161,16 @@
     plugins.gitsigns = {
       # 行単位のGit差分表示とhunk操作を有効化。
       enable = true;
+      settings = {
+        # カーソル行の右端に「誰が・いつ・何を」コミットしたかをインライン表示する。
+        current_line_blame = true;
+        current_line_blame_opts = {
+          virt_text = true;
+          virt_text_pos = "eol"; # 行末に表示
+          delay = 300;
+        };
+        current_line_blame_formatter = "<author>, <author_time:%Y-%m-%d> - <summary>";
+      };
     };
 
     plugins.diffview = {
