@@ -1,0 +1,283 @@
+{
+  "env": {
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+  "language": "Japanese",
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "allow": [
+      "List(*)",
+      "Bash(ls:*)",
+      "Bash(file:*)",
+      "Bash(pwd)",
+      "Bash(tree:*)",
+      "Bash(cd:*)",
+
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(realpath:*)",
+      "Bash(dirname:*)",
+      "Bash(basename:*)",
+      "Bash(open:*)",
+
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(cut:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(tr:*)",
+      "Bash(xargs:*)",
+      "Bash(jq:*)",
+      "Bash(yq:*)",
+      "Bash(comm:*)",
+
+      "Bash(diff:*)",
+      "Bash(cmp:*)",
+      "Bash(stat:*)",
+      "Bash(du:*)",
+
+      "Bash(which:*)",
+      "Bash(type:*)",
+      "Bash(ps:*)",
+      "Bash(lsof:*)",
+      "Bash(whoami)",
+      "Bash(id)",
+      "Bash(uname:*)",
+      "Bash(date:*)",
+      "Bash(env)",
+      "Bash(printenv:*)",
+      "Bash(sleep:*)",
+
+      "Bash(fd:*)",
+
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git diff:*)",
+      "Bash(git blame:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git symbolic-ref:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git fetch:*)",
+      "Bash(git stash list:*)",
+      "Bash(git tag:*)",
+      "Bash(git grep:*)",
+      "Bash(git merge-tree:*)",
+      "Bash(git -C:*)",
+
+      "Bash(git add:*)",
+      "Bash(git mv:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)",
+      "Bash(git stash:*)",
+      "Bash(git push origin:*)",
+
+      "Bash(gh:*)",
+
+      "Bash(sbt:*)",
+      "Bash(scalafmt:*)",
+
+      "Bash(npm list:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm --dir:*)",
+      "Bash(biome:*)",
+      "Bash(vitest:*)",
+      "Bash(prettier:*)",
+      "Bash(eslint --no-fix:*)",
+
+      "Bash(go:*)",
+
+      "Bash(python3:*)",
+      "Bash(poetry run:*)",
+      "Bash(ruff:*)",
+
+      "Bash(nix eval:*)",
+      "Bash(nix build:*)",
+      "Bash(nix flake:*)",
+      "Bash(nix-prefetch-url:*)",
+      "Bash(nix hash:*)",
+      "Bash(nixpkgs-fmt:*)",
+      "Bash(home-manager switch:*)",
+      "Bash(home-manager news)",
+
+      "Bash(shellcheck:*)",
+      "Bash(actionlint:*)",
+      "Bash(pre-commit run:*)",
+
+      "Bash(claude:*)",
+
+      "Bash(gofmt:*)",
+      "Bash(black:*)",
+      "Bash(sqlfmt:*)",
+      "Bash(bc:*)",
+      "Bash(timeout:*)",
+      "Bash(gtimeout:*)",
+      "Bash(hostname)",
+      "Bash(git config:*)",
+
+      "Read(**)",
+      "Edit(**/src/**)",
+      "Edit(**/test/**)",
+      "Edit(**/tests/**)",
+      "Edit(**/app/**)",
+      "Edit(**/conf/**)",
+      "Edit(**/migration/**)",
+      "Edit(**/build.sbt)",
+      "Edit(**/project/**)",
+      "Edit(**/playwright/**)",
+      "Edit(.claude/**)",
+      "Edit(**/*.md)",
+      "Edit(**/*.txt)",
+      "Edit(**/*.json)",
+      "Edit(**/*.yml)",
+      "Edit(**/*.yaml)",
+      "Edit(**/.gitignore)",
+      "Edit(**/.eslintrc*)",
+      "Edit(**/.prettierrc*)",
+
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:npmjs.com)",
+      "WebFetch(domain:www.playframework.com)",
+      "WebFetch(domain:www.scala-lang.org)",
+      "WebFetch(domain:www.scala-sbt.org)",
+      "WebFetch(domain:playwright.dev)",
+      "WebFetch(domain:react.dev)",
+      "WebSearch"
+    ],
+    "deny": [
+      "Read(./**/__snapshots__/**)",
+      "Read(./**/*.snap)",
+      "Read(./**/package-lock.json)",
+
+      "Read(.env*)",
+      "Read(id_rsa)",
+      "Read(id_ed25519)",
+      "Read(**/*.key)",
+      "Read(**/*.pem)",
+      "Read(**/*_secret*)",
+      "Read(**/*credentials*)",
+      "Write(.env*)",
+      "Write(**/secrets/**)",
+
+      "Bash(wget:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(nc:*)",
+      "Bash(netcat:*)",
+
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+
+      "Bash(sh:*)",
+      "Bash(bash:*)",
+      "Bash(zsh:*)",
+      "Bash(eval:*)",
+      "Bash(exec:*)",
+
+      "Bash(python)",
+      "Bash(node)",
+      "Bash(ruby)",
+
+      "Bash(apt:*)",
+      "Bash(yum:*)",
+      "Bash(systemctl:*)",
+      "Bash(service:*)",
+
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin main)",
+      "Bash(git push origin master)",
+
+      "Bash(gh repo delete:*)",
+      "Bash(gh repo rename:*)",
+      "Bash(gh release delete:*)",
+
+      "Bash(go generate:*)",
+      "Bash(go tool:*)",
+
+      "Bash(sbt publish:*)",
+      "Bash(sbt publishSigned:*)",
+      "Bash(sbt publishLocal:*)",
+      "Bash(sbt sonatypeRelease:*)",
+      "Bash(sbt release:*)",
+
+      "Bash(nmap:*)",
+      "Bash(nikto:*)",
+      "Bash(sqlmap:*)",
+      "Bash(masscan:*)",
+
+      "Bash(mysql:*)",
+      "Bash(mongod:*)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
+      "Bash(git rm:*)",
+
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+
+      "Bash(kill:*)",
+      "Bash(killall:*)",
+      "Bash(pkill:*)",
+
+      "Bash(npm install:*)",
+      "Bash(pnpm install:*)",
+      "Bash(yarn install:*)",
+      "Bash(pip install:*)",
+      "Bash(poetry install:*)",
+      "Bash(gem install:*)",
+      "Bash(cargo install:*)",
+      "Bash(go install:*)",
+
+      "Bash(npx:*)",
+      "Bash(uvx:*)",
+
+      "Bash(python :*)",
+      "Bash(node :*)",
+      "Bash(node -e:*)",
+      "Bash(ruby :*)",
+
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+
+      "Bash(git checkout .)",
+      "Bash(git restore .)",
+      "Bash(git clean:*)",
+
+      "Bash(gh api:*)",
+
+      "Bash(psql:*)",
+
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker compose:*)",
+
+      "Bash(make:*)",
+
+      "Bash(curl:*)",
+
+      "Bash(brew:*)"
+    ]
+  }
+}
