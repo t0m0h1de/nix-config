@@ -291,6 +291,10 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in *find*-exec*) jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"find の -exec/-execdir は使用禁止です。別コマンドを実行する場合は `find ... | xargs ...` を使ってください。\"}}' ;; esac"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -Eq '(^|[^[:alnum:]_])cd[[:space:]]' && printf '%s' \"$cmd\" | grep -q '>'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"cd と出力リダイレクトの同居は禁止です(Claude Code の組み込みガードで承認が必要になります)。cd を使わず絶対パスでコマンドを書いてください。\"}}'; fi"
           }
         ]
       }
