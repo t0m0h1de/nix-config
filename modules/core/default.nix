@@ -5,5 +5,6 @@
     ./packages.nix
     ./git.nix
     ./ssh.nix
+    ./claude.nix
   ];
 }
