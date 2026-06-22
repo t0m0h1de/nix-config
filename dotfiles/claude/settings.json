@@ -134,6 +134,9 @@
       "Bash(git config:*)",
 
       "Read(**)",
+      "Read(/tmp/**)",
+      "Edit(/tmp/**)",
+      "Write(/tmp/**)",
       "Edit(**/src/**)",
       "Edit(**/test/**)",
       "Edit(**/tests/**)",
@@ -278,6 +281,19 @@
       "Bash(curl:*)",
 
       "Bash(brew:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in *find*-exec*) jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"find の -exec/-execdir は使用禁止です。別コマンドを実行する場合は `find ... | xargs ...` を使ってください。\"}}' ;; esac"
+          }
+        ]
+      }
     ]
   }
 }
