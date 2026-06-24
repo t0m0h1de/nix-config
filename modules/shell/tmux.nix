@@ -30,12 +30,10 @@ let
     tmux rename-session "$(printf "%s" "$session_name" | tr '.' '_')" 2>/dev/null
   '';
 
-  # prefix + s のセッション切り替えピッカー本体。
-  # 一覧は最終アタッチ時刻の降順(MRU)。現在のセッションは候補から除外する。
-  # Claude の @claude_state があれば "name [working]" のようにバッジを付けて表示し、
-  # 選択後はバッジを除いたセッション名で switch-client する。
-  # (バッジ表示用の列と切替用の列を tab で分け、fzf には --with-nth で表示列だけ見せる)
-  tmuxSessionPicker = pkgs.writeShellScript "tmux-session-picker" ''
+  # prefix + s のセッション一覧生成。最終アタッチ時刻の降順(MRU)で、現在のセッションは除外。
+  # 出力は tab 区切りの2列: <表示ラベル(name + Claude状態バッジ)>\t<切替用のセッション名>。
+  # fzf の reload でも使い回すため独立スクリプトに切り出す。
+  tmuxSessionList = pkgs.writeShellScript "tmux-session-list" ''
     current=$(tmux display-message -p '#{session_name}')
     tmux list-sessions -F '#{session_last_attached}|#{session_name}|#{@claude_state}' \
       | sort -rn -t'|' -k1 \
@@ -43,10 +41,35 @@ let
           label = $2
           if ($3 != "") label = label " [" $3 "]"
           print label, $2
-        }' \
+        }'
+  '';
+
+  # C-a(Create): 検索ボックスに打った文字列を名前に新規セッションを作成 → switch。
+  # after-new-session の自動命名(repo@branch)に名前を奪われないよう、生成後に明示 rename し、
+  # rename の影響を受けない session_id で switch する。名前が空なら自動命名に委ねる。
+  tmuxSessionCreate = pkgs.writeShellScript "tmux-session-create" ''
+    name="''${1:-}"
+    id=$(tmux new-session -d -P -F '#{session_id}')
+    if [ -n "$name" ]; then
+      tmux rename-session -t "$id" "$name"
+    fi
+    tmux switch-client -t "$id"
+  '';
+
+  # prefix + s のセッション切り替え/管理ピッカー。fzf の --bind で CRUD を行う。
+  #   enter : 選択セッションへ switch
+  #   C-a   : 検索ボックスの名前で新規セッション作成 → switch (Create)
+  #   C-d   : 選択セッションを kill → 一覧 reload (Delete)
+  #   C-r   : 選択セッションを検索ボックスの名前へ rename → 一覧 reload (Rename)
+  # fzf には表示ラベル列(--with-nth=1)だけ見せ、操作には切替用の名前列 {2} を使う。
+  tmuxSessionPicker = pkgs.writeShellScript "tmux-session-picker" ''
+    ${tmuxSessionList} \
       | fzf --reverse --delimiter='\t' --with-nth=1 --prompt 'session> ' \
-      | cut -f2 \
-      | xargs -r tmux switch-client -t
+          --header 'enter:switch  C-a:new(query)  C-d:kill  C-r:rename(query)' \
+          --bind 'enter:become(tmux switch-client -t {2})' \
+          --bind 'ctrl-a:become(${tmuxSessionCreate} {q})' \
+          --bind 'ctrl-d:execute-silent(tmux kill-session -t {2})+reload(${tmuxSessionList})' \
+          --bind 'ctrl-r:execute-silent(tmux rename-session -t {2} {q})+reload(${tmuxSessionList})'
   '';
 in
 {
@@ -76,9 +99,9 @@ in
       set -g status-right-length 150
       set -g status-right "#(${pkgs.kube-tmux}/bin/kube.tmux 250 cyan default)"
 
-      # prefix + s で fzf によるセッション切り替え(MRU順, Claude の @claude_state をバッジ表示)。
+      # prefix + s で fzf によるセッション切り替え/管理(MRU順, Claude状態バッジ, CRUDバインド付き)。
       # ピッカー本体は生成スクリプトに切り出している(インラインのクォートが複雑になるのを避けるため)。
-      bind s display-popup -E -w 40% -h 40% "${tmuxSessionPicker}"
+      bind s display-popup -E -w 50% -h 50% "${tmuxSessionPicker}"
 
       # セッション作成時のみセッション名を設定。ウィンドウ名は automatic-rename に委ねる
       set-hook -g after-new-session 'run-shell "${tmuxNameSession} #{pane_current_path}"'
