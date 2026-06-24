@@ -18,4 +18,12 @@
       run cp "$base" "$target"
     fi
   '';
+
+  # Claude の hook から呼ぶ tmux 状態記録スクリプトを ~/.claude/hooks/ に配置する。
+  # settings.json(静的JSON)から安定パスで参照したいので Nix ストアパスではなく
+  # 固定パス(~/.claude/hooks/tmux-state.sh)へ実行可能ファイルとして置く。
+  home.file.".claude/hooks/tmux-state.sh" = {
+    source = ../../dotfiles/claude/hooks/tmux-state.sh;
+    executable = true;
+  };
 }
