@@ -11,7 +11,7 @@ Nix Flakes + Home Manager を利用した開発環境定義リポジトリ。
 
 ```text
 ~/nix-config/
-├── flake.nix           # エントリーポイント (linux / darwinプロファイルを定義)
+├── flake.nix           # エントリーポイント (linux / darwin / work プロファイルを定義)
 ├── home.nix            # Home Manager 設定本体 (Linux/Darwin共通。OS差分は内部で吸収)
 ├── flake.lock          # バージョンロックファイル
 ├── modules/
@@ -21,8 +21,7 @@ Nix Flakes + Home Manager を利用した開発環境定義リポジトリ。
 │   └── editors/        # Vim / Neovim (nixvimによる管理)
 └── dotfiles/           # 設定ファイルの実体 (Nixから読み込まれる)
     ├── zshrc           # Zsh設定 (エイリアス・キーバインド等)
-    ├── gitconfig       # Git共通設定
-    ├── work.gitconfig  # 業務/特定プロジェクト用Git設定 (includeIfで読み込み)
+    ├── gitconfig       # Git共通設定 (マシン固有設定は ~/.gitconfig-extras で上書き)
     ├── vimrc           # Vim設定
     ├── tmux.conf       # Tmux設定
     └── starship.toml   # Starship設定
@@ -81,17 +80,28 @@ chmod 600 ~/.secrets
 
 ### 4\. 環境の適用 (Switch)
 
+利用するプロファイル (`flake.nix` の `homeConfigurations`) は3つ。
+
+| プロファイル | 用途 | `home.username` |
+|---|---|---|
+| `linux` | Linux / WSL | `t0m0h1de` |
+| `work` | 業務用 macOS（このマシン） | `tomohide.sawada` |
+| `darwin` | 個人用 macOS | `t0m0h1de` |
+
+> ⚠️ `darwin` は `home.username = t0m0h1de` 前提。ユーザー名が異なるマシンでは activation に失敗するため、業務用 Mac では必ず `work` を使う。
+
 以下のコマンドで設定を適用する。
 ※ 初回は `home-manager` コマンドがないため、`nix run` を経由する。
+（`-b backup` で既存の設定ファイルを自動バックアップして上書きする）
 
 ```bash
-# Linux/WSL環境の場合 (flake.nix内の "linux" 定義を使用)
-# -b backup オプションで既存の設定ファイルを自動バックアップして上書きする
+# Linux / WSL
 nix run home-manager/master -- switch --flake .#linux -b backup
-```
 
-```bash
-# macOS (Darwin) の場合
+# macOS（業務用・このマシン）
+nix run home-manager/master -- switch --flake .#work -b backup
+
+# macOS（個人用）
 nix run home-manager/master -- switch --flake .#darwin -b backup
 ```
 
@@ -106,7 +116,8 @@ nix run home-manager/master -- switch --flake .#darwin -b backup
 ```bash
 # 2回目以降は home-manager コマンドが使用可能
 home-manager switch --flake .#linux   # Linux/WSL
-home-manager switch --flake .#darwin  # macOS
+home-manager switch --flake .#work    # macOS（業務用・このマシン）
+home-manager switch --flake .#darwin  # macOS（個人用）
 ```
 
 ### パッケージの更新
@@ -116,7 +127,8 @@ home-manager switch --flake .#darwin  # macOS
 ```bash
 nix flake update
 home-manager switch --flake .#linux   # Linux/WSL
-home-manager switch --flake .#darwin  # macOS
+home-manager switch --flake .#work    # macOS（業務用・このマシン）
+home-manager switch --flake .#darwin  # macOS（個人用）
 ```
 
 ### よく使う Nix コマンド
@@ -228,11 +240,10 @@ claude --version
 
 ## ⚙️ Git設定について
 
-特定のディレクトリ配下でのみ適用される設定 (`includeIf`) を採用している。
-
-  * 共通設定: `dotfiles/gitconfig`
-  * 特定プロジェクト用: `dotfiles/work.gitconfig` (例)
-      * 適用条件: 特定のワークスペース配下のGitリポジトリ（例: `~/workspace/proj-a/`）
+  * 共通設定: `modules/core/git.nix`（`user.name` / `user.email` など）と `dotfiles/gitconfig`。
+  * マシン固有・業務用の上書き: `~/.gitconfig-extras`（Git管理外）。
+    `dotfiles/gitconfig` の `[include] path = ~/.gitconfig-extras` で読み込まれる。
+    業務用のメールアドレス等、このリポジトリに含めたくない設定はここに記述する。
 
 ## ⚠️ 注意事項
 
