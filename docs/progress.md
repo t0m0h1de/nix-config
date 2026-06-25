@@ -190,6 +190,16 @@
 
 - Reverted `ghq-fzf` in `dotfiles/zshrc` to show only `ghq list` output on Ctrl+g (removed `gwq list` merge).
 
+### 監査レポート対応 (docs/audit-2026-06-12.md) — 2026-06-25
+- 項目1: `modules/dev/langs.nix` の `JAVA_HOME` を実在しない `${pkgs.jdk17}/lib/openjdk` から `pkgs.jdk17.home` に修正 (commit d03babd)。`work` プロファイルで `JAVA_HOME` が zulu jdk home に解決することを確認。
+- 項目2: `modules/core/packages.nix` から重複JDK `zulu17` を削除し `jdk17`(langs.nix) に一本化 (commit 135969e)。
+- 項目3: `user.email` の二重定義を `modules/core/git.nix` に集約し `dotfiles/gitconfig` から削除 (commit f775cc4)。監査時点の ibm.com/gmail 不一致は既に両方 gmail に統一済みだった。
+- 項目4: `README.md` を実態に合わせ更新 (commit 97749f5)。実在しない `dotfiles/work.gitconfig` 記述を削除、`work` プロファイル追記、`darwin` の username 地雷を注記、Git設定セクションを `~/.gitconfig-extras` 機構に修正。
+- 項目5: `nix build` 成果物の `result` シンボリックリンクを削除 (gitignore 済みのためコミット無し)。
+- 項目7: `overlays/default.nix` の kube-tmux 参照を `rev = "master"` から commit `8b7e1d12...` に固定 (commit c8af11d)。固定rev で既存 hash のままビルド成功することを確認。
+- 項目6(username ハードコード)・項目8(`cd-nav` の fd 依存) は監査でも許容範囲/情報扱いのため今回未対応。
+- `nix eval .#homeConfigurations.work.activationPackage.drvPath` で全体が評価できることを確認。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
