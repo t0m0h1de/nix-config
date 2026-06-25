@@ -39,10 +39,11 @@ final: prev:
   kube-tmux = final.stdenv.mkDerivation {
     pname = "kube-tmux";
     version = "unstable";
+    # 再現性のため master ではなくコミットを固定する。
     src = final.fetchFromGitHub {
       owner = "jonmosco";
       repo = "kube-tmux";
-      rev = "master";
+      rev = "8b7e1d127c16b6dc87ff5743f4d775b245198b69";
       hash = "sha256-l1wjg2ReWKCI7h/K11vvX2ykYTs/mVD+tfz/mQsjn/E=";
     };
     installPhase = ''
