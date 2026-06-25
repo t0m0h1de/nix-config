@@ -13,7 +13,9 @@
   ];
 
   home.sessionVariables = {
-    JAVA_HOME = "${pkgs.jdk17}/lib/openjdk";
+    # nixpkgs が OS 差(Darwin=zulu / Linux=openjdk)を吸収した JAVA_HOME を返す。
+    # 旧 "${pkgs.jdk17}/lib/openjdk" は実在しないパスだった。
+    JAVA_HOME = "${pkgs.jdk17.home}";
   };
 
   # Declarative npm global prefix (replaces `npm config set prefix ~/.local`).
