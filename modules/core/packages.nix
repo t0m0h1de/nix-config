@@ -38,7 +38,6 @@
     libiconv
     ffmpeg
     imagemagick
-    zulu17
   ]
   # Linux専用パッケージ
   ++ lib.optionals stdenv.isLinux [
