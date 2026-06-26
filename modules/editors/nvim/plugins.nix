@@ -108,6 +108,13 @@
     plugins.oil = {
       # Neovim 内でディレクトリを編集できるファイルブラウザを有効化。
       enable = true;
+      settings = {
+        view_options = {
+          # 隠しファイル(ドットファイル)もデフォルトで表示する。
+          # 一時的に隠したい時は oil バッファ内で `g.` でトグルできる。
+          show_hidden = true;
+        };
+      };
     };
 
     plugins.nvim-tree = {
@@ -115,6 +122,12 @@
       enable = true;
       settings = {
         git.enable = true;
+        filters = {
+          # 隠しファイル(ドットファイル)と gitignore 対象もデフォルトで表示する。
+          # ツリー内で `H`(dotfiles) / `I`(gitignore) でトグルできる。
+          dotfiles = false;
+          git_ignored = false;
+        };
         renderer = {
           group_empty = true;
           highlight_git = "icon";
