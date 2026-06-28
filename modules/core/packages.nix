@@ -38,6 +38,7 @@
     libiconv
     ffmpeg
     imagemagick
+    pdftk
   ]
   # Linux専用パッケージ
   ++ lib.optionals stdenv.isLinux [
