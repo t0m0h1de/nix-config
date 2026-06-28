@@ -87,10 +87,11 @@ in
               'sessions=$(tmux list-sessions -F "#{session_last_attached} #{session_name}: #{session_windows} windows#{?session_attached, (attached),}#{?@claude_state, [#{@claude_state}],}" | sort -rn | cut -d" " -f2- | grep -v "^$current_session: ")'
         '';
       }))
-      # continuum は resurrect に依存し、かつ最後に読み込む必要がある。
-      # 保存インターバル・キーバインドはデフォルト(15分 / prefix+C-s 保存, prefix+C-r 復元)。
+      # resurrect: セッション/ウィンドウの保存・復元スクリプトを提供(status-right は使わない)。
+      # continuum はここではロードしない。continuum は status-right に保存トリガ #() を追記する方式で、
+      # home-manager は plugins を extraConfig より先にロードするため、ここで読むと後続の
+      # status-right 上書きで自動保存が壊れる。そのため status-right 設定後に extraConfig 末尾で手動ロードする。
       pkgs.tmuxPlugins.resurrect
-      pkgs.tmuxPlugins.continuum
     ];
     extraConfig = (builtins.readFile ../../dotfiles/tmux.conf) + ''
 
@@ -105,6 +106,14 @@ in
 
       # セッション作成時のみセッション名を設定。ウィンドウ名は automatic-rename に委ねる
       set-hook -g after-new-session 'run-shell "${tmuxNameSession} #{pane_current_path}"'
+
+      # tmux-continuum: 必ず status-right を設定し終えた“後”に読み込む。
+      # continuum は status-right に保存トリガ #() を追記して定期保存を実現するため、
+      # 後から status-right を上書きするとトリガが消えて自動保存が止まる(今回の不具合の原因)。
+      # @continuum-restore on で tmux サーバ起動時の自動復元も有効化する(これも未設定だった)。
+      set -g @continuum-restore 'on'
+      set -g @continuum-save-interval '15'
+      run-shell ${pkgs.tmuxPlugins.continuum}/share/tmux-plugins/continuum/continuum.tmux
     '';
   };
 }
