@@ -112,7 +112,7 @@ in
       # 後から status-right を上書きするとトリガが消えて自動保存が止まる(今回の不具合の原因)。
       # @continuum-restore on で tmux サーバ起動時の自動復元も有効化する(これも未設定だった)。
       set -g @continuum-restore 'on'
-      set -g @continuum-save-interval '15'
+      set -g @continuum-save-interval '5'
       run-shell ${pkgs.tmuxPlugins.continuum}/share/tmux-plugins/continuum/continuum.tmux
     '';
   };
