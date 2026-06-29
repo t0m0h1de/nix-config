@@ -33,6 +33,22 @@
         action = "<cmd>Telescope find_files<cr>";
       }
       {
+        # ファイル名検索（全部込み版）: 隠しファイル/フォルダ・gitignore 対象も対象にする。
+        # ノイズになる .git ディレクトリ配下だけは除外する。
+        mode = "n";
+        key = "<leader>fF";
+        action.__raw = ''
+          function()
+            require("telescope.builtin").find_files({
+              hidden = true,
+              no_ignore = true,
+              file_ignore_patterns = { "%.git/" },
+            })
+          end
+        '';
+        options.desc = "Telescope find_files (incl. hidden & ignored)";
+      }
+      {
         # ripgrep で全文検索。
         mode = "n";
         key = "<leader>fg";
