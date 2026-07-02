@@ -71,6 +71,43 @@ let
           --bind 'ctrl-d:execute-silent(tmux kill-session -t {2})+reload(${tmuxSessionList})' \
           --bind 'ctrl-r:execute-silent(tmux rename-session -t {2} {q})+reload(${tmuxSessionList})'
   '';
+
+  # prefix + w のウィンドウ一覧生成(現在セッション内)。アクティブなウィンドウは除外。
+  # 出力は tab 区切り2列: <表示ラベル "index: name"> <切替用の window_id>。
+  # fzf の reload で使い回すため独立スクリプトに切り出す。
+  tmuxWindowList = pkgs.writeShellScript "tmux-window-list" ''
+    tmux list-windows -F '#{window_index}|#{window_id}|#{window_name}|#{window_active}' \
+      | awk -F'|' 'BEGIN { OFS = "\t" } $4 != "1" {
+          print $1 ": " $3, $2
+        }'
+  '';
+
+  # C-a(Create): 新規ウィンドウ作成 → 自動でそのウィンドウへ。
+  # 検索ボックスに名前があれば -n で命名する(以後 automatic-rename はそのウィンドウで無効化される)。
+  tmuxWindowCreate = pkgs.writeShellScript "tmux-window-create" ''
+    name="''${1:-}"
+    if [ -n "$name" ]; then
+      tmux new-window -n "$name"
+    else
+      tmux new-window
+    fi
+  '';
+
+  # prefix + w のウィンドウ切り替え/管理ピッカー(セッション用 tmuxSessionPicker と同じ流儀)。
+  #   enter : 選択ウィンドウへ切替
+  #   C-a   : 新規ウィンドウ作成(検索ボックスの文字列があれば名前に) → 移動
+  #   C-d   : 選択ウィンドウを kill → 一覧 reload
+  #   C-r   : 選択ウィンドウを検索ボックスの名前へ rename → 一覧 reload
+  # fzf には表示ラベル列(--with-nth=1)だけ見せ、操作には window_id 列 {2} を使う。
+  tmuxWindowPicker = pkgs.writeShellScript "tmux-window-picker" ''
+    ${tmuxWindowList} \
+      | fzf --reverse --delimiter='\t' --with-nth=1 --prompt 'window> ' \
+          --header 'enter:switch  C-a:new(query)  C-d:kill  C-r:rename(query)' \
+          --bind 'enter:become(tmux select-window -t {2})' \
+          --bind 'ctrl-a:become(${tmuxWindowCreate} {q})' \
+          --bind 'ctrl-d:execute-silent(tmux kill-window -t {2})+reload(${tmuxWindowList})' \
+          --bind 'ctrl-r:execute-silent(tmux rename-window -t {2} {q})+reload(${tmuxWindowList})'
+  '';
 in
 {
   programs.tmux = {
@@ -103,6 +140,10 @@ in
       # prefix + s で fzf によるセッション切り替え/管理(MRU順, Claude状態バッジ, CRUDバインド付き)。
       # ピッカー本体は生成スクリプトに切り出している(インラインのクォートが複雑になるのを避けるため)。
       bind s display-popup -E -w 50% -h 50% "${tmuxSessionPicker}"
+
+      # prefix + w で fzf によるウィンドウ切り替え/管理(現在セッション内, CRUDバインド付き)。
+      # セッション切替(prefix s)と同じ流儀。既定の choose-tree(prefix w)を置き換える。
+      bind w display-popup -E -w 50% -h 50% "${tmuxWindowPicker}"
 
       # セッション作成時のみセッション名を設定。ウィンドウ名は automatic-rename に委ねる
       set-hook -g after-new-session 'run-shell "${tmuxNameSession} #{pane_current_path}"'
