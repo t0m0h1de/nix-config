@@ -51,9 +51,15 @@ in
 
     # --- セッション (herdr workspace ≈ tmux session) ---
     workspace_picker = "prefix+s"              # tmux: prefix+s (セッション一覧 choose-session)
+    # セッション一覧(workspace_picker)内の選択移動を j/k でも行う(既定は矢印)。
+    navigate_workspace_down = "j"
+    navigate_workspace_up = "k"
     detach = "prefix+d"                        # tmux: prefix+d (detach)
     rename_workspace = "prefix+$"              # tmux: prefix+$ (rename-session)
     settings = "prefix+shift+s"                # herdr固有(tmux非対応)。prefix+s を workspace_picker に譲るため退避
+    # 統合ジャンプピッカー(goto)を prefix+w でも開く。
+    # ※ herdr には pane 専用のピッカーアクションが無いため、最も近い goto を割当(既定 prefix+g も残す)。
+    goto = ["prefix+g", "prefix+w"]
 
     # --- ウィンドウ (herdr tab ≈ tmux window) ---
     new_tab = "prefix+c"                       # tmux: prefix+c (new-window)
