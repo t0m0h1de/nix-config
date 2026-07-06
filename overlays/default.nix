@@ -1,7 +1,7 @@
 { nix-zenn-cli }:
 final: prev:
 {
-  zenn-cli = nix-zenn-cli.packages.${final.system}.default;
+  zenn-cli = nix-zenn-cli.packages.${final.stdenv.hostPlatform.system}.default;
 
   terragrunt = final.buildGoModule rec {
     pname = "terragrunt";
