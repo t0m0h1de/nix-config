@@ -167,7 +167,9 @@
     };
 
     plugins.tmux-navigator = {
-      # tmux と Neovim 間を Ctrl-hjkl でシームレス移動。
+      # tmux ⇄ Neovim の移動に使う。ただし C-hjkl の既定マッピングは、下の extraConfigLua で
+      # vim-herdr-navigation 版に上書きする(プラグインロード後に走るため後勝ちで置き換わる)。
+      # tmux 内フォールバック用に TmuxNavigate* コマンドだけを利用する。
       enable = true;
     };
 
@@ -204,6 +206,37 @@
           },
         },
       })
+
+      -- vim-herdr-navigation (editor側): C-hjkl で Neovim split を移動し、split の端では
+      -- herdr(HERDR_PANE_ID があれば pane focus)/tmux(TMUX があれば TmuxNavigate) に
+      -- フォールバックしてペイン境界を越える。tmux-navigator の既定マッピングは無効化済み。
+      -- 出典: paulbkim-dev/vim-herdr-navigation editor/nvim.lua (rev 53e318c)
+      local function herdr_nav(wincmd, dir)
+        local prev = vim.api.nvim_get_current_win()
+        vim.cmd("wincmd " .. wincmd)
+        if vim.api.nvim_get_current_win() ~= prev then
+          return
+        end
+        if vim.env.HERDR_PANE_ID and vim.env.HERDR_PANE_ID ~= "" then
+          local herdr = vim.env.HERDR_BIN_PATH
+          if herdr == nil or herdr == "" then
+            herdr = "herdr"
+          end
+          vim.fn.system({ herdr, "pane", "focus", "--direction", dir, "--current" })
+        elseif vim.env.TMUX and vim.env.TMUX ~= "" then
+          local tmux = { left = "Left", down = "Down", up = "Up", right = "Right" }
+          pcall(vim.cmd, "TmuxNavigate" .. tmux[dir])
+        end
+      end
+      local function herdr_map(lhs, wincmd, dir, desc)
+        vim.keymap.set("n", lhs, function()
+          herdr_nav(wincmd, dir)
+        end, { silent = true, noremap = true, desc = desc })
+      end
+      herdr_map("<C-h>", "h", "left", "Navigate left (vim/herdr)")
+      herdr_map("<C-j>", "j", "down", "Navigate down (vim/herdr)")
+      herdr_map("<C-k>", "k", "up", "Navigate up (vim/herdr)")
+      herdr_map("<C-l>", "l", "right", "Navigate right (vim/herdr)")
     '';
   };
 }

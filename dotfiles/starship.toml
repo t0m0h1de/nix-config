@@ -1,5 +1,5 @@
 format = """
-$python$nix_shell$username $directory$git_branch$git_status
+$python$nix_shell$username $directory$git_branch$git_status$kubernetes
 $character
 """
 
@@ -46,3 +46,10 @@ symbol='Nix '
 
 [python]
 format='\($virtualenv\) '
+
+# k8s コンテキスト/ネームスペース表示 (tmux status-right の kube-tmux から移行)
+[kubernetes]
+disabled = false
+symbol = "☸ "
+format = '[ $symbol$context( \($namespace\))]($style)'
+style = "bold cyan"

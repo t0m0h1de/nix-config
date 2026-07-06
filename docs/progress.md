@@ -200,6 +200,30 @@
 - 項目6(username ハードコード)・項目8(`cd-nav` の fd 依存) は監査でも許容範囲/情報扱いのため今回未対応。
 - `nix eval .#homeConfigurations.work.activationPackage.drvPath` で全体が評価できることを確認。
 
+### herdr 移行 (docs/herdr-migration-plan.md) — 2026-07-06
+- 移行プラン `docs/herdr-migration-plan.md` を作成(Phase 0検証→1 config→2 workflow→3 tmux撤去)。
+- Phase 1 完了: `modules/shell/herdr.nix` を新規作成し `xdg.configFile."herdr/config.toml"` で Nix 管理化。
+  既存 `~/.config/herdr/config.toml`(オンボーディング生成)の nord テーマを取り込み。
+  version_check 無効・resume_agents_on_restore・prefix+j/k をタブ移動に割当。`modules/shell/default.nix` に import 追加。
+  生成 config.toml を tomllib で妥当性確認、work 評価成功 (commit 7be1fac)。
+- Phase 2-a 完了: `dotfiles/zshrc` に `hws`(herdr workspace を repo@branch で作成)を追加。tmuxNameSession の命名規則を移植 (commit 2c89137)。
+- Phase 2-b 完了: Claude 状態スタンプ hook 一式(tmux-state.sh + settings.json の該当 hook)を削除 (commit 78e1e02)。
+  併せて claude.nix の settings.json マージを `del(.env,.language,.permissions,.hooks) * base` に修正。
+  単純な再帰マージ `.[0]*.[1]` は base で削除したキーを live に反映できず、stale hook が残る問題を解消
+  (mock target でマージ結果を検証: Claude管理キー温存・stale hook除去を確認)。
+- Phase 2-c 完了: kube 表示の代替として starship の kubernetes モジュールを有効化(`dotfiles/starship.toml`)。
+  format に `$kubernetes` を追加し context/namespace を常時表示。tmux status-right の kube-tmux から移行 (commit 5fca913)。
+- vim-herdr-navigation 導入 (commit 7d93e36): C-hjkl で herdr ペイン ⇄ nvim split をシームレス移動
+  (vim-tmux-navigator の herdr 版)。ソースは Nix 固定(fetchFromGitHub, rev 53e318c)、activation で
+  `herdr plugin link` 登録、config.toml に ctrl+h/j/k/l 割当、nvim 側は extraConfigLua に editor/nvim.lua
+  相当を移植(HERDR_PANE_ID なら herdr / TMUX なら TmuxNavigate の両対応)。herdr theme は `nord` のまま(変更不要)。
+- **残り(意図的に保留)**: Phase 3(tmux 撤去)。herdr を数日運用してユーザーの合格判定を得てから、
+  `modules/shell/tmux.nix`/`dotfiles/tmux.conf`/`overlays` の kube-tmux/nvim の tmux-navigator を削除する。
+- 適用時の注意: `~/.config/herdr/config.toml` が実ファイルとして存在するため、初回 switch は
+  `home-manager switch --flake .#work -b backup`(既存を .backup に退避)が必要。以後 config は read-only symlink。
+  反映後 `herdr server reload-config` で稼働中サーバに適用し、`~/.config/herdr/herdr-server.log` に設定警告が出ていないか
+  (特に `[keys]` の配列/`prefix+down` 受理)を確認すること。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.

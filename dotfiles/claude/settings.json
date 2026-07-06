@@ -297,67 +297,6 @@
             "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -Eq '(^|[^[:alnum:]_])cd[[:space:]]' && printf '%s' \"$cmd\" | grep -q '>'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"cd と出力リダイレクトの同居は禁止です(Claude Code の組み込みガードで承認が必要になります)。cd を使わず絶対パスでコマンドを書いてください。\"}}'; fi"
           }
         ]
-      },
-      {
-        "matcher": "AskUserQuestion",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tmux-state.sh waiting"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tmux-state.sh working"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "permission_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tmux-state.sh waiting"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tmux-state.sh idle"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tmux-state.sh idle"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/tmux-state.sh clear"
-          }
-        ]
       }
     ]
   }

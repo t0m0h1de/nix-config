@@ -91,6 +91,27 @@ function cd-nav() {
     cd "$root_abs/$dir"
   fi
 }
+# herdr: カレントディレクトリの workspace を repo@branch ラベルで作成してフォーカスする。
+# modules/shell/tmux.nix の tmuxNameSession と同じ命名規則:
+# - git リポジトリ: メイン worktree の basename @ ブランチ末尾要素 (gwq worktree の +branch 重複を回避)
+# - git 管理外: ディレクトリ basename
+function hws() {
+  local label main_wt repo b
+  main_wt=$(git worktree list 2>/dev/null | head -1 | awk '{print $1}')
+  if [ -n "$main_wt" ]; then
+    repo=$(basename "$main_wt")
+    b=$(git branch --show-current 2>/dev/null)
+    if [ -n "$b" ]; then
+      label="$repo@${b##*/}"
+    else
+      label="$repo"
+    fi
+  else
+    label=$(basename "$PWD")
+  fi
+  herdr workspace create --cwd "$PWD" --label "$label" --focus
+}
+
 # Force redefine quietly so repeated sourcing (e.g. nested shells in tmux)
 # stays idempotent without duplicate definitions.
 abbr --force --quiet cdn='cd-nav'
