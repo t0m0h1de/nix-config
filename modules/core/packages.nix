@@ -32,6 +32,7 @@
     overmind
     gettext
     pre-commit
+    herdr
 
     watch
     nkf
