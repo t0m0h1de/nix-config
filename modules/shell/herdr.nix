@@ -43,16 +43,44 @@ in
     # サイドバー(エージェント状態一覧)を attention 優先で並べる
     agent_panel_sort = "priority"
 
+    # キーバインドは可能な範囲で tmux(デフォルト + 現行 tmux.conf のカスタム)に合わせる。
+    # herdr の概念対応: workspace ≈ tmux session / tab ≈ tmux window / pane ≈ tmux pane。
+    # ※ herdr のモデル差で完全一致できない項目(リサイズ等)は末尾コメント参照。
     [keys]
-    # prefix は tmux と同じ ctrl+b (デフォルトのまま明示)
-    prefix = "ctrl+b"
-    # タブ移動: tmux の prefix+j/k (前/次ウィンドウ) の手癖を移植。
-    # デフォルトの prefix+j/k は focus_pane_down/up なので、そちらは矢印キーへ退避する。
-    next_tab = ["prefix+n", "prefix+j"]
-    previous_tab = ["prefix+p", "prefix+k"]
-    focus_pane_down = ["prefix+down"]
-    focus_pane_up = ["prefix+up"]
-    # ペイン左右移動はデフォルト(prefix+h / prefix+l)のまま
+    prefix = "ctrl+b"                          # tmux: prefix = C-b
+
+    # --- セッション (herdr workspace ≈ tmux session) ---
+    workspace_picker = "prefix+s"              # tmux: prefix+s (セッション一覧 choose-session)
+    detach = "prefix+d"                        # tmux: prefix+d (detach)
+    rename_workspace = "prefix+$"              # tmux: prefix+$ (rename-session)
+    settings = "prefix+shift+s"                # herdr固有(tmux非対応)。prefix+s を workspace_picker に譲るため退避
+
+    # --- ウィンドウ (herdr tab ≈ tmux window) ---
+    new_tab = "prefix+c"                       # tmux: prefix+c (new-window)
+    rename_tab = "prefix+comma"                # tmux: prefix+, (rename-window)
+    close_tab = "prefix+ampersand"             # tmux: prefix+& (kill-window)
+    next_tab = ["prefix+n", "prefix+j"]        # tmux: prefix+n (+ 現行 tmux.conf の独自 prefix+j)
+    previous_tab = ["prefix+p", "prefix+k"]    # tmux: prefix+p (+ 独自 prefix+k)
+    switch_tab = "prefix+1..9"                 # tmux: prefix+0..9 (select-window)
+
+    # --- ペイン ---
+    split_vertical = "prefix+%"                # tmux: prefix+% (split-window -h / 左右分割)
+    split_horizontal = "prefix+\""             # tmux: prefix+" (split-window -v / 上下分割)
+    close_pane = "prefix+x"                    # tmux: prefix+x (kill-pane)
+    zoom = "prefix+z"                          # tmux: prefix+z (resize-pane -Z)
+    # ペイン移動: tmux 既定の prefix+方向キー(select-pane)。C-hjkl は vim-herdr-navigation(下 [[keys.command]])で対応。
+    focus_pane_left = "prefix+left"
+    focus_pane_down = "prefix+down"
+    focus_pane_up = "prefix+up"
+    focus_pane_right = "prefix+right"
+
+    # --- その他 ---
+    help = "prefix+?"                          # tmux: prefix+? (list-keys)
+
+    # tmux と完全一致できない/概念が異なる項目(herdr 既定のまま):
+    #   - ペインリサイズ: tmux 独自の prefix+H/J/K/L(直接)に対し herdr は resize_mode(prefix+r)。
+    #   - pane rename: tmux 既定に相当なし(herdr rename_pane = prefix+shift+p のまま)。
+    #   - copy mode(prefix+[), next/last pane(prefix+o / prefix+;) 等の細かいキーは herdr 既定のまま。
 
     # vim-herdr-navigation: 直接の Ctrl+h/j/k/l をプラグインアクションに割当。
     # フォアグラウンドが Vim/Neovim なら Vim に転送し、そうでなければ herdr ペインを移動する。
