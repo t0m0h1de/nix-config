@@ -1,5 +1,5 @@
 format = """
-$python$nix_shell$username $directory$git_branch$git_status$kubernetes
+$python$nix_shell$username $directory$git_branch$git_status
 $character
 """
 
