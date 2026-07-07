@@ -82,6 +82,9 @@ in
 
     # --- その他 ---
     help = "prefix+?"                          # tmux: prefix+? (list-keys)
+    # worktree 作成は gwq に一任するため herdr の作成キー(既定 prefix+shift+g)を無効化。
+    # 非gitディレクトリで誤起動して "worktree actions require a Git work tree" 警告(消えない)を誘発するのも防ぐ。
+    new_worktree = ""
 
     # tmux と完全一致できない/概念が異なる項目(herdr 既定のまま):
     #   - ペインリサイズ: tmux 独自の prefix+H/J/K/L(直接)に対し herdr は resize_mode(prefix+r)。
