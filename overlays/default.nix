@@ -100,4 +100,48 @@ final: prev:
       mainProgram = "roots";
     };
   };
+
+  # Datadog CLI (pup)。Rust製・nixpkgs 未収録のため、リリースのプリビルドバイナリを
+  # system 別に取得して配置する(大きな Rust CLI なのでソースビルドを避ける)。
+  # darwin バイナリは system framework のみ依存で単体実行可。linux は autoPatchelfHook で張替え。
+  pup =
+    let
+      version = "1.6.2";
+      selection = {
+        aarch64-darwin = { suffix = "Darwin_arm64"; hash = "sha256-er8nzA57pJbr667eWDdmWUC2nThWBor4lntnkGh/pvY="; };
+        x86_64-darwin = { suffix = "Darwin_x86_64"; hash = "sha256-dME8Xqby+BWVn3Go5WHEUTpuYOINvcCNMdCe0ILstEI="; };
+        x86_64-linux = { suffix = "Linux_x86_64"; hash = "sha256-7lAsWzx7PVZywOraiP25Y4+LgISfuP+6ai3p250pVy8="; };
+        aarch64-linux = { suffix = "Linux_arm64"; hash = "sha256-ADRtVg+3Eb0f3aU01bIQDe2Bae/1nnFsI1FVv3AcdvI="; };
+      };
+      sel = selection.${final.stdenv.hostPlatform.system}
+        or (throw "pup: unsupported system ${final.stdenv.hostPlatform.system}");
+    in
+    final.stdenvNoCC.mkDerivation {
+      pname = "pup";
+      inherit version;
+
+      src = final.fetchurl {
+        url = "https://github.com/DataDog/pup/releases/download/v${version}/pup_${version}_${sel.suffix}.tar.gz";
+        inherit (sel) hash;
+      };
+
+      sourceRoot = ".";
+
+      nativeBuildInputs = final.lib.optionals final.stdenv.hostPlatform.isLinux [ final.autoPatchelfHook ];
+      buildInputs = final.lib.optionals final.stdenv.hostPlatform.isLinux [ final.stdenv.cc.cc.lib ];
+
+      installPhase = ''
+        runHook preInstall
+        install -Dm755 pup $out/bin/pup
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Datadog CLI companion with 200+ commands across Datadog products";
+        homepage = "https://github.com/DataDog/pup";
+        license = licenses.asl20;
+        mainProgram = "pup";
+        platforms = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
+      };
+    };
 }

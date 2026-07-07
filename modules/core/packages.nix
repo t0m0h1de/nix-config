@@ -33,6 +33,7 @@
     gettext
     pre-commit
     herdr
+    pup
 
     watch
     nkf
