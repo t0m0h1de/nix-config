@@ -167,10 +167,12 @@
     };
 
     plugins.tmux-navigator = {
-      # tmux ⇄ Neovim の移動に使う。ただし C-hjkl の既定マッピングは、下の extraConfigLua で
-      # vim-herdr-navigation 版に上書きする(プラグインロード後に走るため後勝ちで置き換わる)。
+      # tmux ⇄ Neovim の移動用。ただし C-hjkl の既定マッピングは no_mappings で無効化し、
+      # vim-herdr-navigation(下の extraConfigLua)に一本化する。
+      # (extraConfigLua はプラグインより先に走るため、無効化しないと tmux-navigator が後勝ちで上書きしてしまう)
       # tmux 内フォールバック用に TmuxNavigate* コマンドだけを利用する。
       enable = true;
+      settings.no_mappings = 1;
     };
 
     plugins.gitsigns = {
