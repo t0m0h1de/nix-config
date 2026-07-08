@@ -224,6 +224,38 @@
   反映後 `herdr server reload-config` で稼働中サーバに適用し、`~/.config/herdr/herdr-server.log` に設定警告が出ていないか
   (特に `[keys]` の配列/`prefix+down` 受理)を確認すること。
 
+### herdr: フロート Spaces ピッカー(fzf, 自前MRU) — 2026-07-08
+- `modules/shell/herdr.nix` に fzf ピッカーを追加。`prefix+s` で一時ペイン(`[[keys.command]]` type="pane")に
+  fzf を開き、workspace を絞り込み → enter で `herdr workspace focus`。空クエリ時は最終アタッチ順(MRU)で並ぶ。
+- 実装: `writeShellScript` 3本を let に追加(tmux.nix の fzf ピッカーと同じ流儀)。
+  - `herdr-workspace-list`: `herdr workspace list`(JSON)を jq で `id\t icon+label \t focused` 化 →
+    MRU ファイル順(現存のみ)→ 未記録の現存を list 順で並べ、現在フォーカス中を除外して `<display>\t<id>` 出力。
+  - `herdr-workspace-focus`: 選択 id を MRU 先頭へ積んで `herdr workspace focus`(become で fzf を置換)。
+  - `herdr-workspace-picker`: 一覧を fzf に流し `--with-nth=1`(表示)/`{2}`(id)。
+- MRU の理由: herdr の API は last-attached/last-focused 時刻を返さない(list の `focused` は bool、number は作成順)。
+  そのため MRU は自前ファイル(`$XDG_CACHE_HOME/herdr/workspace-mru`)で管理。GC はピッカー起動のたびに
+  現存 workspace で刈り込んで書き戻す方式(起動時クリアより上位互換: サーバ再起動をまたいでも履歴が残る)。
+- キー再割当: `prefix+s`=自前fzfピッカー / ネイティブ `workspace_picker`=`prefix+shift+s`(保険) /
+  `settings`=`prefix+shift+g`(prefix+shift+s を picker に譲るため退避。new_worktree 無効化で空いた枠)。
+- 制約(ユーザーに共有済み): herdr は「起動時からサイドバー非表示」設定が無く(`toggle_sidebar`=prefix+b のトグルのみ)、
+  真のフローティングウィンドウも無い。サイドバーは残す方針にし、ピッカーは type="pane" の一時ペインで近似。
+- 検証: `nixpkgs-fmt`(整形なし)・`nix-instantiate --parse`・`nix eval .#homeConfigurations.work.activationPackage.drvPath`
+  成功。生成 config.toml を tomllib で妥当性確認([[keys.command]] 5件=fzfピッカー1+vim-nav4、ストアパス埋め込み確認)。
+- 未実施(ユーザー確認): switch → `herdr server reload-config` 後の実挙動(prefix+s で fzf が開く/enter で切替/
+  空クエリMRU順/GC)は未検証。bash スクリプトの実行検証はセッションの権限制約で行えずレビューのみ。
+- 追加修正: fzf 内で Ctrl+j/k の選択移動が効かない問題に対応。原因は vim-herdr-navigation が Ctrl+h/j/k/l を
+  グローバルに奪い(navigate.sh)、Vim 以外の前面アプリ(fzf)には転送しないため。navigate.sh は
+  `HERDR_NAV_PASSTHROUGH_RE`(小文字化した前面プロセス名への ERE)にマッチすれば `herdr pane send-keys` で
+  前面へ転送する opt-in を持つ。当初 `home.sessionVariables` で env を渡したが効かず。原因は2点:
+  (1) `herdr plugin list` のリンク先が未パッチの上流ソースを指したまま、(2) サーバへの env 継承が起動タイミング依存。
+  → env に依存しないよう navigate.sh の既定を `${HERDR_NAV_PASSTHROUGH_RE:-fzf}` に**焼き込むパッチ**へ変更
+  (`pkgs.runCommand` で source をコピー → `substituteInPlace --replace-fail`)。ビルドで置換成功と
+  `passthrough_re="${HERDR_NAV_PASSTHROUGH_RE:-fzf}"` の反映を確認。
+  activation は `plugin unlink → link` に変更(link だけだと古いストアパスが残りパッチ未反映になるため)。
+  env(`home.sessionVariables.HERDR_NAV_PASSTHROUGH_RE = "fzf"`)は追加TUI用の上書きとして残置。
+  注意: switch はサーバ稼働中に行うこと(activation の unlink/link が届く)。反映後 `herdr plugin list` が
+  新ストアパス(vim-herdr-navigation)を指すことを確認 → 効かなければ `herdr server reload-config`。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.

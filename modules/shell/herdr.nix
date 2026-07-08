@@ -4,12 +4,91 @@ let
   # する(vim-tmux-navigator の herdr 版)。herdr のプラグイン登録は ~/.config/herdr/plugins.json
   # への書き込みで宣言的管理が難しいため、ソースだけ Nix で固定し activation で `herdr plugin link`
   # する(plugin_root は渡したストアパスを参照するので、closure に入り GC 保護される)。
-  vim-herdr-navigation = pkgs.fetchFromGitHub {
+  vim-herdr-navigation-src = pkgs.fetchFromGitHub {
     owner = "paulbkim-dev";
     repo = "vim-herdr-navigation";
     rev = "53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244";
     hash = "sha256-vUUt46jiK6ZsPH8D13/+IIlqT3KbFliPJkNplsVqiQo=";
   };
+
+  # navigate.sh の passthrough 既定を fzf に焼き込むパッチ。
+  # 上流は Ctrl+h/j/k/l を Vim/Neovim にしか転送せず、fzf 等の TUI 前面では herdr のペイン移動に
+  # 消費されてしまう(→ fzf の選択移動 Ctrl+j/k が効かない)。env HERDR_NAV_PASSTHROUGH_RE で
+  # opt-in できるが、herdr サーバへの env 継承は起動タイミング依存で不確実だったため、サーバが毎回
+  # 実行する navigate.sh 自体の既定を fzf にする(env が設定されていればそちらが優先されるまま)。
+  vim-herdr-navigation = pkgs.runCommand "vim-herdr-navigation" { } ''
+    cp -r ${vim-herdr-navigation-src} $out
+    chmod -R u+w $out
+    substituteInPlace $out/navigate.sh \
+      --replace-fail 'passthrough_re="''${HERDR_NAV_PASSTHROUGH_RE:-}"' \
+                     'passthrough_re="''${HERDR_NAV_PASSTHROUGH_RE:-fzf}"'
+  '';
+
+  # --- フロート Spaces ピッカー (fzf, 自前 MRU) ---
+  # サイドバー(Spaces一覧)の代替として prefix+s で fzf ピッカーを一時ペインに開き、
+  # workspace を絞り込み → enter で focus する(ネイティブ workspace_picker は prefix+shift+s に退避)。
+  #
+  # MRU(最終アタッチ順)について: herdr の API は last-attached/last-focused の時刻を一切返さない
+  # (workspace list の focused は「今フォーカス中か」の bool のみ、number は作成順)。そのため
+  # 「空クエリ時に最終アタッチ順」は自前の MRU ファイルで実現する。focus のたびに先頭へ積む。
+  # GC: ピッカーを開くたびに現存 workspace で MRU ファイルを刈り込んで書き戻すので肥大化しない。
+  mruFile = ''"''${XDG_CACHE_HOME:-$HOME/.cache}/herdr/workspace-mru"'';
+
+  # 一覧生成: 現存 workspace を「MRU ファイル順(現存のみ) → 未記録の現存を list 順」で並べ、
+  # 刈り込んだ MRU を書き戻し(GC)、fzf 用に「<icon+label>\t<workspace_id>」を出力する。
+  # 現在フォーカス中の workspace は切替対象外なので除外する(先頭に「今いる所」が来ないように)。
+  herdrWorkspaceList = pkgs.writeShellScript "herdr-workspace-list" ''
+    mru=${mruFile}
+    mkdir -p "$(dirname "$mru")"
+    touch "$mru"
+
+    # <id>\t<icon + label>\t<focused>
+    list=$(herdr workspace list | jq -r '
+      .result.workspaces[]
+      | (if   .agent_status=="blocked" then "🔴"
+         elif .agent_status=="working" then "🟡"
+         elif .agent_status=="done"    then "🔵"
+         elif .agent_status=="idle"    then "🟢"
+         else "⚪" end) as $icon
+      | [.workspace_id, ($icon + " " + .label), (.focused|tostring)] | @tsv')
+
+    # MRU 順の id 列(MRU ファイル順で現存のみ → 未記録の現存を list 順で末尾に)
+    ordered=$(awk -F"\t" '
+      NR==FNR { live[$1]=1; order[++n]=$1; next }
+      ($0 in live) && !seen[$0]++ { print }
+      END { for (i=1;i<=n;i++) if (!seen[order[i]]++) print order[i] }
+    ' <(printf "%s\n" "$list") "$mru")
+
+    # GC: 現存する id だけに刈り込んだ MRU を書き戻す
+    printf "%s\n" "$ordered" | awk 'NF' > "$mru"
+
+    # fzf 行: <display>\t<id>。現在フォーカス中は除外。
+    awk -F"\t" '
+      NR==FNR { disp[$1]=$2; foc[$1]=$3; next }
+      NF && foc[$0]!="true" { print disp[$0] "\t" $0 }
+    ' <(printf "%s\n" "$list") <(printf "%s\n" "$ordered")
+  '';
+
+  # 選択した workspace を MRU 先頭へ積んでから focus する(become で fzf を置き換えて実行)。
+  herdrWorkspaceFocus = pkgs.writeShellScript "herdr-workspace-focus" ''
+    id="''${1:-}"
+    [ -n "$id" ] || exit 0
+    mru=${mruFile}
+    mkdir -p "$(dirname "$mru")"
+    touch "$mru"
+    { printf "%s\n" "$id"; grep -vxF "$id" "$mru" 2>/dev/null; } > "$mru.tmp"
+    mv "$mru.tmp" "$mru"
+    herdr workspace focus "$id" >/dev/null 2>&1
+  '';
+
+  # ピッカー本体: 一覧を fzf に流し、enter で focus スクリプトへ置き換える(tmux 版と同じ流儀)。
+  # fzf には表示ラベル列(--with-nth=1)だけ見せ、操作には workspace_id 列 {2} を使う。
+  herdrWorkspacePicker = pkgs.writeShellScript "herdr-workspace-picker" ''
+    ${herdrWorkspaceList} \
+      | fzf --reverse --delimiter='\t' --with-nth=1 --nth=1 --prompt 'space> ' \
+          --header 'enter:switch' \
+          --bind 'enter:become(${herdrWorkspaceFocus} {2})'
+  '';
 in
 {
   # herdr (AIエージェント向けターミナルワークスペース) の設定。
@@ -50,13 +129,17 @@ in
     prefix = "ctrl+b"                          # tmux: prefix = C-b
 
     # --- セッション (herdr workspace ≈ tmux session) ---
-    workspace_picker = "prefix+s"              # tmux: prefix+s (セッション一覧 choose-session)
-    # セッション一覧(workspace_picker)内の選択移動を j/k でも行う(既定は矢印)。
+    # prefix+s は自前の fzf フロート Spaces ピッカー([[keys.command]] 末尾)に割当。
+    # ネイティブの workspace_picker は prefix+shift+s へ退避(fzf が動かない時のフォールバック)。
+    workspace_picker = "prefix+shift+s"        # ネイティブ Spaces ピッカー(fzf ピッカーの保険)
+    # ネイティブ workspace_picker 内の選択移動を j/k でも行う(既定は矢印)。
     navigate_workspace_down = "j"
     navigate_workspace_up = "k"
     detach = "prefix+d"                        # tmux: prefix+d (detach)
     rename_workspace = "prefix+$"              # tmux: prefix+$ (rename-session)
-    settings = "prefix+shift+s"                # herdr固有(tmux非対応)。prefix+s を workspace_picker に譲るため退避
+    # 設定UI。prefix+shift+s は workspace_picker に譲ったので、new_worktree 無効化で空いた
+    # prefix+shift+g へ退避(このリポジトリでは config が read-only なので設定UIは実質参照用)。
+    settings = "prefix+shift+g"                # herdr固有(tmux非対応)
     # 統合ジャンプピッカー(goto)を prefix+w でも開く。
     # ※ herdr には pane 専用のピッカーアクションが無いため、最も近い goto を割当(既定 prefix+g も残す)。
     goto = ["prefix+g", "prefix+w"]
@@ -91,9 +174,20 @@ in
     #   - pane rename: tmux 既定に相当なし(herdr rename_pane = prefix+shift+p のまま)。
     #   - copy mode(prefix+[), next/last pane(prefix+o / prefix+;) 等の細かいキーは herdr 既定のまま。
 
+    # フロート Spaces ピッカー(fzf, 自前MRU)。prefix+s で一時ペインに開き、workspace を
+    # 絞り込み → enter で focus。空クエリ時は最終アタッチ順(MRU)で並ぶ。実装は先頭の let を参照。
+    # ※ herdr に真のフローティングウィンドウは無く、type="pane" の一時ペイン(終了で自動close)で近似。
+    [[keys.command]]
+    key = "prefix+s"
+    type = "pane"
+    command = "${herdrWorkspacePicker}"
+    description = "Spaces picker (fzf, MRU)"
+
     # vim-herdr-navigation: 直接の Ctrl+h/j/k/l をプラグインアクションに割当。
     # フォアグラウンドが Vim/Neovim なら Vim に転送し、そうでなければ herdr ペインを移動する。
     # (nvim 側マッピングは modules/editors/nvim/plugins.nix、登録は下の activation)
+    # ※ fzf など Ctrl+h/j/k/l を自前で使う TUI では、これがペイン移動に消費されキーが届かない。
+    #   下の HERDR_NAV_PASSTHROUGH_RE で fzf 前面時はそのまま fzf へ転送させている。
     [[keys.command]]
     key = "ctrl+h"
     type = "plugin_action"
@@ -119,10 +213,17 @@ in
     description = "navigate right (vim/herdr)"
   '';
 
-  # vim-herdr-navigation を herdr に登録する(plugins.json)。ソースは Nix ストアに固定し、
-  # 毎 switch で現行ストアパスへ再リンクする(冪等)。herdr サーバ未起動時は失敗し得るので
-  # best-effort(|| true)。反映後 `herdr plugin list` で確認できる。
+  # fzf passthrough は上の navigate.sh パッチ(既定 fzf)で担保済み。この env は追加の TUI を
+  # 増やしたい時の上書き用に残す(例: "fzf|lazygit")。設定するとパッチ既定より優先される。
+  # ただしサーバへの env 継承は起動タイミング依存なので、確実性はパッチ側に置いている。
+  home.sessionVariables.HERDR_NAV_PASSTHROUGH_RE = "fzf";
+
+  # vim-herdr-navigation を herdr に登録する(plugins.json)。ソースは Nix ストアに固定する。
+  # パッチで navigate.sh を変えるとストアパスが変わるため、毎 switch で一旦 unlink → 現行パスへ
+  # link し直す(link だけだと既存 id が古いストアパスのまま残り、パッチが反映されない)。
+  # herdr サーバ未起動時は失敗し得るので best-effort(|| true)。反映後 `herdr plugin list` で確認。
   home.activation.herdrLinkNavPlugin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${pkgs.herdr}/bin/herdr plugin unlink vim-herdr-navigation > /dev/null 2>&1 || true
     ${pkgs.herdr}/bin/herdr plugin link "${vim-herdr-navigation}" > /dev/null 2>&1 || true
   '';
 }
