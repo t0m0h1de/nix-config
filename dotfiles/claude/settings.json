@@ -295,6 +295,10 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if printf '%s' \"$cmd\" | grep -Eq '(^|[^[:alnum:]_])cd[[:space:]]' && printf '%s' \"$cmd\" | grep -q '>'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"cd と出力リダイレクトの同居は禁止です(Claude Code の組み込みガードで承認が必要になります)。cd を使わず絶対パスでコマンドを書いてください。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq '(^|[;&|][[:space:]]*)(for|while|until|if|case)[[:space:]]' || printf '%s' \"$stripped\" | grep -Eq '(^|[;&|[:space:]])\\('; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"サブシェル( )や for/while/until/if/case の複合構文は権限判定が分解できず承認プロンプトになります。&& ; | と xargs による平坦なコマンドに書き換えてください(例: for f in a b; do cmd $f; done → printf \\\"%s\\\\n\\\" a b | xargs -n1 cmd)。\"}}'; fi"
           }
         ]
       }
