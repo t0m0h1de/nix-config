@@ -256,6 +256,21 @@
   注意: switch はサーバ稼働中に行うこと(activation の unlink/link が届く)。反映後 `herdr plugin list` が
   新ストアパス(vim-herdr-navigation)を指すことを確認 → 効かなければ `herdr server reload-config`。
 
+### herdr: フロート Agent ピッカー(fzf, 注目度順) — 2026-07-08
+- `prefix+a` で fzf フロート(type="pane")にエージェント一覧を出し、enter で `herdr agent focus <terminal_id>`。
+  Spaces ピッカー(prefix+s)の Agent 版。並びは注目度順(blocked→working→unknown→idle)。現在フォーカス中は除外。
+- 実装: `writeShellScript` 2本を let に追加。
+  - `herdr-agent-list`: `herdr agent list` を jq(`def prio`/`def icon`/`sort_by`/`select(.focused|not)`)で整形。
+    `herdr workspace list` の workspace_id→label も引き、`<icon> <label> · <agent> · <cwd basename>\t<terminal_id>` 出力。
+  - `herdr-agent-picker`: fzf `--with-nth=1`(表示)/`{2}`(terminal_id)、`enter:become(herdr agent focus {2})`。
+- 制約: 対象は `herdr agent list` が返す「検知中のエージェント」のみ(workspace list と違い全ペインではない)。
+  サーバ再起動直後は検知されるまで件数が少ない(検証時は focused の1件のみ検知 → focused除外で空になる状況を確認)。
+- 並びは MRU ではなく attention 順を採用(「対応が必要なエージェントへ飛ぶ」用途に適するため)。MRU 希望なら
+  Spaces ピッカーの MRU 機構を流用可能。
+- 検証: `nixpkgs-fmt`/`parse`/`eval` 成功、生成 config.toml を tomllib 確認([[keys.command]] 6件=prefix+s/a+ctrl hjkl)。
+  jq 整形(prio/icon/sort_by/join)は実データで出力確認。bash 実行検証は権限制約でレビューのみ。
+- キー: prefix+a は既存バインドと未衝突を確認。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.

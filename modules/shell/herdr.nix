@@ -89,6 +89,46 @@ let
           --header 'enter:switch' \
           --bind 'enter:become(${herdrWorkspaceFocus} {2})'
   '';
+
+  # --- フロート Agent ピッカー (fzf) ---
+  # prefix+a で fzf を開き、herdr が検知中のエージェントを注目度順(blocked→working→unknown→idle)で
+  # 一覧 → enter でそのエージェントのペインへ focus。Spaces ピッカーと違い MRU は使わず attention 順。
+  # ※ 対象は「herdr が現在検知しているエージェント」(`herdr agent list`)のみ。workspace list と違い
+  #   全ペインではなく検知済みエージェントに限られる(サーバ再起動直後などは検知されるまで出ない)。
+  #
+  # 一覧生成: workspace_id→label を引くために workspace list も取得し、
+  # 「<icon> <label> · <agent> · <cwd basename>\t<terminal_id>」を出力。現在フォーカス中は除外。
+  herdrAgentList = pkgs.writeShellScript "herdr-agent-list" ''
+    wsmap=$(herdr workspace list | jq -r '.result.workspaces[] | [.workspace_id, .label] | @tsv')
+
+    herdr agent list | jq -r '
+      def prio: if   .agent_status=="blocked" then 0
+                elif .agent_status=="working" then 1
+                elif .agent_status=="unknown" then 2
+                else 3 end;
+      def icon: if   .agent_status=="blocked" then "🔴"
+                elif .agent_status=="working" then "🟡"
+                elif .agent_status=="unknown" then "⚪"
+                else "🟢" end;
+      [ .result.agents[] | select(.focused|not) ] | sort_by(prio) | .[]
+      | [ .workspace_id, icon, (.agent // ""), (.foreground_cwd // .cwd // ""), .terminal_id ] | @tsv' \
+    | awk -F"\t" '
+        NR==FNR { lbl[$1]=$2; next }
+        {
+          label = ($1 in lbl) ? lbl[$1] : $1
+          n = split($4, p, "/"); base = (n > 0 ? p[n] : $4)
+          printf "%s %s · %s · %s\t%s\n", $2, label, $3, base, $5
+        }
+      ' <(printf "%s\n" "$wsmap") -
+  '';
+
+  # ピッカー本体: enter で `herdr agent focus <terminal_id>`(become で置換)。
+  herdrAgentPicker = pkgs.writeShellScript "herdr-agent-picker" ''
+    ${herdrAgentList} \
+      | fzf --reverse --delimiter='\t' --with-nth=1 --nth=1 --prompt 'agent> ' \
+          --header 'enter:focus' \
+          --bind 'enter:become(herdr agent focus {2})'
+  '';
 in
 {
   # herdr (AIエージェント向けターミナルワークスペース) の設定。
@@ -182,6 +222,14 @@ in
     type = "pane"
     command = "${herdrWorkspacePicker}"
     description = "Spaces picker (fzf, MRU)"
+
+    # フロート Agent ピッカー(fzf, 注目度順)。prefix+a で開き、検知中のエージェントを一覧 →
+    # enter でそのペインへ focus。対象は herdr が検知中のエージェントのみ(実装は先頭の let 参照)。
+    [[keys.command]]
+    key = "prefix+a"
+    type = "pane"
+    command = "${herdrAgentPicker}"
+    description = "Agents picker (fzf, attention order)"
 
     # vim-herdr-navigation: 直接の Ctrl+h/j/k/l をプラグインアクションに割当。
     # フォアグラウンドが Vim/Neovim なら Vim に転送し、そうでなければ herdr ペインを移動する。
