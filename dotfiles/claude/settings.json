@@ -299,6 +299,10 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq '(^|[;&|][[:space:]]*)(for|while|until|if|case)[[:space:]]' || printf '%s' \"$stripped\" | grep -Eq '(^|[;&|[:space:]])\\('; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"サブシェル( )や for/while/until/if/case の複合構文は権限判定が分解できず承認プロンプトになります。&& ; | と xargs による平坦なコマンドに書き換えてください(例: for f in a b; do cmd $f; done → printf \\\"%s\\\\n\\\" a b | xargs -n1 cmd)。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq '(^|[;&|][[:space:]]*)[A-Za-z_][A-Za-z0-9_]*=[^[:space:];&|]*[[:space:]]+[^[:space:]]'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"FOO=bar cmd 形式(envプレフィックス付きコマンド)は権限判定を通らず承認プロンプトになります。行を分けて代入する(VAR=value 改行 cmd)か、値を直接引数に書いてください。代入単体や VAR=v; cmd は問題ありません。\"}}'; fi"
           }
         ]
       }

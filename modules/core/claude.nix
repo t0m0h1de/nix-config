@@ -20,5 +20,15 @@
     else
       run cp "$base" "$target"
     fi
+
+    # マシンローカルの追加作業ディレクトリ(repo外・git追跡しない)を permissions.additionalDirectories に注入する。
+    # 絶対パスは環境依存(ユーザー/マシン/会社)なので base(コミット対象)には置かず、各マシンがこの外部
+    # ファイル(JSON配列)で定義する。.secrets と同じ発想。ファイルが無ければ何もしない。
+    #   例: printf '%s' '["/Users/you/src/github.com/foo-inc"]' > ~/.claude/additional-directories.json
+    localdirs="$HOME/.claude/additional-directories.json"
+    if [ -f "$localdirs" ]; then
+      ${pkgs.jq}/bin/jq --slurpfile d "$localdirs" '.permissions.additionalDirectories = $d[0]' "$target" > "$target.tmp"
+      run mv -f "$target.tmp" "$target"
+    fi
   '';
 }
