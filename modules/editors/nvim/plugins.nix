@@ -122,6 +122,13 @@
       enable = true;
       settings = {
         git.enable = true;
+        # 開いているファイルに追従してツリー上で現在ファイルをハイライトする(既定 false)。
+        # ctrl-o 等でバッファを切り替えてもフォーカス表示が更新されるようになる。
+        # update_root.enable=false: 追従はするが作業ディレクトリ(ルート)は勝手に変えない。
+        update_focused_file = {
+          enable = true;
+          update_root.enable = false;
+        };
         filters = {
           # 隠しファイル(ドットファイル)と gitignore 対象もデフォルトで表示する。
           # ツリー内で `H`(dotfiles) / `I`(gitignore) でトグルできる。
@@ -209,6 +216,25 @@
     };
 
     extraConfigLua = ''
+      -- nvim-tree の git 表示を staging/commit に追従させる。
+      -- nvim-tree の filesystem_watchers はワークツリーのファイル変更は拾うが、`git add`(index のみ
+      -- 変更)は拾わないため、gitsigns の git-dir 監視イベント(User GitSignsUpdate: staging/commit/
+      -- 外部 index 変更で発火)をフックしてツリーを reload する。GitSignsUpdate は編集中にも発火するので
+      -- タイマーでデバウンスし、ツリー表示中のみ reload する(reload は非同期で git を再取得する)。
+      local nvimtree_git_timer = (vim.uv or vim.loop).new_timer()
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "GitSignsUpdate",
+        callback = function()
+          nvimtree_git_timer:stop()
+          nvimtree_git_timer:start(250, 0, vim.schedule_wrap(function()
+            local ok, tree_api = pcall(require, "nvim-tree.api")
+            if ok and tree_api.tree.is_visible() then
+              tree_api.tree.reload()
+            end
+          end))
+        end,
+      })
+
       -- nvim-window-picker: ウィンドウ選択UIの初期化（nvim-tree と連携）。
       require("window-picker").setup({
         hint = "floating-big-letter",

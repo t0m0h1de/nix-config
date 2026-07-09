@@ -293,6 +293,24 @@
   markview のサブコマンドは commands.lua 実物を確認(`toggle`=現在バッファ / `Toggle`=全バッファ、`Start/Stop`=全体)。
   未検証: switch 後の実表示・キー動作。`:Glow` は glow.nvim 標準コマンド。
 
+### nvim-tree: フォーカス追従 + git ステージング表示のリアルタイム化 — 2026-07-09
+- 問題1: ファイルツリーの git ステージング状況がリアルタイム反映されない時がある。
+- 問題2: ctrl-o 等で別バッファへ移動してもツリー上の現在ファイルのフォーカス表示が追従しない。
+- 原因(実プラグイン確認):
+  - 問題2: nvim-tree `update_focused_file.enable` の既定が **false**(config.lua:168)。
+  - 問題1: `filesystem_watchers.enable` は既定 true でワークツリー変更は拾うが、`git add`(index のみ変更)は
+    ツリーの fs watcher に届かない。gitsigns は `.git` を監視し staging/commit/外部 index 変更で
+    `User GitSignsUpdate` を発火する(status.lua の autocmd_update)ことを確認。
+- 対応(`modules/editors/nvim/plugins.nix`):
+  - `settings.update_focused_file = { enable = true; update_root.enable = false; }`(追従するがルートは変えない)。
+  - extraConfigLua に autocmd 追加: `User GitSignsUpdate` を 250ms デバウンスで拾い、ツリー表示中のみ
+    `require("nvim-tree.api").tree.reload()`(API 実在を _meta で確認)。編集中の頻発を timer で抑制。
+- 残る制約: gitsigns 未アタッチ(=nvim で開いていない)ファイルを外部で stage した場合はイベントが飛ばないため、
+  そのファイル行は次のトリガ(別更新/手動 R)まで更新されない。開いているファイルの staging・commit・ブランチ変更は反映。
+- 検証: `eval`/実 `nix build activationPackage` 成功。生成 init.lua に
+  `update_focused_file = { enable = true, update_root = { enable = false } }` と GitSignsUpdate autocmd が入ることを確認。
+  未検証: switch 後の実挙動。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
