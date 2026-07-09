@@ -195,6 +195,19 @@
       enable = true;
     };
 
+    plugins.glow = {
+      # ターミナルの glow と同じレンダラで Markdown をフローティングウィンドウにプレビューする。
+      # glow バイナリは modules/core/packages.nix で導入済み(nixvim が dependencies.glow で参照)。
+      # :Glow で開閉(キーマップは keymaps.nix の <leader>mp)。
+      enable = true;
+    };
+
+    plugins.markview = {
+      # 編集中バッファ内で Markdown をライブ整形表示(見出し/コード塊/表/リンク等)。treesitter 利用。
+      # markdown 系 filetype で自動レンダリング。:Markview toggle でトグル(keymaps.nix の <leader>mt)。
+      enable = true;
+    };
+
     extraConfigLua = ''
       -- nvim-window-picker: ウィンドウ選択UIの初期化（nvim-tree と連携）。
       require("window-picker").setup({

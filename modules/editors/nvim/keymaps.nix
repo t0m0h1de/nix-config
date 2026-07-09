@@ -146,6 +146,20 @@
         action = "<cmd>DiffviewClose<cr>";
       }
       {
+        # glow.nvim: 現在の Markdown をフローティングでプレビュー(ターミナルの glow と同じ見た目)。
+        mode = "n";
+        key = "<leader>mp";
+        action = "<cmd>Glow<cr>";
+        options.desc = "Markdown preview (glow)";
+      }
+      {
+        # markview.nvim: バッファ内ライブレンダリングをトグル。
+        mode = "n";
+        key = "<leader>mt";
+        action = "<cmd>Markview toggle<cr>";
+        options.desc = "Toggle markview (inline render)";
+      }
+      {
         # Terminal buffer から素早く normal mode に戻る。
         mode = "t";
         key = "<Esc><Esc>";

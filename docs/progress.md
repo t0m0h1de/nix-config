@@ -271,6 +271,28 @@
   jq 整形(prio/icon/sort_by/join)は実データで出力確認。bash 実行検証は権限制約でレビューのみ。
 - キー: prefix+a は既存バインドと未衝突を確認。
 
+### herdr 0.7.3 追随: 保留(unstable 反映待ち) — 2026-07-09
+- 目的: nixpkgs の herdr が 0.7.1→0.7.3 になったので追随したい。
+- 調査結果: nixpkgs-unstable の最新(2026-07-05 時点の rev)でも **herdr は 0.7.1 のまま**。
+  0.7.3 は nixpkgs **master(commit cb6e5dce2f37c6a450a70b934d8e09488d2a03d7)には存在**(`nix eval` で 0.7.3 を確認)。
+  → 0.7.3 は master には入っているが Hydra ビルド待ちで unstable チャンネルにまだ降りていない状態。
+- 判断(ユーザー): master から pin せず **unstable への反映を待つ**。今回は変更なし(試行した `nix flake update nixpkgs`
+  は 0.7.1 のままで目的未達だったため flake.lock を revert 済み)。
+- 反映後の手順: `nix flake update nixpkgs` →
+  `nix eval --raw .#homeConfigurations.work.pkgs.herdr.version` が 0.7.3 になったのを確認 → switch。
+
+### nvim: Markdown プレビュー(glow.nvim + markview.nvim)追加 — 2026-07-09
+- 目的: ターミナルの `glow` と同様の簡易 Markdown プレビューを Neovim でも行いたい。
+- 両方導入(`modules/editors/nvim/plugins.nix`):
+  - `plugins.glow.enable`: glow.nvim。`glow` バイナリ(packages.nix 既存)を呼びフローティングでレンダー。`:Glow`。
+  - `plugins.markview.enable`: markview.nvim(v28.3.0)。バッファ内ライブ整形表示。md filetype で自動レンダー。
+- キーマップ(`modules/editors/nvim/keymaps.nix`):
+  - `<leader>mp` = `:Glow`(glow プレビュー)
+  - `<leader>mt` = `:Markview toggle`(現在バッファの整形表示トグル)
+- 確認: nixvim に `plugins.glow` / `plugins.markview` option が実在することを reference manpage で確認。`eval` 成功。
+  markview のサブコマンドは commands.lua 実物を確認(`toggle`=現在バッファ / `Toggle`=全バッファ、`Start/Stop`=全体)。
+  未検証: switch 後の実表示・キー動作。`:Glow` は glow.nvim 標準コマンド。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
