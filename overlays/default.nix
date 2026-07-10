@@ -1,7 +1,10 @@
-{ nix-zenn-cli }:
+{ nix-zenn-cli, hunk }:
 final: prev:
 {
   zenn-cli = nix-zenn-cli.packages.${final.stdenv.hostPlatform.system}.default;
+
+  # modem-dev/hunk のターミナル差分ビューア CLI(独自 flake の default パッケージ、バイナリ hunk)。
+  hunk = hunk.packages.${final.stdenv.hostPlatform.system}.default;
 
   terragrunt = final.buildGoModule rec {
     pname = "terragrunt";

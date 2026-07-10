@@ -343,6 +343,18 @@
     diffthis(split diff)を採用。
 - 検証: `eval`/実ビルド成功、生成 init.lua に preview_hunk と diffthis HEAD の両 keymap を確認。
 
+### CLI: modem-dev/hunk(ターミナル差分ビューア)を flake input で導入 — 2026-07-10
+- ※ julienvincent/hunk.nvim(nvim プラグイン)とは別物。TypeScript/bun 製の CLI 差分ビューア(バイナリ `hunk`、
+  npm 名 `hunkdiff`)。git/jj/sapling 対応、agent 生成 changeset のレビュー向け。
+- 導入方法(ユーザー選択): Nix flake input(zenn-cli と同じ流儀)。
+  - `flake.nix`: input `hunk = { url = "github:modem-dev/hunk"; inputs.nixpkgs.follows = "nixpkgs"; }` 追加、
+    outputs 引数に `hunk`、`import ./overlays { inherit nix-zenn-cli hunk; }`。
+  - `overlays/default.nix`: 引数 `{ nix-zenn-cli, hunk }`、`hunk = hunk.packages.${system}.default`。
+  - `modules/core/packages.nix`: `home.packages` に `hunk` 追加。
+- ビルド: bun2nix ビルド。`nix flake lock` で hunk/bun2nix 等を lock(`hunk/nixpkgs follows nixpkgs`)。
+  実ビルド成功(`hunkdiff-0.17.0`)、`bin/hunk --version` → 0.17.0 を確認。全体 eval 成功。
+- 命名衝突なし(hunk.nvim はプラグインで CLI 無し)。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
