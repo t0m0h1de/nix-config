@@ -311,6 +311,38 @@
   `update_focused_file = { enable = true, update_root = { enable = false } }` と GitSignsUpdate autocmd が入ることを確認。
   未検証: switch 後の実挙動。
 
+### nvim: hunk.nvim(差分分割エディタ)導入 — 2026-07-10
+- `plugins.hunk.enable`(nixvim, `modules/editors/nvim/plugins.nix`)。hunk.nvim v1.10.0(julienvincent/hunk.nvim)。
+  `:DiffEditor <left> <right> [output]` で left/right ディレクトリ差分を file/hunk/line 単位に選択し部分 diff を作る。
+  主に jujutsu(jj)/git の diff-editor・difftool として nvim を起動して使う想定(単体では :DiffEditor 待ち)。
+- 必須依存 nui.nvim は nixvim の plugins.hunk が自動追加しないため `extraPlugins` に `nui-nvim` を明示追加。
+  任意依存の web-devicons は plugins.web-devicons で導入済み。setup は既定(`require("hunk").setup({})`)。
+- 検証: nixvim に `plugins.hunk`(settings 有)・`vimPlugins.hunk-nvim`/`nui-nvim` 実在を確認。`eval`/実ビルド成功、
+  生成 init.lua に `require("hunk").setup({})` を確認。
+- git difftool 連携(ユーザー選択: git)を `modules/core/git.nix` の `programs.git.settings` に追加:
+  - `[difftool "hunk"] cmd = nvim -c "DiffEditor $LOCAL $REMOTE"`(dir-diff が渡す $LOCAL/$REMOTE の2ディレクトリを
+    :DiffEditor に渡す。output 省略=right 側)、`[difftool] prompt = false`、alias `dh = difftool --dir-diff --tool=hunk`。
+  - 使い方: `git dh [<commit>] [-- <path>...]`(例 `git dh HEAD`)。
+  - 不具合修正: 初版 `git dh` で全ファイルが新規/差分無しに化けた。原因は dir-diff が working tree 側(right)を
+    **symlink** で作り、hunk.nvim が symlink を差分対象にしない実装(`fs.scan_dir` が link 判定 → `diff.diff_file` が
+    `left.symlink or right.symlink` で空 return)だったため。`difftool.symlinks=false`(config)は本環境で効かず、
+    **`--no-symlinks` フラグ**で実ファイルコピーになることを検証(`ls -l` で right が regular file 化を確認)→ alias に固定。
+  - 注意: dir-diff は accept した編集結果を working tree に書き戻し得る(hunk はステージング機構ではなく差分ビューア/エディタ)。
+  - 検証: 生成 git config に `[difftool "hunk"] cmd = "nvim -c \"DiffEditor $LOCAL $REMOTE\""` と alias を確認(eval 成功)。
+  - README には jj 連携のみ記載(git は非公式)。jj を使い始めたら `ui.diff-editor = ["nvim","-c","DiffEditor $left $right $output"]`。
+
+### nvim: gitsigns preview が出ない件の診断 + HEAD 基準キー追加 — 2026-07-10
+- 症状: `<leader>hp`(Gitsigns preview_hunk)が何も出ない。
+- 診断(確証): 原因はプラグインでなく「変更が全部ステージ済み」。gitsigns は既定で working tree vs index を
+  比較するため、full staged だと未ステージ hunk が 0 → preview 対象なし。実測: staged のみ→hunks=0、
+  同ファイルに unstaged 変更を足す→hunks=1(ヘッドレス `gitsigns.get_hunks` で確認)。自動ステージ hook は無し
+  (claude の hook は PreToolUse ガードのみ)= 手動 `git add` 運用による。
+- 対応(`modules/editors/nvim/keymaps.nix`): 既定(index 基準)の `<leader>hp` は維持し、HEAD 基準を別キーに追加。
+  - `<leader>hd` = `:Gitsigns diffthis HEAD`(そのファイルの HEAD との差分ビュー=ステージ済みも含む全変更)。
+  - preview_hunk は base=index 固定でフロート、HEAD 基準の hunk フロートは gitsigns 仕様上クリーンに作れないため
+    diffthis(split diff)を採用。
+- 検証: `eval`/実ビルド成功、生成 init.lua に preview_hunk と diffthis HEAD の両 keymap を確認。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.

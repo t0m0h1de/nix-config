@@ -103,10 +103,19 @@
         action = "<cmd>lua vim.diagnostic.jump({ count = -1 })<cr>";
       }
       {
-        # gitsigns: 現在hunkの差分プレビュー。
+        # gitsigns: 現在hunkの差分プレビュー(base=index のため「未ステージ」の変更のみ)。
+        # 変更を git add 済みだと未ステージ hunk が無く何も出ない → HEAD 基準は下の <leader>hd。
         mode = "n";
         key = "<leader>hp";
         action = "<cmd>Gitsigns preview_hunk<cr>";
+      }
+      {
+        # gitsigns: 現在ファイルを HEAD と比較する差分ビューを開く(ステージ済みも含め
+        # 最後のコミットからの全変更)。preview_hunk が index 基準=未ステージのみなのを補う。
+        mode = "n";
+        key = "<leader>hd";
+        action = "<cmd>Gitsigns diffthis HEAD<cr>";
+        options.desc = "Diff this file vs HEAD (staged+unstaged)";
       }
       {
         # カーソル位置の診断詳細をフロート表示。

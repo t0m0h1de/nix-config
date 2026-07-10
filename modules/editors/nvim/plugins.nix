@@ -3,6 +3,9 @@
   programs.nixvim = {
     extraPlugins = with pkgs.vimPlugins; [
       nvim-window-picker
+      # hunk.nvim の必須依存(nixvim の plugins.hunk は自動で入れないため明示追加)。
+      # 任意依存の web-devicons は plugins.web-devicons で導入済み。
+      nui-nvim
     ];
 
     plugins.treesitter = {
@@ -212,6 +215,14 @@
     plugins.markview = {
       # 編集中バッファ内で Markdown をライブ整形表示(見出し/コード塊/表/リンク等)。treesitter 利用。
       # markdown 系 filetype で自動レンダリング。:Markview toggle でトグル(keymaps.nix の <leader>mt)。
+      enable = true;
+    };
+
+    plugins.hunk = {
+      # 差分(hunk)分割エディタ。:DiffEditor で left/right ディレクトリの差分を
+      # ファイル/hunk/行単位に選択して部分 diff を作れる。主に jujutsu(jj)や git の
+      # diff-editor / difftool として nvim を起動して使う想定(単体では :DiffEditor 待ち)。
+      # 依存 nui.nvim は上の extraPlugins で追加済み。setup は既定のまま。
       enable = true;
     };
 
