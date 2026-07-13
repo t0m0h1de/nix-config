@@ -188,8 +188,9 @@ in
     new_tab = "prefix+c"                       # tmux: prefix+c (new-window)
     rename_tab = "prefix+comma"                # tmux: prefix+, (rename-window)
     close_tab = "prefix+ampersand"             # tmux: prefix+& (kill-window)
-    next_tab = ["prefix+n", "prefix+j"]        # tmux: prefix+n (+ 現行 tmux.conf の独自 prefix+j)
-    previous_tab = ["prefix+p", "prefix+k"]    # tmux: prefix+p (+ 独自 prefix+k)
+    # タブ移動: prefix+n/p(tmux既定)+ prefix+j/k(現行 tmux.conf 独自)+ prefix+l/h(vim の左右=次/前)。
+    next_tab = ["prefix+n", "prefix+j", "prefix+l"]      # 次タブ: prefix+n / prefix+j / prefix+l
+    previous_tab = ["prefix+p", "prefix+k", "prefix+h"]  # 前タブ: prefix+p / prefix+k / prefix+h
     switch_tab = "prefix+1..9"                 # tmux: prefix+0..9 (select-window)
 
     # --- ペイン ---

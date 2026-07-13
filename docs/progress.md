@@ -355,6 +355,13 @@
   実ビルド成功(`hunkdiff-0.17.0`)、`bin/hunk --version` → 0.17.0 を確認。全体 eval 成功。
 - 命名衝突なし(hunk.nvim はプラグインで CLI 無し)。
 
+### herdr: タブ移動に prefix+h/l を追加 — 2026-07-13
+- 要望: prefix+h/l をタブ移動に追加(vim の左右=前/次)。
+- `modules/shell/herdr.nix`: `next_tab` に `prefix+l`、`previous_tab` に `prefix+h` を追加。
+  結果 next_tab=[n,j,l] / previous_tab=[p,k,h]。prefix+h/l は未バインドだったので衝突なし
+  (ペインフォーカスは prefix+方向キー、ctrl+hjkl は vim-herdr-navigation のまま)。
+- 検証: parse・生成 config.toml を tomllib で確認(next_tab/previous_tab の配列反映)。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
