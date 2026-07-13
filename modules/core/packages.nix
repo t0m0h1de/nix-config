@@ -22,6 +22,7 @@
     bottom
     diffnav
     hunk
+    md2pdf
 
     nil
     nixpkgs-fmt

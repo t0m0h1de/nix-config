@@ -388,6 +388,21 @@
 - 衝突確認: scala-cli の bin は `scala-cli` のみで、既存(sbt/coursier/jdk17/metals)と重複なし → home.packages collision 無し。
   キャッシュ済み(cache.nixos.org から substitute、ローカルビルド不要)。eval 成功。
 
+### dev: md2pdf(Markdown→PDF)を overlay 経由で導入 — 2026-07-13
+- nixpkgs の `md2pdf`(jmaupetit/md2pdf 3.1.1, Python/weasyprint 系)。`md2pdf -i in.md -o out.pdf`。
+- 問題: 依存 weasyprint 69.0 が aarch64-darwin で描画テスト `tests/draw/test_text.py::test_unicode_range` に
+  失敗しビルド不能(darwin はキャッシュ無しでソースビルド→checkPhase で落ちる)。
+- 対応(`overlays/default.nix`): weasyprint の test だけ無効化した python セットで md2pdf を再ビルド。
+  `md2pdf = prev.md2pdf.override { python3Packages = final.python3Packages.overrideScope (_: pp: { weasyprint = pp.weasyprint.overridePythonAttrs (_: { doCheck = false; }); }); };`
+  `modules/core/packages.nix` の home.packages に `md2pdf` 追加。
+- 検証: overlay 経由でビルド成功、実変換で有効な PDF 生成を確認(`/tmp/*.md` → PDF v1.7, 3867 bytes)。
+  実行時に `Fontconfig error` が出て、**日本語(CJK)が豆腐**になる問題があった。
+- 日本語対応(追加パッチ): weasyprint は fontconfig でフォント解決するが、既定では fontconfig 設定/CJK フォントが
+  無いため日本語が出ない。`makeFontsConf { fontDirectories = [ noto-fonts-cjk-sans ]; }` で fontconfig を生成し、
+  `symlinkJoin` + `wrapProgram --set FONTCONFIG_FILE` で md2pdf をラップ(overlay 内で weasyprint パッチと合成)。
+  検証: 日本語 md → PDF 生成で Fontconfig エラー消失・サイズ 3.8KB→32.6KB(CJK グリフ埋め込み)を確認。
+  (テキスト抽出は CJK サブセットの ToUnicode 欠如で空になりがちなので、エラー消失＋サイズ増で判定)。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.

@@ -147,4 +147,29 @@ final: prev:
         platforms = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
       };
     };
+
+  # md2pdf (jmaupetit/md2pdf, Markdown→PDF)。2点パッチ:
+  #  1) 依存 weasyprint が aarch64-darwin で描画テスト(tests/draw/test_text.py::test_unicode_range)に
+  #     失敗しビルド不能なため、weasyprint の test を無効化して通す。
+  #  2) weasyprint は fontconfig でフォント解決するが、既定では fontconfig 設定/CJK フォントが無く
+  #     日本語が豆腐になる。Noto Sans CJK を含む fontconfig を生成し FONTCONFIG_FILE で渡して日本語対応。
+  md2pdf =
+    let
+      patched = prev.md2pdf.override {
+        python3Packages = final.python3Packages.overrideScope (_: pyprev: {
+          weasyprint = pyprev.weasyprint.overridePythonAttrs (_: { doCheck = false; });
+        });
+      };
+      fontsConf = final.makeFontsConf {
+        fontDirectories = [ final.noto-fonts-cjk-sans ];
+      };
+    in
+    final.symlinkJoin {
+      inherit (patched) name;
+      paths = [ patched ];
+      nativeBuildInputs = [ final.makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/md2pdf --set FONTCONFIG_FILE ${fontsConf}
+      '';
+    };
 }
