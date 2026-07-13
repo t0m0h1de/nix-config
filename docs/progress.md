@@ -362,6 +362,20 @@
   (ペインフォーカスは prefix+方向キー、ctrl+hjkl は vim-herdr-navigation のまま)。
 - 検証: parse・生成 config.toml を tomllib で確認(next_tab/previous_tab の配列反映)。
 
+### nixpkgs 更新 → herdr 0.7.3 + hunk の x86_64-darwin 対応 — 2026-07-13
+- `nix flake update nixpkgs`(→ 2026-07-12 rev 3b32825)で herdr が 0.7.1 → **0.7.3** に(2026-07-09 保留分を解消)。
+- 副作用: nixpkgs unstable が **26.11 で x86_64-darwin サポートを削除**。`hunk` 入力(bun2nix ビルドは flake-parts で
+  全 system を評価する)が x86_64-darwin を評価しようとして eval エラー(work/linux/darwin 全滅)。
+  ※ 当リポジトリ自体は x86_64-darwin を対象にしていない(profiles は x86_64-linux/aarch64-darwin)。エラー源は hunk 側。
+- 対応(`flake.nix`): メイン nixpkgs は最新のまま、**hunk のビルド用 nixpkgs だけ**を x86_64-darwin をまだ含む
+  rev(c4013e50, 2026-07-05 = 前回 hunk がビルドできた版)に固定。`nixpkgs-hunk` 入力を追加し
+  `hunk.inputs.nixpkgs.follows = "nixpkgs-hunk"`(bun2nix は hunk の nixpkgs を follows するので連鎖して解決)。
+  将来 upstream が systems から x86_64-darwin を外したら follows を "nixpkgs" に戻してよい。
+- 検証: `nix flake lock` で `nixpkgs-hunk` 追加・`hunk/nixpkgs → nixpkgs-hunk` 確認。
+  herdr=0.7.3、hunk=hunkdiff-0.17.0、work/linux/darwin 3profile とも activation eval 成功
+  (残る "26.05...x86_64-darwin" は非推奨警告でエラーではない)。
+- 未実施: switch 実行(nixpkgs bump で広範なリビルドあり)。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
