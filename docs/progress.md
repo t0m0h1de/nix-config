@@ -374,6 +374,10 @@
 - 検証: `nix flake lock` で `nixpkgs-hunk` 追加・`hunk/nixpkgs → nixpkgs-hunk` 確認。
   herdr=0.7.3、hunk=hunkdiff-0.17.0、work/linux/darwin 3profile とも activation eval 成功
   (残る "26.05...x86_64-darwin" は非推奨警告でエラーではない)。
+- switch エラー: nixvim の doc(manpage)ビルドが `pandoc has been compiled without Lua support` で失敗。
+  原因は nixpkgs だけ更新し nixvim/home-manager を古い rev のままにしたことで、新 nixpkgs の pandoc と不整合。
+  対応: `nix flake update nixvim home-manager`(両者 2026-07-12 rev へ)。nixvim パッケージの実ビルド成功で解消を確認
+  (`config.programs.nixvim.build.package` → nixvim.drv がビルド完了)。
 - 未実施: switch 実行(nixpkgs bump で広範なリビルドあり)。
 
 ## Next
