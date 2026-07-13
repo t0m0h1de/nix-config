@@ -380,6 +380,14 @@
   (`config.programs.nixvim.build.package` → nixvim.drv がビルド完了)。
 - 未実施: switch 実行(nixpkgs bump で広範なリビルドあり)。
 
+### dev: scala-cli 追加 — 2026-07-13
+- `modules/dev/langs.nix` の home.packages に `scala-cli`(1.15.0)追加。単発 Scala スクリプト/worksheet(.sc)/
+  scala-cli ビルドの実行用。sbt プロジェクトには必須でないが、Metals の worksheet/標準ファイル処理でも使われる。
+- 補足: 「legacyPackages.<system>.scala-cli」の legacy は非推奨の意味ではなく、flake が nixpkgs 全体を公開する
+  出力名(従来の pkgs 集合)というだけ。scala-cli 1.15.0 は現行版。
+- 衝突確認: scala-cli の bin は `scala-cli` のみで、既存(sbt/coursier/jdk17/metals)と重複なし → home.packages collision 無し。
+  キャッシュ済み(cache.nixos.org から substitute、ローカルビルド不要)。eval 成功。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.

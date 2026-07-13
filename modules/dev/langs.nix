@@ -7,6 +7,10 @@
     jdk17
     coursier
     sbt
+    # scala-cli: 単発 Scala スクリプト / worksheet(.sc)/ scala-cli ビルドの実行用。
+    # sbt プロジェクトには必須ではないが、Metals の worksheet/標準ファイル処理でも使われる。
+    # bin は scala-cli のみで既存(sbt/coursier/jdk17/metals)と衝突しない。
+    scala-cli
     cargo
     rustc
     bc
