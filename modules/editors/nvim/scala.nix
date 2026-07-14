@@ -90,10 +90,18 @@
             return
           end
 
-          -- Scala プロジェクト外のファイルでは Metals を起動しない。
+          -- Scala プロジェクト外のファイルでは原則 Metals を起動しない。
+          -- ただし .sc(worksheet / scala-cli スクリプト)は単体でも LSP を動かしたいので、
+          -- プロジェクトが見つからなければファイルのディレクトリをルートに standalone 起動する
+          -- (単体 Scala ファイルの補完/診断は Metals が scala-cli 経由で処理する。scala-cli 導入済み)。
+          -- 既定の Scala バージョンで動く。特定版が要る worksheet は先頭に `//> using scala "2.13.x"` 等を書く。
           local root_dir = find_scala_project_root(bufname)
           if root_dir == nil then
-            return
+            if bufname:match("%.sc$") then
+              root_dir = vim.fs.dirname(bufname)
+            else
+              return
+            end
           end
 
           -- バッファごとに root_dir を固定した config を渡して attach する。

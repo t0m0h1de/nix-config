@@ -403,6 +403,17 @@
   検証: 日本語 md → PDF 生成で Fontconfig エラー消失・サイズ 3.8KB→32.6KB(CJK グリフ埋め込み)を確認。
   (テキスト抽出は CJK サブセットの ToUnicode 欠如で空になりがちなので、エラー消失＋サイズ増で判定)。
 
+### nvim: .sc(Scala worksheet/スクリプト)で Metals を standalone 起動 — 2026-07-14
+- 要望: `xxx.sc` を開いたとき、適当なプロファイルで Scala LSP(Metals)が動くように。
+- 現状確認: `.sc` は nvim が既に `scala` filetype として検出(filetype 追加不要)。不足は「プロジェクトマーカー
+  (build.sbt/.scala-build/project)が無い単体 `.sc` では `find_scala_project_root` が nil → Metals 未起動」。
+- 対応(`modules/editors/nvim/scala.nix`): FileType コールバックで、root が見つからず かつ bufname が `%.sc$` なら
+  ファイルのディレクトリを root_dir にして `initialize_or_attach`(standalone)。`.scala/.sbt/.java` は従来通り
+  プロジェクト外では起動しない。単体 Scala は Metals が scala-cli 経由で処理(scala-cli 導入済み)。
+- 検証: eval・nixvim 実ビルド成功、生成 init.lua に `bufname:match("%.sc$") → root_dir = vim.fs.dirname(bufname)` を確認。
+  実起動(Metals standalone の補完/診断)は switch 後に確認。初回は Metals/scala-cli の準備でやや時間がかかる。
+  特定 Scala 版が必要な worksheet は先頭に `//> using scala "2.13.x"` 等を書けばよい(既定は Metals/scala-cli 標準版)。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
