@@ -136,7 +136,6 @@
       "Read(**)",
       "Read(/tmp/**)",
       "Edit(/tmp/**)",
-      "Write(/tmp/**)",
       "Edit(**/src/**)",
       "Edit(**/test/**)",
       "Edit(**/tests/**)",
@@ -179,8 +178,8 @@
       "Read(**/*.pem)",
       "Read(**/*_secret*)",
       "Read(**/*credentials*)",
-      "Write(.env*)",
-      "Write(**/secrets/**)",
+      "Edit(.env*)",
+      "Edit(**/secrets/**)",
 
       "Bash(wget:*)",
       "Bash(ssh:*)",
