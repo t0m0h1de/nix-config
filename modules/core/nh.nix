@@ -8,7 +8,7 @@
     # NH_FLAKE 環境変数に本リポジトリのチェックアウト先(絶対パス)を設定する。
     # これにより `nh home switch -c <profile>`(例: -c work)を flake パス省略で実行できる。
     # 絶対パスはマシン依存なので、ghq 配置(~/src/<host>/<owner>/<repo>)前提で home ディレクトリ基準に組み立てる。
-    flake = "${config.home.homeDirectory}/src/github-private.com/t0m0h1de/nix-config";
+    flake = "${config.home.homeDirectory}/src/github.com/t0m0h1de/nix-config";
 
     # 古い世代を定期 GC する。Linux は systemd user timer、macOS は launchd agent が自動選択される。
     clean = {
