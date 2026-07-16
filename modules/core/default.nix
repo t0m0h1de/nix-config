@@ -6,5 +6,6 @@
     ./git.nix
     ./ssh.nix
     ./claude.nix
+    ./nh.nix
   ];
 }

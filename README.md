@@ -120,6 +120,18 @@ home-manager switch --flake .#work    # macOS（業務用・このマシン）
 home-manager switch --flake .#darwin  # macOS（個人用）
 ```
 
+> 💡 `nh`（Nix CLI ヘルパー、`modules/core/nh.nix` で導入）でも同じことができる。
+> ビルド進捗の TUI 表示と、適用前後で変わるパッケージの差分表示が付く。
+> `NH_FLAKE` に本リポジトリのパスが設定済みなので `--flake` は省略でき、プロファイルは `-c` で指定する。
+>
+> ```bash
+> nh home switch -c linux    # Linux/WSL
+> nh home switch -c work     # macOS（業務用・このマシン）
+> nh home switch -c darwin   # macOS（個人用）
+> ```
+>
+> ※ `nh` 自体はこのリポジトリで導入されるため、初回だけは上記 `home-manager switch`（または `nix run`）が必要。
+
 ### パッケージの更新
 
 `flake.lock` を更新して、最新のパッケージを取得する。
@@ -130,6 +142,23 @@ home-manager switch --flake .#linux   # Linux/WSL
 home-manager switch --flake .#work    # macOS（業務用・このマシン）
 home-manager switch --flake .#darwin  # macOS（個人用）
 ```
+
+> 💡 適用側は `nh home switch -c <profile>` に置き換えてもよい（`nix flake update` はそのまま）。
+
+### 世代の掃除（GC）
+
+古い世代を削除してディスクを空ける。`nh` を導入しているため、保持ポリシー付きで掃除できる。
+
+```bash
+# 5世代 or 直近7日を残して掃除（対話で確認あり）
+nh clean all --keep 5 --keep-since 7d
+
+# ユーザープロファイルのみ対象
+nh clean user
+```
+
+> ℹ️ 定期 GC は `programs.nh.clean` で自動化済み（週1、`--keep 5 --keep-since 7d`）。
+> Linux は systemd user timer、macOS は launchd agent で実行される。上記は手動で追加実行したいとき用。
 
 ### よく使う Nix コマンド
 
@@ -142,6 +171,8 @@ nix search nixpkgs ripgrep
 # 正規表現で絞り込み
 nix search nixpkgs 'python3[0-9]+Packages\.wheel$'
 ```
+
+> 💡 `nh search ripgrep` でも検索できる（結果がキャッシュされ 2 回目以降が速い）。
 
 #### パッケージ情報を確認する
 

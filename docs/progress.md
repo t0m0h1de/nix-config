@@ -414,6 +414,32 @@
   実起動(Metals standalone の補完/診断)は switch 後に確認。初回は Metals/scala-cli の準備でやや時間がかかる。
   特定 Scala 版が必要な worksheet は先頭に `//> using scala "2.13.x"` 等を書けばよい(既定は Metals/scala-cli 標準版)。
 
+### claude: settings.json の Write ルールを Edit へ移行 — 2026-07-16
+- 症状: Claude 起動時に警告 3件。`Write(path)` 形式の permission ルールはファイル権限チェックで無視され、
+  `Edit(path)` ルールのみが全ファイル編集ツール(Write 含む)に適用されるという Claude Code の仕様。
+- 対応(Nix 管理元 `dotfiles/claude/settings.json`): allow の `Write(/tmp/**)` を削除(同義の `Edit(/tmp/**)` が既存)、
+  deny の `Write(.env*)`→`Edit(.env*)`、`Write(**/secrets/**)`→`Edit(**/secrets/**)` に置換。
+  ※ 反映元は `~/.claude/settings.json` 直編集ではなく `modules/core/claude.nix` の activation マージ経由。
+- 反映: `home-manager switch` 後に Claude 再起動で警告が消える。
+
+### core: nh(Nix CLI ヘルパー)を programs.nh で導入 — 2026-07-16
+- nh 4.4.1(nixpkgs 収録、overlay/flake input 不要)。`nh home switch` の TUI+差分表示、`nh clean` の GC、`nh search`。
+- 方式(ユーザー選択): `programs.nh` HM モジュール(`modules/core/nh.nix` 新規、`core/default.nix` に import)。
+  home.packages に足すだけの方式では自動 GC が付けられない(systemd/launchd を手書きになる)ため、clean 有効化に伴いモジュール採用。
+- 設定: `flake = "${config.home.homeDirectory}/src/github-private.com/t0m0h1de/nix-config"`(NH_FLAKE。ghq 配置前提の絶対パス)、
+  `clean = { enable = true; dates = "weekly"; extraArgs = "--keep 5 --keep-since 7d"; }`。
+- モジュール実装確認(`home-manager/modules/programs/nh.nix`): clean は Linux=systemd user timer / macOS=launchd agent を自動選択。
+  → メインの mac(work/aarch64-darwin)でも launchd で自動 GC が動く。
+- 検証: `nixpkgs-fmt`(整形なし)、work/linux/darwin 3profile とも `nix eval activationPackage.drvPath` 成功。
+  生成物確認: work の `NH_FLAKE` が repo 絶対パス、work launchd `nh-clean` の ProgramArguments、
+  linux systemd `nh-clean` ExecStart がいずれも `nh clean user --keep 5 --keep-since 7d` を含むことを確認。
+  新規 `nh.nix` は `git add -N` しないと flake から未追跡で見えず eval 失敗する点に注意(intent-to-add 済み)。
+- 未実施: switch 実行後の `nh --version` / `nh home switch -c work` の実挙動確認。
+- README 反映: home-manager コマンドの操作は残しつつ、各所に nh の代替を併記。
+  「設定の変更」に `nh home switch -c <profile>`(NH_FLAKE 設定済みで --flake 省略可、初回のみ home-manager 必要)、
+  「パッケージの更新」に同置換メモ、新規「世代の掃除(GC)」節(`nh clean all` + 自動 GC の説明)、
+  「パッケージを探す」に `nh search` を追記。
+
 ## Next
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
