@@ -90,44 +90,80 @@ let
           --bind 'enter:become(${herdrWorkspaceFocus} {2})'
   '';
 
-  # --- フロート Agent ピッカー (fzf) ---
-  # prefix+a で fzf を開き、herdr が検知中のエージェントを注目度順(blocked→working→unknown→idle)で
-  # 一覧 → enter でそのエージェントのペインへ focus。Spaces ピッカーと違い MRU は使わず attention 順。
-  # ※ 対象は「herdr が現在検知しているエージェント」(`herdr agent list`)のみ。workspace list と違い
-  #   全ペインではなく検知済みエージェントに限られる(サーバ再起動直後などは検知されるまで出ない)。
-  #
-  # 一覧生成: workspace_id→label を引くために workspace list も取得し、
-  # 「<icon> <label> · <agent> · <cwd basename>\t<terminal_id>」を出力。現在フォーカス中は除外。
+  # --- フロート Agent ピッカー (fzf, workspace MRU 順) ---
+  # prefix+a で popup に fzf を開き、herdr が検知中のエージェントを workspace MRU 順(=最近フォーカス
+  # した workspace のエージェントから)で一覧 → enter でそのエージェントのペインへ focus。
+  # Spaces ピッカーと同じ MRU ファイルを共有し、focus 時にその workspace を MRU 先頭へ積む。
+  # ※1 対象は「herdr が現在検知しているエージェント」(`herdr agent list`)のみ。workspace list と違い
+  #     全ペインではなく検知済みエージェントに限られる(サーバ再起動直後などは検知されるまで出ない)。
+  # ※2 「今いるエージェント」の除外は .focused では不可。popup を開くと focus が picker 側へ移り、
+  #     直前のエージェントの .focused が false になって一覧に残ってしまう(しかも blocked/working だと
+  #     従来の priority ソートで先頭に来て邪魔)。popup へ渡る HERDR_ACTIVE_PANE_ID(開く直前に
+  #     アクティブだったペイン)と .pane_id を突き合わせて除外する(未設定時のみ .focused で近似)。
   herdrAgentList = pkgs.writeShellScript "herdr-agent-list" ''
+    active="''${HERDR_ACTIVE_PANE_ID:-}"
+    mru=${mruFile}
+    touch "$mru" 2>/dev/null || true
+
+    # workspace_id -> label
     wsmap=$(herdr workspace list | jq -r '.result.workspaces[] | [.workspace_id, .label] | @tsv')
 
-    herdr agent list | jq -r '
-      def prio: if   .agent_status=="blocked" then 0
-                elif .agent_status=="working" then 1
-                elif .agent_status=="unknown" then 2
-                else 3 end;
+    # 検知中エージェント → <workspace_id>\t<icon>\t<agent>\t<cwd>\t<terminal_id>。
+    # 今アクティブなペイン(HERDR_ACTIVE_PANE_ID。未設定時は .focused で近似)は除外。
+    agents=$(herdr agent list | jq -r --arg active "$active" '
       def icon: if   .agent_status=="blocked" then "🔴"
                 elif .agent_status=="working" then "🟡"
                 elif .agent_status=="unknown" then "⚪"
                 else "🟢" end;
-      [ .result.agents[] | select(.focused|not) ] | sort_by(prio) | .[]
-      | [ .workspace_id, icon, (.agent // ""), (.foreground_cwd // .cwd // ""), .terminal_id ] | @tsv' \
-    | awk -F"\t" '
-        NR==FNR { lbl[$1]=$2; next }
-        {
-          label = ($1 in lbl) ? lbl[$1] : $1
-          n = split($4, p, "/"); base = (n > 0 ? p[n] : $4)
-          printf "%s %s · %s · %s\t%s\n", $2, label, $3, base, $5
-        }
-      ' <(printf "%s\n" "$wsmap") -
+      .result.agents[]
+      | select( if $active != "" then (.pane_id != $active) else (.focused|not) end )
+      | [ .workspace_id, icon, (.agent // ""), (.foreground_cwd // .cwd // ""), .terminal_id ] | @tsv')
+
+    [ -n "$agents" ] || exit 0
+
+    # agents に含まれる workspace_id を「MRU ファイル順(現存のみ) → 未記録は出現順」で整列。
+    wsorder=$(awk -F"\t" '
+      NR==FNR { if (!($1 in live)) { live[$1]=1; order[++n]=$1 }; next }
+      ($0 in live) && !seen[$0]++ { print }
+      END { for (i=1;i<=n;i++) if (!seen[order[i]]++) print order[i] }
+    ' <(printf "%s\n" "$agents") "$mru")
+
+    # workspace MRU 順に、その workspace のエージェント行を出現順で出力。
+    # fzf 行: 「<icon> <label> · <agent> · <cwd basename>\t<terminal_id>\t<workspace_id>」
+    printf "%s\n" "$wsorder" | while IFS= read -r ws; do
+      [ -n "$ws" ] || continue
+      label=$(printf "%s\n" "$wsmap" | awk -F"\t" -v w="$ws" '$1==w{print $2; exit}')
+      [ -n "$label" ] || label="$ws"
+      printf "%s\n" "$agents" | awk -F"\t" -v w="$ws" -v label="$label" '
+        $1==w {
+          n=split($4,p,"/"); base=(n>0?p[n]:$4)
+          printf "%s %s · %s · %s\t%s\t%s\n", $2, label, $3, base, $5, $1
+        }'
+    done
   '';
 
-  # ピッカー本体: enter で `herdr agent focus <terminal_id>`(become で置換)。
+  # 選択したエージェントへ focus し、あわせてその workspace を MRU 先頭へ積む(Spaces ピッカーと
+  # 共有。次回の並びに反映)。become で fzf を置き換えて実行({1}=terminal_id, {2}=workspace_id)。
+  herdrAgentFocus = pkgs.writeShellScript "herdr-agent-focus" ''
+    term="''${1:-}"
+    ws="''${2:-}"
+    [ -n "$term" ] || exit 0
+    if [ -n "$ws" ]; then
+      mru=${mruFile}
+      mkdir -p "$(dirname "$mru")"
+      touch "$mru"
+      { printf "%s\n" "$ws"; grep -vxF "$ws" "$mru" 2>/dev/null; } > "$mru.tmp"
+      mv "$mru.tmp" "$mru"
+    fi
+    herdr agent focus "$term" >/dev/null 2>&1
+  '';
+
+  # ピッカー本体: enter で focus スクリプトへ置換({2}=terminal_id, {3}=workspace_id)。
   herdrAgentPicker = pkgs.writeShellScript "herdr-agent-picker" ''
     ${herdrAgentList} \
       | fzf --reverse --delimiter='\t' --with-nth=1 --nth=1 --prompt 'agent> ' \
           --header 'enter:focus' \
-          --bind 'enter:become(herdr agent focus {2})'
+          --bind 'enter:become(${herdrAgentFocus} {2} {3})'
   '';
 in
 {
