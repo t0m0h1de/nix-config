@@ -4,6 +4,7 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- Switched the two herdr fzf pickers in `modules/shell/herdr.nix` (`prefix+s` Spaces / `prefix+a` Agents) from `type="pane"` to `type="popup"` (herdr 0.7.4+). Real session-modal floating terminal that doesn't reflow the tab layout; added `width="70%" height="70%"`. Both pickers don't use `HERDR_PANE_ID`, so no bridge changes needed. `work` profile evaluates.
 - Guarded the Nix daemon profile source in `dotfiles/zshrc`: マルチユーザ(daemon)の `/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` を存在チェック付きで優先し、無ければ `~/.nix-profile/etc/profile.d/nix.sh` に `elif` フォールバック。無条件 source を避け、他OS/インストール形態でのシェル起動エラーを防止。
 - Fixed Neovim deprecation warnings (v0.12): replaced `vim.diagnostic.goto_next/goto_prev` keymaps with `vim.diagnostic.jump({ count = ±1 })` in `nvim/keymaps.nix`.
 - Patched `copilot-cmp` (archived upstream) via `overrideAttrs postPatch` in `nvim/completion.nix`: `self.client.is_stopped()` → `self.client:is_stopped()` (dot-call triggers the deprecation shim).
@@ -442,6 +443,7 @@
   「パッケージを探す」に `nh search` を追記。
 
 ## Next
+- Run `home-manager switch --flake .#<profile>` + `herdr server reload-config`, then verify `prefix+s` / `prefix+a` open a floating popup (not a split pane) and that `enter:become(... focus ...)` still switches focus correctly from inside the popup.
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
 - Run `roots --help` (or `roots --version`) after switch.
 - Run `home-manager switch --flake .#<profile>` and verify `roots --version` (or `roots --help`).

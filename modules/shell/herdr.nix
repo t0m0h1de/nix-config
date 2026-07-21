@@ -215,22 +215,28 @@ in
     #   - pane rename: tmux 既定に相当なし(herdr rename_pane = prefix+shift+p のまま)。
     #   - copy mode(prefix+[), next/last pane(prefix+o / prefix+;) 等の細かいキーは herdr 既定のまま。
 
-    # フロート Spaces ピッカー(fzf, 自前MRU)。prefix+s で一時ペインに開き、workspace を
+    # フロート Spaces ピッカー(fzf, 自前MRU)。prefix+s でフロート popup に開き、workspace を
     # 絞り込み → enter で focus。空クエリ時は最終アタッチ順(MRU)で並ぶ。実装は先頭の let を参照。
-    # ※ herdr に真のフローティングウィンドウは無く、type="pane" の一時ペイン(終了で自動close)で近似。
+    # herdr 0.7.4+ の type="popup"(セッションモーダルなフロート端末。tab レイアウトを変えず、
+    # command 終了まで Escape 含む全入力を受け取る)を利用。width/height は border 込み、割合指定可。
     [[keys.command]]
     key = "prefix+s"
-    type = "pane"
+    type = "popup"
     command = "${herdrWorkspacePicker}"
     description = "Spaces picker (fzf, MRU)"
+    width = "70%"
+    height = "70%"
 
-    # フロート Agent ピッカー(fzf, 注目度順)。prefix+a で開き、検知中のエージェントを一覧 →
-    # enter でそのペインへ focus。対象は herdr が検知中のエージェントのみ(実装は先頭の let 参照)。
+    # フロート Agent ピッカー(fzf, 注目度順)。prefix+a でフロート popup に開き、検知中のエージェントを
+    # 一覧 → enter でそのペインへ focus。対象は herdr が検知中のエージェントのみ(実装は先頭の let 参照)。
+    # Spaces ピッカーと同じく herdr 0.7.4+ の type="popup" を利用。
     [[keys.command]]
     key = "prefix+a"
-    type = "pane"
+    type = "popup"
     command = "${herdrAgentPicker}"
     description = "Agents picker (fzf, attention order)"
+    width = "70%"
+    height = "70%"
 
     # vim-herdr-navigation: 直接の Ctrl+h/j/k/l をプラグインアクションに割当。
     # フォアグラウンドが Vim/Neovim なら Vim に転送し、そうでなければ herdr ペインを移動する。
