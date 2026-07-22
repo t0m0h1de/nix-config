@@ -36,6 +36,7 @@
     pre-commit
     herdr
     pup
+    coder
 
     watch
     nkf
