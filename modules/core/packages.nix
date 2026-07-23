@@ -39,6 +39,7 @@
     coder
 
     watch
+    tree
     nkf
     libiconv
     ffmpeg
