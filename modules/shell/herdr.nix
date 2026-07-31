@@ -34,6 +34,14 @@ let
   # GC: ピッカーを開くたびに現存 workspace で MRU ファイルを刈り込んで書き戻すので肥大化しない。
   mruFile = ''"''${XDG_CACHE_HOME:-$HOME/.cache}/herdr/workspace-mru"'';
 
+  # Agent ピッカー用の MRU(pane_id 単位)。workspace-mru とは別ファイルにする:
+  # Spaces ピッカーは workspace 粒度が必要で、粒度を混ぜると双方の並びが壊れるため。
+  # 記録されるのは「ピッカーで選んで飛んだ先」と「ピッカーを開いた時点の現在地」の2点。
+  # (herdr の socket API には pane.focused イベント購読 `events.subscribe` もあり、常駐して
+  #  購読すれば Ctrl+hjkl 等も含め完全な履歴が取れるが、常駐プロセスと再接続処理が必要なので
+  #  採らない。上記2点で「A↔B を行き来する」実用ケースはほぼ拾える。)
+  agentMruFile = ''"''${XDG_CACHE_HOME:-$HOME/.cache}/herdr/agent-mru"'';
+
   # 一覧生成: 現存 workspace を「MRU ファイル順(現存のみ) → 未記録の現存を list 順」で並べ、
   # 刈り込んだ MRU を書き戻し(GC)、fzf 用に「<icon+label>\t<workspace_id>」を出力する。
   # 現在フォーカス中の workspace は切替対象外なので除外する(先頭に「今いる所」が来ないように)。
@@ -90,77 +98,124 @@ let
           --bind 'enter:become(${herdrWorkspaceFocus} {2})'
   '';
 
-  # --- フロート Agent ピッカー (fzf, workspace MRU 順) ---
-  # prefix+a で popup に fzf を開き、herdr が検知中のエージェントを workspace MRU 順(=最近フォーカス
-  # した workspace のエージェントから)で一覧 → enter でそのエージェントのペインへ focus。
-  # Spaces ピッカーと同じ MRU ファイルを共有し、focus 時にその workspace を MRU 先頭へ積む。
+  # --- フロート Agent ピッカー (fzf, エージェント単位 MRU 順) ---
+  # prefix+a で popup に fzf を開き、herdr が検知中のエージェントを一覧 → enter でそのペインへ focus。
+  # 並び順は pane_id 単位の MRU(agent-mru):
+  #   1. 訪問歴のあるエージェント … agent-mru 順(直近に居た/飛んだものほど上)
+  #   2. 訪問歴のないエージェント … workspace MRU 順(未記録 workspace は末尾)→ 各 workspace 内は list 順
+  # これで「同じ workspace の Agent 1/2」が塊で上位に来ることはなくなり、1 だけが上、2 は履歴どおりの
+  # 位置に出る。agent-mru へ書き戻すのは (1) の訪問済みだけ(未訪問を書くと「行っていないのに履歴上位」
+  # に居座り、以降ずっと workspace MRU フォールバックが効かなくなるため)。
   # ※1 対象は「herdr が現在検知しているエージェント」(`herdr agent list`)のみ。workspace list と違い
   #     全ペインではなく検知済みエージェントに限られる(サーバ再起動直後などは検知されるまで出ない)。
   # ※2 「今いるエージェント」の除外は .focused では不可。popup を開くと focus が picker 側へ移り、
-  #     直前のエージェントの .focused が false になって一覧に残ってしまう(しかも blocked/working だと
-  #     従来の priority ソートで先頭に来て邪魔)。popup へ渡る HERDR_ACTIVE_PANE_ID(開く直前に
-  #     アクティブだったペイン)と .pane_id を突き合わせて除外する(未設定時のみ .focused で近似)。
+  #     直前のエージェントの .focused が false になって一覧に残ってしまう。popup へ渡る
+  #     HERDR_ACTIVE_PANE_ID(開く直前にアクティブだったペイン)と .pane_id を突き合わせて除外する
+  #     (未設定時のみ .focused で近似)。この active は一覧からは消すが agent-mru の先頭には残す
+  #     ——「今いる所」こそ最新の訪問先であり、次に prefix+a を開いた時の 1 位になるべきだから。
   herdrAgentList = pkgs.writeShellScript "herdr-agent-list" ''
     active="''${HERDR_ACTIVE_PANE_ID:-}"
-    mru=${mruFile}
-    touch "$mru" 2>/dev/null || true
+    wsmru=${mruFile}
+    amru=${agentMruFile}
+    mkdir -p "$(dirname "$amru")"
+    touch "$wsmru" "$amru" 2>/dev/null || true
 
-    # workspace_id -> label
-    wsmap=$(herdr workspace list | jq -r '.result.workspaces[] | [.workspace_id, .label] | @tsv')
-
-    # 検知中エージェント → <workspace_id>\t<icon>\t<agent>\t<cwd>\t<pane_id>。
+    # 検知中エージェント → <pane_id>\t<workspace_id>\t<表示ラベル>。
     # ※ focus 対象の識別子は pane_id。`herdr agent focus` は terminal_id を受け付けず
     #   agent_not_found になる(herdr 0.7.5 で確認)ので、必ず pane_id を渡すこと。
     # 今アクティブなペイン(HERDR_ACTIVE_PANE_ID。未設定時は .focused で近似)は除外。
-    agents=$(herdr agent list | jq -r --arg active "$active" '
+    wsjson=$(herdr workspace list)
+    agents=$(herdr agent list | jq -r --arg active "$active" --argjson ws "$wsjson" '
       def icon: if   .agent_status=="blocked" then "🔴"
                 elif .agent_status=="working" then "🟡"
                 elif .agent_status=="unknown" then "⚪"
                 else "🟢" end;
-      .result.agents[]
+      ($ws.result.workspaces | map({ key: .workspace_id, value: .label }) | from_entries) as $lbl
+      | .result.agents[]
       | select( if $active != "" then (.pane_id != $active) else (.focused|not) end )
-      | [ .workspace_id, icon, (.agent // ""), (.foreground_cwd // .cwd // ""), .pane_id ] | @tsv')
+      | [ .pane_id, .workspace_id,
+          ( icon + " " + ($lbl[.workspace_id] // .workspace_id)
+            + " · " + (.agent // "")
+            + " · " + (((.foreground_cwd // .cwd // "") | split("/") | last) // "") ) ]
+      | @tsv')
 
     [ -n "$agents" ] || exit 0
 
-    # agents に含まれる workspace_id を「MRU ファイル順(現存のみ) → 未記録は出現順」で整列。
-    wsorder=$(awk -F"\t" '
-      NR==FNR { if (!($1 in live)) { live[$1]=1; order[++n]=$1 }; next }
-      ($0 in live) && !seen[$0]++ { print }
-      END { for (i=1;i<=n;i++) if (!seen[order[i]]++) print order[i] }
-    ' <(printf "%s\n" "$agents") "$mru")
+    # MRU ファイルは変数に読み込んでから使う(空ファイルだと awk の NR==FNR が第2入力側で
+    # 誤って真になるため、必ず printf 経由で最低1行を渡す)。
+    amru_lines=$(cat "$amru")
+    wsmru_lines=$(cat "$wsmru")
 
-    # workspace MRU 順に、その workspace のエージェント行を出現順で出力。
+    # (1) 訪問歴あり: agent-mru の順で、いま現存するエージェントだけを拾う。
+    visited=$(awk -F"\t" '
+      NR==FNR { live[$1]=1; next }
+      ($0 in live) && !seen[$0]++ { print }
+    ' <(printf "%s\n" "$agents") <(printf "%s\n" "$amru_lines"))
+
+    # (2) 訪問歴なし: workspace MRU 順(未記録 workspace は末尾)→ 同一 workspace 内は list 順。
+    #     workspace 順位を各行に付けて安定ソートする(第2キー = 出現順)。
+    unvisited=$(awk -F"\t" '
+      NR==FNR { rec[$0]=1; next }
+      !($1 in rec) { print }
+    ' <(printf "%s\n" "$visited") <(printf "%s\n" "$agents") \
+      | awk -F"\t" '
+      NR==FNR { if ($0 != "" && !($0 in rank)) rank[$0] = ++r; next }
+      { rk = ($2 in rank) ? rank[$2] : 999999; printf "%d\t%d\t%s\n", rk, ++i, $1 }
+    ' <(printf "%s\n" "$wsmru_lines") - \
+      | sort -k1,1n -k2,2n | cut -f3)
+
+    # GC 兼記録: agent-mru には「現在地 → 訪問済み(現存のみ)」だけを書き戻す。
+    # active は agents から除外済みで visited にも入らないので、ここで明示的に先頭へ置く。
+    if [ -n "$active" ]; then
+      { printf "%s\n" "$active"; printf "%s\n" "$visited" | awk 'NF' | grep -vxF "$active"; } > "$amru.tmp"
+    else
+      printf "%s\n" "$visited" | awk 'NF' > "$amru.tmp"
+    fi
+    mv "$amru.tmp" "$amru"
+
     # fzf 行: 「<icon> <label> · <agent> · <cwd basename>\t<pane_id>\t<workspace_id>」
-    printf "%s\n" "$wsorder" | while IFS= read -r ws; do
-      [ -n "$ws" ] || continue
-      label=$(printf "%s\n" "$wsmap" | awk -F"\t" -v w="$ws" '$1==w{print $2; exit}')
-      [ -n "$label" ] || label="$ws"
-      printf "%s\n" "$agents" | awk -F"\t" -v w="$ws" -v label="$label" '
-        $1==w {
-          n=split($4,p,"/"); base=(n>0?p[n]:$4)
-          printf "%s %s · %s · %s\t%s\t%s\n", $2, label, $3, base, $5, $1
-        }'
-    done
+    printf "%s\n%s\n" "$visited" "$unvisited" | awk -F"\t" '
+      NR==FNR { disp[$1] = $3 "\t" $1 "\t" $2; next }
+      NF && ($0 in disp) { print disp[$0] }
+    ' <(printf "%s\n" "$agents") -
   '';
 
-  # 選択したエージェントへ focus し、あわせてその workspace を MRU 先頭へ積む(Spaces ピッカーと
-  # 共有。次回の並びに反映)。become で fzf を置き換えて実行({1}=pane_id, {2}=workspace_id)。
-  # 別 workspace のエージェントへ飛べるよう、先に workspace focus してから agent focus する
-  # (agent focus 単体で workspace 切替まで行うかは保証がないため。同一 workspace なら no-op)。
-  # 失敗しても popup は即閉じてしまい原因が分からないので、エラー時だけメッセージを出して待つ。
+  # 選択したエージェントへ focus し、あわせて MRU を更新する。become で fzf を置き換えて実行
+  # ({1}=pane_id, {2}=workspace_id)。pane は agent-mru の、workspace は workspace-mru の
+  # (Spaces ピッカーと共有)それぞれ先頭へ積む。
+  #
+  # ★ popup 内では「UI を変える API 呼び出し」はスクリプトの最後の1回だけにすること。
+  #   popup はセッションモーダルな一時端末なので、focus 系 API(changes_ui=true)を呼ぶと popup
+  #   自体が破棄され、その中で走っているこのスクリプトも一緒に殺される。→ 後続の行は実行されない。
+  #   実際、以前ここで `herdr workspace focus` を先に呼んでいた版では popup がその時点で閉じ、
+  #   次行の `herdr agent focus` に到達せず「workspace は変わるが tab/pane には飛ばない」状態だった
+  #   (サーバログに workspace.focus だけが並び agent.focus が一切出ないことで確認)。
+  #   `herdr agent focus <pane_id>` は単体で workspace/tab/pane すべてを切り替えるので
+  #   (別 workspace のペインを指定して実測: focused workspace/tab/pane がすべて追従)、
+  #   workspace focus は不要。MRU ファイルの更新は API を叩かないので先に済ませてよい。
+  #
+  # 失敗しても popup は即閉じてしまい原因が分からないので、エラー時だけメッセージを出して待つ
+  # (失敗時は UI が変わらない = popup が残るので、この表示はちゃんと読める)。
   herdrAgentFocus = pkgs.writeShellScript "herdr-agent-focus" ''
     pane="''${1:-}"
     ws="''${2:-}"
     [ -n "$pane" ] || exit 0
+
+    amru=${agentMruFile}
+    mkdir -p "$(dirname "$amru")"
+    touch "$amru"
+    { printf "%s\n" "$pane"; grep -vxF "$pane" "$amru" 2>/dev/null; } > "$amru.tmp"
+    mv "$amru.tmp" "$amru"
+
+    # workspace MRU は Spaces ピッカーと共有。ファイル更新のみ(focus API は呼ばない)。
     if [ -n "$ws" ]; then
       mru=${mruFile}
-      mkdir -p "$(dirname "$mru")"
       touch "$mru"
       { printf "%s\n" "$ws"; grep -vxF "$ws" "$mru" 2>/dev/null; } > "$mru.tmp"
       mv "$mru.tmp" "$mru"
-      herdr workspace focus "$ws" >/dev/null 2>&1 || true
     fi
+
+    # ここから先は popup が閉じる前提。追加の処理を足さないこと。
     if ! err=$(herdr agent focus "$pane" 2>&1); then
       printf 'herdr agent focus %s failed:\n%s\n' "$pane" "$err" >&2
       sleep 3
