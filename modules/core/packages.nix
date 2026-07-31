@@ -26,6 +26,7 @@
 
     nil
     nixpkgs-fmt
+    shellcheck
     uv
     zenn-cli
     roots
