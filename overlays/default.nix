@@ -148,6 +148,68 @@ final: prev:
       };
     };
 
+  # zenbu-labs/terminal-browser: ターミナル内で動く実ブラウザ(kitty graphics protocol を使って
+  # Chromium のオフスクリーン描画をペインに表示する)。nixpkgs 未収録。
+  # 配布形態が特殊: GitHub Releases にはタグだけで成果物が無く、実体は公式インストーラ
+  # (`curl -fsSL https://terminal-browser.sh/install`)が参照する独自ドメインの tarball のみ。
+  # 中身は Electron/Chromium 同梱(展開後 約300MB)の Apple Silicon macOS 専用ビルドなので、
+  # ソースからは組まずプリビルドをそのまま配置する(pup と同じ方針)。
+  #
+  # 更新手順: 上記インストーラを開くと先頭に DOWNLOAD_URL / VERSION / SHA256 が定数で書かれている。
+  # その VERSION と SHA256 を下記に反映する(SHA256 は素の16進なので
+  # `nix hash convert --hash-algo sha256 --to sri <SHA256>` で SRI へ変換して hash に入れる)。
+  terminal-browser =
+    let
+      version = "0.3.3";
+    in
+    final.stdenvNoCC.mkDerivation {
+      pname = "terminal-browser";
+      inherit version;
+
+      src = final.fetchurl {
+        url = "https://terminal-browser.sh/install/dl/stable/v${version}/terminal-browser-darwin-arm64.tar.gz";
+        hash = "sha256-gAQjGCeiscquAyL5mEgllp1xbtVTwtfM3HhNPPhH/Qk=";
+      };
+
+      sourceRoot = "terminal-browser";
+
+      # 配布物の bin/terminal-browser は `dirname $0/..` で自分の配置先(ROOT)を求め、そこから
+      # electron/ と cli/ を参照する。これをそのまま $out/bin に置くと home.packages 経由の
+      # symlink(~/.nix-profile/bin/terminal-browser)から起動された時に ROOT が ~/.nix-profile と
+      # 誤解決されて壊れる。そこで一式は libexec に置き、$out/bin には実体を絶対パスで exec する
+      # だけの薄いラッパーを置く。
+      # ※ makeWrapper は使えない: 生成されるラッパーが argv0 を保つ `exec -a "$0"` を使うため、
+      #   上流スクリプトの `dirname $0` が結局 $out/bin を指してしまう。
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/libexec
+        cp -R . $out/libexec/terminal-browser
+
+        mkdir -p $out/bin
+        cat > $out/bin/terminal-browser <<EOF
+        #!/bin/sh
+        exec "$out/libexec/terminal-browser/bin/terminal-browser" "\$@"
+        EOF
+        chmod +x $out/bin/terminal-browser
+
+        runHook postInstall
+      '';
+
+      # 同梱の Electron は Apple の署名付きバイナリ。既定の fixupPhase(strip 等)を通すと署名が
+      # 壊れ、Apple Silicon では起動できなくなるため無効化する。Nix 由来の依存も持たない。
+      dontFixup = true;
+
+      meta = with prev.lib; {
+        description = "A browser that runs directly inside your existing terminal";
+        homepage = "https://terminal-browser.com";
+        license = licenses.mit;
+        mainProgram = "terminal-browser";
+        # 上流が Apple Silicon macOS 版しか配布していない(インストーラも他環境では即 exit する)。
+        platforms = [ "aarch64-darwin" ];
+      };
+    };
+
   # md2pdf (jmaupetit/md2pdf, Markdown→PDF)。2点パッチ:
   #  1) 依存 weasyprint が aarch64-darwin で描画テスト(tests/draw/test_text.py::test_unicode_range)に
   #     失敗しビルド不能なため、weasyprint の test を無効化して通す。
