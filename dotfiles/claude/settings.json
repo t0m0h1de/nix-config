@@ -47,6 +47,13 @@
       "Bash(rev:*)",
       "Bash(seq:*)",
       "Bash(base64:*)",
+      "Bash(zgrep:*)",
+      "Bash(zcat:*)",
+      "Bash(strings:*)",
+      "Bash(readlink:*)",
+      "Bash(od:*)",
+      "Bash(glow:*)",
+      "Bash(md2pdf:*)",
 
       "Bash(export:*)",
 
@@ -85,6 +92,13 @@
       "Bash(git tag:*)",
       "Bash(git grep:*)",
       "Bash(git merge-tree:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git merge-base:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git describe:*)",
+      "Bash(git shortlog:*)",
+      "Bash(git worktree list:*)",
       "Bash(git -C:*)",
 
       "Bash(git add:*)",
@@ -96,6 +110,7 @@
 
       "Bash(gh:*)",
 
+      "Bash(gcloud:*)",
       "Bash(gcloud auth list)",
       "Bash(gcloud config get-value:*)",
       "Bash(gcloud config list:*)",
@@ -201,6 +216,12 @@
       "Bash(gcloud secrets versions list:*)",
       "Bash(gcloud container clusters list:*)",
       "Bash(gcloud container clusters describe:*)",
+      "Bash(gcloud container node-pools list:*)",
+      "Bash(gcloud container node-pools describe:*)",
+      "Bash(gcloud container operations list:*)",
+      "Bash(gcloud container operations describe:*)",
+      "Bash(gcloud container images list:*)",
+      "Bash(gcloud container images describe:*)",
 
       "Bash(gsutil ls:*)",
       "Bash(gsutil stat:*)",
@@ -218,6 +239,9 @@
       "Bash(kubectl api-resources:*)",
       "Bash(kubectl api-versions:*)",
       "Bash(kubectl explain:*)",
+      "Bash(kubectl events:*)",
+      "Bash(kubectl auth can-i:*)",
+      "Bash(kubectl diff:*)",
       "Bash(kubectl kustomize:*)",
       "Bash(kubectl version:*)",
 
@@ -240,6 +264,12 @@
       "Bash(terraform version:*)",
       "Bash(terragrunt validate:*)",
       "Bash(terragrunt hclfmt:*)",
+      "Bash(terragrunt hcl fmt:*)",
+      "Bash(terragrunt hcl validate:*)",
+      "Bash(terragrunt output:*)",
+      "Bash(terragrunt state list:*)",
+      "Bash(terragrunt state show:*)",
+      "Bash(terragrunt --version)",
       "Bash(tofu validate:*)",
       "Bash(tofu fmt:*)",
       "Bash(tofu show:*)",
@@ -247,6 +277,8 @@
       "Bash(tofu state list:*)",
       "Bash(tofu state show:*)",
       "Bash(tofu version:*)",
+      "Bash(tofu -chdir:*)",
+      "Bash(terraform -chdir:*)",
 
       "Bash(dig:*)",
       "Bash(host:*)",
@@ -290,9 +322,26 @@
       "Bash(nix flake:*)",
       "Bash(nix-prefetch-url:*)",
       "Bash(nix hash:*)",
+      "Bash(nix search:*)",
+      "Bash(nix path-info:*)",
+      "Bash(nix why-depends:*)",
+      "Bash(nix derivation show:*)",
+      "Bash(nix store prefetch-file:*)",
+      "Bash(nix store ls:*)",
+      "Bash(nix store path-info:*)",
+      "Bash(nix store diff-closures:*)",
+      "Bash(nix-instantiate --parse:*)",
+      "Bash(nix --version)",
+      "Bash(nix develop:*)",
       "Bash(nixpkgs-fmt:*)",
       "Bash(home-manager switch:*)",
       "Bash(home-manager news)",
+      "Bash(nh search:*)",
+      "Bash(nh home:*)",
+      "Bash(nh os:*)",
+      "Bash(nh darwin:*)",
+      "Bash(nh --version)",
+      "Bash(nh --help)",
 
       "Bash(shellcheck:*)",
       "Bash(actionlint:*)",
@@ -308,6 +357,9 @@
       "Bash(gtimeout:*)",
       "Bash(hostname)",
       "Bash(git config:*)",
+
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
 
       "Read(**)",
       "Read(/tmp/**)",
@@ -368,6 +420,13 @@
       "Bash(sudo:*)",
       "Bash(su:*)",
 
+      "Bash(rm -rf /)",
+      "Bash(rm -fr /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/)",
+      "Bash(rm -rf $HOME)",
+
       "Bash(sh:*)",
       "Bash(bash:*)",
       "Bash(zsh:*)",
@@ -382,6 +441,14 @@
       "Bash(yum:*)",
       "Bash(systemctl:*)",
       "Bash(service:*)",
+
+      "Bash(nix-collect-garbage:*)",
+      "Bash(nix store gc:*)",
+      "Bash(nix store delete:*)",
+      "Bash(nix profile remove:*)",
+      "Bash(nix profile rollback:*)",
+      "Bash(nix profile wipe-history:*)",
+      "Bash(nh clean:*)",
 
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
@@ -454,6 +521,13 @@
       "Bash(terragrunt destroy:*)",
       "Bash(terragrunt run-all apply:*)",
       "Bash(terragrunt run-all destroy:*)",
+      "Bash(terragrunt state rm:*)",
+      "Bash(terragrunt state mv:*)",
+      "Bash(terraform force-unlock:*)",
+      "Bash(terragrunt force-unlock:*)",
+      "Bash(tofu force-unlock:*)",
+      "Bash(terraform workspace delete:*)",
+      "Bash(tofu workspace delete:*)",
       "Bash(tofu plan:*)",
       "Bash(tofu apply:*)",
       "Bash(tofu destroy:*)",
@@ -479,8 +553,6 @@
       "Bash(gcloud storage rsync:*)"
     ],
     "ask": [
-      "Bash(rm:*)",
-      "Bash(rmdir:*)",
       "Bash(git rm:*)",
 
       "Bash(chmod:*)",
@@ -502,6 +574,12 @@
       "Bash(npx:*)",
       "Bash(uvx:*)",
 
+      "Bash(nix run:*)",
+      "Bash(nix shell:*)",
+      "Bash(nix-shell:*)",
+      "Bash(nix-store --realise:*)",
+      "Bash(nix profile install:*)",
+
       "Bash(python :*)",
       "Bash(node :*)",
       "Bash(node -e:*)",
@@ -510,9 +588,29 @@
       "Bash(git reset:*)",
       "Bash(git rebase:*)",
 
-      "Bash(git checkout .)",
+      "Bash(git checkout:*)",
       "Bash(git restore .)",
       "Bash(git clean:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git worktree add:*)",
+      "Bash(git worktree remove:*)",
+      "Bash(git worktree prune:*)",
+
+      "Bash(tofu init:*)",
+      "Bash(terraform init:*)",
+      "Bash(terragrunt init:*)",
+
+      "Bash(scala-cli:*)",
+      "Bash(perl:*)",
+      "Bash(sips:*)",
+      "Bash(tar:*)",
+      "Bash(gzip:*)",
+      "Bash(gunzip:*)",
+      "Bash(unzip:*)",
+      "Bash(pip3:*)",
+      "Bash(ln:*)",
+      "Bash(kubie:*)",
 
       "Bash(bq query:*)",
       "Bash(gcloud compute ssh:*)",
@@ -573,6 +671,26 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq '(^|[;&|][[:space:]]*)(kubectl|gcloud|bq|gsutil)[[:space:]]+-' && ! printf '%s' \"$stripped\" | grep -Eq '(^|[;&|][[:space:]]*)(kubectl|gcloud|bq|gsutil)[[:space:]]+--(version|help)([[:space:]]|$)'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"kubectl/gcloud/bq/gsutil のグローバルフラグ(-n, --context, --project など)をサブコマンドの前に置かないでください。許可ルールは前方一致なので Bash(kubectl get:*) 等にマッチせず毎回承認が必要になります。フラグはサブコマンドの後ろへ(例: kubectl -n stg get pods → kubectl get pods -n stg / gcloud --project=p compute instances list → gcloud compute instances list --project=p)。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq 'git[[:space:]]+-C[[:space:]]+[^[:space:]]+[[:space:]]+(push[[:space:]]+(--force|-f)|reset[[:space:]]+--hard|clean[[:space:]]+-[a-zA-Z]*f|rm[[:space:]]|push[[:space:]]+origin[[:space:]]+(main|master)([[:space:]]|$))'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"git -C <path> は前方一致の deny ルール(git push --force / git reset --hard / git clean -f / git rm)をすり抜けてしまいます。破壊的な git 操作を -C 経由で行わないでください。対象リポジトリで直接実行し、必要なら単独のコマンドとして承認を受けてください。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); n=$(printf '%s' \"$stripped\" | tr ';|&' '\\n' | awk '{ f=0; for(i=1;i<=NF;i++){ if($i==\"rm\" || $i==\"rmdir\"){f=1;continue} if(f && $i !~ /^-/ && $i !~ /^\\/tmp\\// && $i !~ /^\\/private\\/tmp\\//) print $i } }' | wc -l); if [ \"$n\" -gt 0 ]; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"/tmp 配下以外を削除しようとしています。絶対パスの /tmp・/private/tmp 配下だけが自動許可です。相対パスの tmp/... はカレントディレクトリ配下(例: このリポジトリの tmp/)を指し /tmp とは別物なので、ここに含まれます。対象を確認してください。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq 'gh[[:space:]]+((pr|issue)[[:space:]]+(merge|close|reopen|ready)|(release|repo)[[:space:]]+(create|delete|archive|rename|fork)|workflow[[:space:]]+(run|enable|disable)|run[[:space:]]+(cancel|rerun|delete)|(secret|variable)[[:space:]]+(set|delete)|auth[[:space:]]+(login|logout|refresh)|cache[[:space:]]+delete)([[:space:]]|$)'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"gh の高リスク操作(merge / close / release・repo の create・delete / workflow run / secret set / auth login など)です。view・list・diff・comment・edit といった日常操作は自動で許可されています。内容を確認してください。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq 'gcloud[[:space:]].*[[:space:]](create|delete|update|patch|import|deploy|undeploy|replace|migrate|move|clone|resize|restart|start|stop|suspend|resume|reset|rollback|undelete|purge|revoke|grant|enable|disable|attach|detach|abandon|promote|activate|deactivate|rotate|upgrade|install|uninstall|submit|cancel|kill|ssh|scp|connect|login|logout|set-iam-policy|add-iam-policy-binding|remove-iam-policy-binding)([[:space:]]|$)'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"gcloud の変更系サブコマンドです。read-only(list / describe / get-* / search-*)は自動で許可されますが、リソースを変更する操作は内容を確認してください。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq '(tofu|terraform)[[:space:]]+-chdir=[^[:space:]]+[[:space:]]+(apply|destroy|import|taint|plan|force-unlock|state[[:space:]]+(rm|mv)|workspace[[:space:]]+delete)'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"tofu/terraform の -chdir=<path> は前方一致の deny ルール(tofu apply / destroy / import / plan など)をすり抜けてしまいます。破壊的な操作を -chdir 経由で行わないでください。読み取り系(fmt/validate/show/output)は -chdir でも問題ありません。\"}}'; fi"
           },
           {
             "type": "command",
