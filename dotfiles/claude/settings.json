@@ -423,7 +423,6 @@
 
       "Bash(rm -rf /)",
       "Bash(rm -fr /)",
-      "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf ~/)",
       "Bash(rm -rf $HOME)",

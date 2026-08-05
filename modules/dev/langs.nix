@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
     gcc
@@ -14,6 +14,12 @@
     cargo
     rustc
     bc
+
+    # Python 3.12: 3.12 を要求するプロジェクト用。既定の python3 は k8s.nix の
+    # python3.withPackages(現在 3.14)が提供しており、python312 をそのまま入れると
+    # bin/python3・python・python3-config が衝突する。lowPrio で既定側を優先させ、
+    # このパッケージからは衝突しない python3.12 だけを取り込む。
+    (lib.lowPrio python312)
   ];
 
   home.sessionVariables = {
