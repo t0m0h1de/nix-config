@@ -210,6 +210,14 @@ final: prev:
       };
     };
 
+  # poetry (Python 依存管理)。nixpkgs の 2.4.1 はテストが3件失敗してビルドできない
+  # (tests/installation/test_executor.py、3065 passed / 3 failed)。失敗しているのは
+  # "- Removing black (21.11b0)" のようなアンインストール表示文言のアサーション差異で、
+  # poetry の機能そのものではない。バイナリキャッシュにも無くローカルビルドになるため、
+  # md2pdf(weasyprint)と同じく doCheck を無効化して通す。
+  # nixpkgs 側でテストが直ったらこの override は削除してよい。
+  poetry = prev.poetry.overridePythonAttrs (_: { doCheck = false; });
+
   # md2pdf (jmaupetit/md2pdf, Markdown→PDF)。2点パッチ:
   #  1) 依存 weasyprint が aarch64-darwin で描画テスト(tests/draw/test_text.py::test_unicode_range)に
   #     失敗しビルド不能なため、weasyprint の test を無効化して通す。

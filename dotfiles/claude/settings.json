@@ -4,6 +4,7 @@
   },
   "language": "Japanese",
   "permissions": {
+    "defaultMode": "auto",
     "disableBypassPermissionsMode": "disable",
     "allow": [
       "List(*)",
@@ -679,6 +680,10 @@
           {
             "type": "command",
             "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); n=$(printf '%s' \"$stripped\" | tr ';|&' '\\n' | awk '{ f=0; for(i=1;i<=NF;i++){ if($i==\"rm\" || $i==\"rmdir\"){f=1;continue} if(f && $i !~ /^-/ && $i !~ /^\\/tmp\\// && $i !~ /^\\/private\\/tmp\\//) print $i } }' | wc -l); if [ \"$n\" -gt 0 ]; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"ask\",permissionDecisionReason:\"/tmp 配下以外を削除しようとしています。絶対パスの /tmp・/private/tmp 配下だけが自動許可です。相対パスの tmp/... はカレントディレクトリ配下(例: このリポジトリの tmp/)を指し /tmp とは別物なので、ここに含まれます。対象を確認してください。\"}}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); stripped=$(printf '%s' \"$cmd\" | sed -e \"s/'[^']*'//g\" -e 's/\"[^\"]*\"//g'); if printf '%s' \"$stripped\" | grep -Eq '(^|[[:space:]])2>'; then jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",permissionDecision:\"deny\",permissionDecisionReason:\"2>&1 / 2>/dev/null は付けないでください。Bash ツールは stderr も結果に含めて返すため不要です。一方でリダイレクトを含むコマンドは Claude Code の組み込みガードにより毎回承認が必要になる(permissions の allow では開放できない)ので、付けるだけ承認回数が増えます。そのまま外して実行してください。\"}}'; fi"
           },
           {
             "type": "command",

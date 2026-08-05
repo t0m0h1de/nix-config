@@ -28,6 +28,7 @@
     nixpkgs-fmt
     shellcheck
     uv
+    poetry
     zenn-cli
     roots
     zed-editor
