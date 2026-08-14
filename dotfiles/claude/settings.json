@@ -365,7 +365,6 @@
       "Read(**)",
       "Read(/tmp/**)",
       "Edit(/tmp/**)",
-      "Write(/tmp/**)",
       "Edit(**/src/**)",
       "Edit(**/test/**)",
       "Edit(**/tests/**)",
