@@ -13,6 +13,7 @@
       pyyaml
     ]))
     kubectl
+    kustomize # 以前は gcloud SDK 同梱版が PATH に居た(modules/dev/gcloud.nix の移行で単体化)
     kubie
     kubernetes-helm
     argocd
