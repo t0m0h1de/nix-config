@@ -550,7 +550,9 @@
       "Bash(gcloud storage rm:*)",
       "Bash(gcloud storage cp:*)",
       "Bash(gcloud storage mv:*)",
-      "Bash(gcloud storage rsync:*)"
+      "Bash(gcloud storage rsync:*)",
+      "mcp__figma__use_figma",
+      "mcp__figma__create_new_file"
     ],
     "ask": [
       "Bash(git rm:*)",
