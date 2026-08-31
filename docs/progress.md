@@ -4,6 +4,10 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- `cloudflared` 2026.7.3 を `modules/core/packages.nix` に追加(`awscli2` の隣 — ネットワーク/クラウド系の並び)。バイナリキャッシュから取得でき、ローカルビルドは発生しない。
+  - 条件分岐は不要。`cloudflared` の `meta.platforms` に `aarch64-darwin` と全 linux が含まれ、このリポジトリの3プロファイル(`linux`=x86_64-linux / `darwin`,`work`=aarch64-darwin)を全てカバーする。**ただし `x86_64-darwin` は含まれない**ので、将来 Intel Mac のプロファイルを足すなら `lib.optionals` でのガードが要る。
+  - 認証情報(`cloudflared login` が置く cert / tunnel credentials)は `~/.cloudflared/` に入る。秘匿情報なので Git 管理せず、この flake では設定ファイルもサービス定義も持たせていない(CLI のみ)。
+  - 検証: 3プロファイル評価 OK / `nixpkgs-fmt` 差分なし / switch 後 `cloudflared --version` → `2026.7.3`。
 - `k9s` 0.51.0 を `modules/dev/k8s.nix` に追加し、**既定を readOnly** にした(`k9s.readOnly: true`)。書きたいときは `k9s --write`、恒久的に変えるならこのモジュール。UI 上はクラスタ情報ヘッダの `[R]` / `[RW]` で判別できる(`internal/ui/types.go`)。
   - **設定ディレクトリの OS 差を `K9S_CONFIG_DIR` で吸収**。k9s は adrg/xdg を使うので、`XDG_CONFIG_HOME` 未設定の macOS では `~/Library/Application Support/k9s`、Linux では `~/.config/k9s` を見る(`k9s info` で確認)。このリポジトリは `xdg.enable` を有効にしておらず `XDG_CONFIG_HOME` を export しないため、`home.sessionVariables.K9S_CONFIG_DIR = "${config.xdg.configHome}/k9s"` で `~/.config/k9s` に固定し、`xdg.configFile."k9s/config.yaml"` 一本で両 OS を管理する。これに伴い `k8s.nix` に `config` 引数を追加。
   - **store への read-only シンボリックリンクで壊れないことをソースで確認済み**。`internal/config/config.go` の `Save()` は `os.Stat(AppConfigFile)` が `ErrNotExist` のときだけ `SaveFile()` を呼ぶ ⇒ **ファイルが存在する限り k9s は config.yaml を書き換えない**。実行中に更新されるコンテキスト別の状態は `clusters/<cluster>/<context>/config.yaml` に分離されている(こちらは書き込み可能な実ディレクトリ)。

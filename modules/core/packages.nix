@@ -13,6 +13,7 @@
     ghq
     gwq
     awscli2
+    cloudflared
     fzf
     ripgrep
     fd
