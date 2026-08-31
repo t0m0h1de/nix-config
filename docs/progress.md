@@ -4,6 +4,10 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- Go 1.26.5 を `modules/dev/langs.nix` に追加(`cargo` / `rustc` の隣)。バイナリは `go` と `gofmt` の2つで、導入前に両方とも profile に無いことを確認済み(衝突なし)。overlay の `roots` は `buildGoModule` でビルド時に Go を引いていたが、**PATH 上に `go` が載るのはこれが初めて**。
+  - **未対応 = `go install` したツールが PATH に出ない**。`go env` は `GOPATH=~/go` / `GOBIN` 未設定なので `go install` の出力は `~/go/bin` に入るが、**`~/go/bin` は PATH に含まれていない**。必要になったら `home.sessionPath` に追加する(新しいシェルからのみ有効)。今回は「言語を入れる」以上のことをしていないので保留。
+  - `gopls` は入れていない。`modules/editors/nvim/lsp.nix` にも gopls の設定は無いので、Neovim で Go を書くなら LSP 側の追加が別途必要。
+  - 検証: 3プロファイル評価 OK / `nixpkgs-fmt` 差分なし / switch 後 `go version` → `go1.26.5 darwin/arm64`、`which go gofmt` が両方 `~/.nix-profile/bin` を指す。
 - `cloudflared` 2026.7.3 を `modules/core/packages.nix` に追加(`awscli2` の隣 — ネットワーク/クラウド系の並び)。バイナリキャッシュから取得でき、ローカルビルドは発生しない。
   - 条件分岐は不要。`cloudflared` の `meta.platforms` に `aarch64-darwin` と全 linux が含まれ、このリポジトリの3プロファイル(`linux`=x86_64-linux / `darwin`,`work`=aarch64-darwin)を全てカバーする。**ただし `x86_64-darwin` は含まれない**ので、将来 Intel Mac のプロファイルを足すなら `lib.optionals` でのガードが要る。
   - 認証情報(`cloudflared login` が置く cert / tunnel credentials)は `~/.cloudflared/` に入る。秘匿情報なので Git 管理せず、この flake では設定ファイルもサービス定義も持たせていない(CLI のみ)。

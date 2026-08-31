@@ -13,6 +13,7 @@
     scala-cli
     cargo
     rustc
+    go
     bc
 
     # Python 3.12: 3.12 を要求するプロジェクト用。既定の python3 は k8s.nix の
