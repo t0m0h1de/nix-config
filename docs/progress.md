@@ -4,6 +4,13 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- Docker buildx 0.35.0 を Nix 管理下に置いた。`modules/dev/docker.nix` を新規作成し `modules/dev/default.nix` に import。
+  - **docker / docker-compose / colima 本体は brew 管理のまま**(macOS の VM と密結合。`modules/shell/zsh.nix:33-34` の方針どおり)。buildx だけ Nix に寄せられるのは、buildx が **docker CLI のクライアント側プラグイン**でしかなく VM と疎結合だから — ビルドの実行は colima 側 daemon 同梱の BuildKit が担い、docker CLI とはプラグイン API 経由でしか繋がらない。
+  - 実装は `home.packages` ではなく **symlink 1本**: docker CLI が `~/.docker/cli-plugins/docker-<name>` を走査してサブコマンドを生やす仕様なので、`home.file.".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx"` で足りる。単体の `docker-buildx` を PATH に出す必要はない。GC 保護されることは `nix why-depends` で確認済み(generation → home-manager-files → docker-buildx)。既存の手動 `docker-compose` symlink(brew の opt へ)は home-manager がファイル単位でリンクを張るので無傷。
+  - **新規 .nix ファイルは `git add` しないと flake から見えない**。追加直後の `nix eval` が `error: Path 'modules/dev/docker.nix' ... is not tracked by Git` で3プロファイルとも落ちた。コミット前でも stage は必要。
+  - **マルチアーキの前提が想定と違った(実測)**: colima の builder は既定で `linux/arm64, linux/amd64, linux/amd64/v2, linux/386` を報告する(`docker buildx inspect colima`)。**amd64 のエミュレーションは VM 側に登録済み**で、`--platform linux/amd64` の単一プラットフォームビルドは `tonistiigi/binfmt` を叩かなくても通る。ただし `docker` driver は1回のビルドで複数プラットフォームのマニフェストを出力できないので、マルチアーキイメージを作るなら `docker buildx create --driver docker-container --use` が要る。binfmt の追加登録が必要なのは riscv64 等それ以外のアーキだけ。
+  - バージョンは nixpkgs 0.35.0(brew formula は 0.37.0 で2マイナー新しい)。docker CLI は brew の 29.5.3 / server 29.5.2 だが、プラグイン API 経由の疎結合なので問題なく動作。
+  - 検証: 3プロファイル評価 OK / `nixpkgs-fmt` 差分なし / switch 後 `docker buildx version` → `v0.35.0`、`docker buildx ls` で `colima` builder が `running / BuildKit v0.30.0` として出る。なお `default` builder は `/var/run/docker.sock` を見に行って error になるが、これは Docker Desktop 不在によるもので無関係(アクティブなのは `colima`)。
 - Go 1.26.5 を `modules/dev/langs.nix` に追加(`cargo` / `rustc` の隣)。バイナリは `go` と `gofmt` の2つで、導入前に両方とも profile に無いことを確認済み(衝突なし)。overlay の `roots` は `buildGoModule` でビルド時に Go を引いていたが、**PATH 上に `go` が載るのはこれが初めて**。
   - **未対応 = `go install` したツールが PATH に出ない**。`go env` は `GOPATH=~/go` / `GOBIN` 未設定なので `go install` の出力は `~/go/bin` に入るが、**`~/go/bin` は PATH に含まれていない**。必要になったら `home.sessionPath` に追加する(新しいシェルからのみ有効)。今回は「言語を入れる」以上のことをしていないので保留。
   - `gopls` は入れていない。`modules/editors/nvim/lsp.nix` にも gopls の設定は無いので、Neovim で Go を書くなら LSP 側の追加が別途必要。
