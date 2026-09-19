@@ -116,12 +116,24 @@ in
     plugins = [
       # tmux-fzf のセッション一覧を最終アタッチ時刻の降順(MRU)にする。
       # 本体に順序設定が無いため session.sh の list-sessions をソート版に差し替える。
+      #
+      # 上流(2025-09-24 版)で session.sh の構造が変わった。以前は
+      #   sessions=$(tmux list-sessions | grep -v "^$current_session: ")
+      # の1行だったが、現在は「一覧生成」と「カレントセッション除外」が分離している:
+      #   if [[ -z "$TMUX_FZF_SESSION_FORMAT" ]]; then sessions=$(tmux list-sessions)
+      #   else sessions=$(tmux list-sessions -F "#S: $TMUX_FZF_SESSION_FORMAT"); fi
+      #   if [[ -z "$TMUX_FZF_SWITCH_CURRENT" ]]; then ... grep -v "^$current_session: " ...; fi
+      # そのため置換対象を既定ブランチの1行だけに絞り、除外処理は上流に任せる
+      # (`TMUX_FZF_SWITCH_CURRENT` の opt-out も壊さずに済む)。
+      # TMUX_FZF_SESSION_FORMAT 側のブランチは触らない — 上流にも .envs にも既定値が無く
+      # 未設定なので通らない。設定した場合は意図的にこの MRU 並びを捨てる、という扱い。
+      # 出力形は上流と同じ "<name>: <n> windows ..." を保つ(後段の grep とパースがこれに依存)。
       (pkgs.tmuxPlugins.tmux-fzf.overrideAttrs (old: {
         postPatch = (old.postPatch or "") + ''
           substituteInPlace scripts/session.sh \
             --replace-fail \
-              'sessions=$(tmux list-sessions | grep -v "^$current_session: ")' \
-              'sessions=$(tmux list-sessions -F "#{session_last_attached} #{session_name}: #{session_windows} windows#{?session_attached, (attached),}#{?@claude_state, [#{@claude_state}],}" | sort -rn | cut -d" " -f2- | grep -v "^$current_session: ")'
+              'sessions=$(tmux list-sessions)' \
+              'sessions=$(tmux list-sessions -F "#{session_last_attached} #{session_name}: #{session_windows} windows#{?session_attached, (attached),}#{?@claude_state, [#{@claude_state}],}" | sort -rn | cut -d" " -f2-)'
         '';
       }))
       # resurrect: セッション/ウィンドウの保存・復元スクリプトを提供(status-right は使わない)。
