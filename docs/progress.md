@@ -4,6 +4,13 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- Google Antigravity の CLI を `modules/core/packages.nix` に追加(`pup` / `coder` の隣 — ベンダー CLI の並び)。属性は **`antigravity-cli` 1.1.11**、**コマンド名は `agy`**(`antigravity` ではない。`meta.mainProgram` で確認)。
+  - **npm ではなく nixpkgs**。npm の `antigravity` は v0.0.0 の `"placeholder for the haters"` というジョークパッケージで無関係、`@google/antigravity` は 404。nixpkgs 側には `antigravity-cli`(TUI エージェントクライアント)と `antigravity-ide` 2.1.1(IDE 本体)の2系統があり、旧 `antigravity` は `antigravity-ide` へのリネーム(評価時に warning が出る)。今回要るのは前者。
+  - 条件分岐は不要。`meta.platforms` は `aarch64-darwin` / `aarch64-linux` / `x86_64-linux` で3プロファイルを全てカバーする。
+  - **unfree だが追加設定は要らなかった**。`modules/core/common.nix:4` の `nixpkgs.config.allowUnfree = true` が効いており、3プロファイルとも素通りで評価できる(`NIXPKGS_ALLOW_UNFREE` も `~/.config/nixpkgs/config.nix` も無い状態で確認済み = マシンローカル設定に依存していない)。
+  - Google 配布のプリビルドバイナリ(`storage.googleapis.com/antigravity-public/.../cli_mac_arm64.tar.gz`)の再パッケージなので **cache.nixos.org には無く、初回は Google から直接取得**してローカルビルドになる。
+  - **`agy update` と `agy install` は使わないこと**。前者は自己更新を試みるが store が read-only なので機能しない(更新は `nix flake update`)。後者は "Configure environment paths and shell settings" でシェルの rc を書き換えにいくが、PATH は Nix が管理している。gcloud を nix 管理へ移したときの `gcloud components update` と同じ性質の罠。
+  - 検証: 3プロファイル評価 OK / `nixpkgs-fmt` 差分なし / switch 後 `which agy` → `~/.nix-profile/bin/agy`、`agy --version` → `1.1.11`、`agy --help` がサブコマンド一覧を正常表示。
 - Docker buildx 0.35.0 を Nix 管理下に置いた。`modules/dev/docker.nix` を新規作成し `modules/dev/default.nix` に import。
   - **docker / docker-compose / colima 本体は brew 管理のまま**(macOS の VM と密結合。`modules/shell/zsh.nix:33-34` の方針どおり)。buildx だけ Nix に寄せられるのは、buildx が **docker CLI のクライアント側プラグイン**でしかなく VM と疎結合だから — ビルドの実行は colima 側 daemon 同梱の BuildKit が担い、docker CLI とはプラグイン API 経由でしか繋がらない。
   - 実装は `home.packages` ではなく **symlink 1本**: docker CLI が `~/.docker/cli-plugins/docker-<name>` を走査してサブコマンドを生やす仕様なので、`home.file.".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/libexec/docker/cli-plugins/docker-buildx"` で足りる。単体の `docker-buildx` を PATH に出す必要はない。GC 保護されることは `nix why-depends` で確認済み(generation → home-manager-files → docker-buildx)。既存の手動 `docker-compose` symlink(brew の opt へ)は home-manager がファイル単位でリンクを張るので無傷。

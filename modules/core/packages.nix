@@ -40,6 +40,10 @@
     herdr
     pup
     coder
+    # Google Antigravity の TUI エージェントクライアント。コマンド名は antigravity ではなく `agy`。
+    # unfree(Google 配布のプリビルドバイナリを再パッケージ)なので cache.nixos.org には無く、
+    # 初回は storage.googleapis.com から直接取得される。IDE 版が要るなら別途 antigravity-ide。
+    antigravity-cli
 
     watch
     tree
