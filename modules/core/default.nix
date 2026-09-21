@@ -6,6 +6,7 @@
     ./git.nix
     ./ssh.nix
     ./claude.nix
+    ./antigravity.nix
     ./nh.nix
   ];
 }
