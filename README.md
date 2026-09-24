@@ -134,15 +134,16 @@ home-manager switch --flake .#darwin  # macOS（個人用）
 
 ### パッケージの更新
 
-更新は GitHub Actions で行う。`.github/workflows/update.yml` が毎週月曜 03:00 JST(と手動実行時)に以下を更新し、対象ごとに PR(ブランチ `update/<name>`)を作る。PR では CI(`.github/workflows/ci.yml`)が全プロファイルをビルドする。
+更新は GitHub Actions で行う。`.github/workflows/update.yml` が対象ごとに曜日をずらして(いずれも 03:00 JST)以下を更新し、対象ごとに PR(ブランチ `update/<name>`)を作る。PR では CI(`.github/workflows/ci.yml`)が全プロファイルをビルドし、通れば auto-merge される。手動実行(Actions → Update → Run workflow)では対象を1つ選ぶか `all` で全部を更新できる。
 
-| 対象 | 更新方法 |
-| --- | --- |
-| `flake.lock`(nixpkgs / home-manager / nixvim / hunk / nix-zenn-cli) | `nix flake update` |
-| `roots` | `nix-update --flake roots`(最新リリース) |
-| `kube-tmux` / `vim-herdr-navigation` | `nix-update --flake --version=branch <name>`(既定ブランチの最新コミット) |
-| `pup` | `scripts/update/pup.sh`(全 system 分の hash を `overlays/sources/pup.json` に書く) |
-| `terminal-browser` | `scripts/update/terminal-browser.sh`(公式インストーラから `overlays/sources/terminal-browser.json` を更新) |
+| 対象 | 曜日 | 更新方法 |
+| --- | --- | --- |
+| `flake.lock`(nixpkgs / home-manager / nixvim / hunk / nix-zenn-cli) | 月 | `nix flake update` |
+| `pup` | 火 | `scripts/update/pup.sh`(全 system 分の hash を `overlays/sources/pup.json` に書く) |
+| `terminal-browser` | 水 | `scripts/update/terminal-browser.sh`(公式インストーラから `overlays/sources/terminal-browser.json` を更新) |
+| `roots` | 木 | `nix-update --flake roots`(最新リリース) |
+| `vim-herdr-navigation` | 金 | `nix-update --flake --version=branch vim-herdr-navigation`(既定ブランチの最新コミット) |
+| `kube-tmux` | 土 | `nix-update --flake --version=branch kube-tmux`(同上) |
 
 `nixpkgs-hunk` は意図的に rev を固定しているため更新対象外(`flake.nix` のコメント参照)。
 

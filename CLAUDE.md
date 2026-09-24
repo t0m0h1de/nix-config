@@ -15,7 +15,7 @@ x86_64とaarch64など複数のCPUアーキテクチャ、linux, macOSなどの�
     * 更新: `home-manager switch --flake .#<profile>`
 * メンテナンス
     * 依存関係の更新: 通常は `.github/workflows/update.yml` が毎週 PR を作る(flake.lock と overlay の自前パッケージ)。手元で行うなら `nix flake update`
-    * overlay の自前パッケージを追加したら、`update.yml` の matrix にも更新方法を足す(nix-update か `scripts/update/` のスクリプト)
+    * overlay の自前パッケージを追加したら、`update.yml` の `plan` ジョブの targets に更新方法(nix-update か `scripts/update/` のスクリプト)と cron を足し、同じ cron を `on.schedule` と `workflow_dispatch` の選択肢にも足す
     * 整形: `nixpkgs-fmt <file.nix>`(CI で `nixpkgs-fmt --check .` が走る)
 
 ## HomeManagerのプロファイル

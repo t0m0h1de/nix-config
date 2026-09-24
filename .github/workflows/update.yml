@@ -9,10 +9,33 @@ name: Update
 # auto-merge: main の branch protection に必須 status check が登録されている時だけ有効化する。
 # 保護が無い、または必須 check が空だと `gh pr merge --auto` は CI を待たずに即マージしてしまうため。
 
+# スケジュール: 対象ごとに曜日をずらし、bump PR の CI(特に同時実行数の少ない macOS ランナー)が
+# 一度に集中しないようにしている。cron は UTC なので、JST では翌日 03:00 になる。
+# 対象を足すときは、plan ジョブの targets に cron を書き、同じ文字列を on.schedule にも足すこと
+# (github.event.schedule は起動した cron 文字列そのものなので、完全一致で対象を選んでいる)。
+
 on:
   schedule:
-    - cron: "0 18 * * 0" # 毎週月曜 03:00 JST
+    - cron: "0 18 * * 0" # 月 03:00 JST: flake-lock
+    - cron: "0 18 * * 1" # 火 03:00 JST: pup
+    - cron: "0 18 * * 2" # 水 03:00 JST: terminal-browser
+    - cron: "0 18 * * 3" # 木 03:00 JST: roots
+    - cron: "0 18 * * 4" # 金 03:00 JST: vim-herdr-navigation
+    - cron: "0 18 * * 5" # 土 03:00 JST: kube-tmux
   workflow_dispatch:
+    inputs:
+      target:
+        description: 更新する対象(all は全部)
+        type: choice
+        default: all
+        options:
+          - all
+          - flake-lock
+          - pup
+          - terminal-browser
+          - roots
+          - vim-herdr-navigation
+          - kube-tmux
 
 concurrency:
   group: update
@@ -23,25 +46,48 @@ permissions:
   pull-requests: write
 
 jobs:
+  # 起動した cron(手動実行なら inputs.target)に対応する対象だけを matrix にする。
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.select.outputs.matrix }}
+    steps:
+      - id: select
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          TARGET: ${{ inputs.target }}
+        run: |
+          targets='[
+            { "name": "flake-lock", "cron": "0 18 * * 0",
+              "title": "chore: update flake.lock",
+              "run": "nix flake update" },
+            { "name": "pup", "cron": "0 18 * * 1",
+              "run": "./scripts/update/pup.sh" },
+            { "name": "terminal-browser", "cron": "0 18 * * 2",
+              "run": "./scripts/update/terminal-browser.sh" },
+            { "name": "roots", "cron": "0 18 * * 3",
+              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake roots" },
+            { "name": "vim-herdr-navigation", "cron": "0 18 * * 4",
+              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch vim-herdr-navigation" },
+            { "name": "kube-tmux", "cron": "0 18 * * 5",
+              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch kube-tmux" }
+          ]'
+          matrix=$(jq -c --arg schedule "$SCHEDULE" --arg target "${TARGET:-all}" '
+            map(select(
+              if $schedule != "" then .cron == $schedule
+              elif $target != "all" then .name == $target
+              else true end))' <<< "$targets")
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "selected: $(jq -r 'map(.name) | join(", ")' <<< "$matrix")"
+
   update:
     name: update (${{ matrix.name }})
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: flake-lock
-            title: "chore: update flake.lock"
-            run: nix flake update
-          - name: roots
-            run: nix run --inputs-from . nixpkgs#nix-update -- --flake roots
-          - name: kube-tmux
-            run: nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch kube-tmux
-          - name: vim-herdr-navigation
-            run: nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch vim-herdr-navigation
-          - name: pup
-            run: ./scripts/update/pup.sh
-          - name: terminal-browser
-            run: ./scripts/update/terminal-browser.sh
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

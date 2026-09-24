@@ -605,6 +605,17 @@
   旧ガードは `.protected` だけを見ていたため素通りし、`gh pr merge --auto` が CI を待たずに即マージするところだった。
 - ガードを `branches/main` の `.protection.required_status_checks.contexts | length > 0` に変更(ブランチ API なので
   Administration 権限の無い BOT_TOKEN でも読める)。現状は 0 → auto-merge をスキップすることを確認。
+- その後ユーザーが必須 check を登録して初回実行 → PR 4件(flake-lock / pup / terminal-browser / vim-herdr-navigation)が
+  auto-merge 付きで作られ、CI が起動した(roots / kube-tmux は最新で PR なし)。
+
+### update.yml: 対象ごとに曜日をずらす — 2026-09-24
+- 動機: 全対象を同時に回すと bump PR の CI が集中する。課金ではなく同時実行数の上限(Free: 全体20 / macOS 5)の問題で、
+  6対象すべてに更新があると macOS ジョブが6つになり1つ待ちになる(失敗はしない)。
+- `plan` ジョブが `github.event.schedule`(起動した cron 文字列)と完全一致する対象だけを matrix JSON にして `update` に渡す。
+  月 flake-lock / 火 pup / 水 terminal-browser / 木 roots / 金 vim-herdr-navigation / 土 kube-tmux(いずれも 03:00 JST)。
+  workflow_dispatch は `target` の選択肢(既定 all)。対象定義(cron・run・title)は plan の targets に一元化し、
+  cron は on.schedule にも同じ文字列を書く必要がある(コメントで明記)。
+- 検証: actionlint OK。選択ロジックを jq で3パターン確認(水曜 cron → terminal-browser / 手動 roots → roots / 手動 all → 6件)。
 
 ## Next
 - GitHub 側の設定(未実施): secret `BOT_TOKEN` の登録、Settings > Actions で「Allow GitHub Actions to create and approve pull requests」
