@@ -7,6 +7,7 @@
     ./ssh.nix
     ./claude.nix
     ./antigravity.nix
+    ./codex.nix
     ./nh.nix
   ];
 }

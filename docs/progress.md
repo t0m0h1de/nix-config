@@ -4,6 +4,15 @@
 - Repository-wide refactoring (completed).
 
 ## Done
+- Codex CLI の設定(`approval_policy` / `approvals_reviewer` / `sandbox_mode`)を宣言的に管理。`dotfiles/codex/config.toml`(ベース)と `modules/core/codex.nix`(activation)を新規作成し、`modules/core/default.nix` に import。
+  - **read-only symlink は使えない**。`~/.codex/config.toml` には codex 自身が書いた状態が混ざっている — `model` / `model_reasoning_effort`(`/model` での選択)、`[projects."<path>"] trust_level`(ディレクトリ信頼)、`[tui.model_availability_nux]`(新モデル告知のカウンタ)。claude.nix / antigravity.nix と同じマージ方式にした。
+  - **JSON ではなく TOML なので jq が使えない**。**`yq`(mikefarah v4)は `-p toml -o toml` で TOML のラウンドトリップができる**ので、これを使った(`yq-go` は `packages.nix` に既にあり新規依存ゼロ)。`dasel` や `python3Packages.tomli-w` も候補だったが不要だった。
+  - マージ式は `select(fi==0) as $t | select(fi==1) as $b | ($t | with_entries(select(.key as $k | $b | has($k) | not))) * $b`。**ベースが持つトップレベルキーを target 側から落としてからマージする**ことで、ベースからキーを消したときに実ファイル側へ古い値が残らないようにしている(単純な `$t * $b` だと残る)。
+  - **ベースにコメントを書かないこと**。yq のマージはコメントを実ファイル側へ運んでしまい、「ここが原本」と誤解させる出力になる(一度書いてから外した)。説明は `modules/core/codex.nix` 側に置く。
+  - `~/.codex` 配下で触るのは `config.toml` だけ。`auth.json`(認証情報)や `*.sqlite` / `history.jsonl`(会話履歴)は一切管理しない。`chmod 600` は codex 自身のモードに合わせるためと、store から `cp` した直後の 444 を避けるため。
+  - キーと値が実在することは codex バイナリ(`@openai/codex-darwin-arm64` の vendor 配下)への grep で確認済み(`approval_policy` 55 / `approvals_reviewer` 46 / `sandbox_mode` 56 / `auto_review` 112 / `on-request` 33 / `workspace-write` 35 件)。
+  - **検証は `codex doctor` が使える**(「Diagnose local Codex installation, config, auth, and runtime health」)。適用後に `config.toml parse ok`、`sandbox: restricted fs + restricted network · approval OnRequest`、`0 warn · 0 fail` を確認。codex 由来のキーが温存されていることも実ファイルで確認済み。適用前のバックアップは `/tmp/codex-config.bak.toml`。
+  - 補足: codex 本体は `npx @openai/codex`(npm 管理)のまま。**ツール本体の管理と設定の管理は別軸**で、claude / agy と同じ扱い。なお `CLAUDE.md:39` は codex を「Nix管理」の例に、`README.md:206` は「Nix管理外」の例に挙げていて**記述が矛盾している**(実態は npm 管理)。未修正。
 - Claude Code の permissions を Antigravity CLI(`agy`)へ移植。`dotfiles/antigravity/settings.json`(ベース)と `modules/core/antigravity.nix`(activation)を新規作成し、`modules/core/default.nix` に import。**今回は permissions のみ**で、フック・GEMINI.md/AGENTS.md・skills・MCP は対象外。
   - **agy の設定体系は Claude と驚くほど近い**。`permissions.{allow,deny,ask}` の3バケット構成が同じ(バイナリの proto タグで `allow=1, deny=2, ask=3` の repeated string を確認)。フックも `PreToolUse`/`PostToolUse`/`Stop` 等のイベント名まで一致する。仕様の一次情報は **builtin skill `~/.gemini/antigravity-cli/builtin/skills/agy-customizations/`**(`docs/{hooks,rules,skills,plugins,mcp_servers,json_configs}.md`)にある。
   - **specifier の対応**。有効な種類はバイナリ内の検証正規表現 `^(command|read_file|write_file|read_url|mcp|execute_url|unsandboxed)\s*\(.*\)$` で確定(`unsandboxed` は廃止済みで「書いても無視され何も許可しない」)。変換は `Bash(x:*)`→`command(x)` / `Read(p)`→`read_file(p)` / `Edit(p)`→`write_file(p)` / `WebFetch(domain:d)`→`read_url(d)` / `mcp__s__t`→`mcp(s/t)`。**`List(*)` と `WebSearch` は対応する specifier が無いので落とした**(allow 349→347)。パスの glob は doublestar(`bmatcuk/doublestar` が同梱)なので `**` がそのまま使える。
