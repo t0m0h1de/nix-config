@@ -6,8 +6,8 @@ name: Update
 # トークン: secret BOT_TOKEN(PAT もしくは GitHub App トークン。contents / pull-requests の write 権限)を
 # 使う。GITHUB_TOKEN で作った PR では CI が起動しないため。未設定なら GITHUB_TOKEN で PR だけ作る
 # (その場合 CI は PR 画面から手動で再実行するか、workflow_dispatch で起動する)。
-# auto-merge: main に必須 status check を持つ branch protection がある時だけ有効化する。
-# 保護が無いと `gh pr merge --auto` は CI を待たずに即マージしてしまうため。
+# auto-merge: main の branch protection に必須 status check が登録されている時だけ有効化する。
+# 保護が無い、または必須 check が空だと `gh pr merge --auto` は CI を待たずに即マージしてしまうため。
 
 on:
   schedule:
@@ -100,9 +100,11 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT_TOKEN || github.token }}
           PR: ${{ steps.cpr.outputs.pull-request-number }}
         run: |
-          protected=$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" --jq .protected)
-          if [ "$protected" != "true" ]; then
-            echo "::warning::main に branch protection が無いため auto-merge を有効化しません(CI を待たずにマージされるのを防ぐため)"
+          # 保護があっても必須 check が空なら `--auto` は即マージになるので、check の登録まで確かめる。
+          required=$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" \
+            --jq '.protection.required_status_checks.contexts // [] | length')
+          if [ "$required" -eq 0 ]; then
+            echo "::warning::main に必須 status check が無いため auto-merge を有効化しません(CI を待たずにマージされるのを防ぐため)"
             exit 0
           fi
           gh pr merge --auto --squash "$PR"

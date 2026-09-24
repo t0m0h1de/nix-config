@@ -598,6 +598,13 @@
   検証: `coder version` OK、work / linux の activationPackage のビルド時依存(drv closure)に `terraform-<ver>` が無いことを確認
   (残るのは nvim の tree-sitter grammar だけで、これはキャッシュ済み)。手元でも flake update のたびの terraform ビルドが消える。
 - 他の自前ビルド(zenn-cli 約1〜1.5分 / hunk 約1分)は、必要になれば Cachix で再利用を検討する。
+- 結果: 次の CI で約18分 → 約12分(ユーザー確認)。
+
+### update.yml: auto-merge ガードの強化 — 2026-09-24
+- 初回実行前の確認で、main は保護済み(`protected: true`)だが **必須 status check が空**(`contexts: []`)だった。
+  旧ガードは `.protected` だけを見ていたため素通りし、`gh pr merge --auto` が CI を待たずに即マージするところだった。
+- ガードを `branches/main` の `.protection.required_status_checks.contexts | length > 0` に変更(ブランチ API なので
+  Administration 権限の無い BOT_TOKEN でも読める)。現状は 0 → auto-merge をスキップすることを確認。
 
 ## Next
 - GitHub 側の設定(未実施): secret `BOT_TOKEN` の登録、Settings > Actions で「Allow GitHub Actions to create and approve pull requests」
