@@ -1,50 +1,16 @@
-# Agent Development Guide
+# Agent Guide
 
-このリポジトリでエージェントが動作するためのガイドライン
+Home Manager の Flake 構成(プロファイルは `flake.nix` の `homeConfigurations`)。構成・コマンドは README とコードを参照し、ここにはコードから読み取れない約束事だけを書く。
 
-## アーキテクチャ
+## 約束事
 
-[Home Manager](https://github.com/nix-community/home-manager)を利用したFlake構成。
-x86_64とaarch64など複数のCPUアーキテクチャ、linux, macOSなどの複数のOSをサポートし、OS固有の差分は `pkgs.stdenv` の条件分岐で処理する。
-具体的なサポート対象は[HomeManagerのプロファイル](#homemanagerのプロファイル)を参照。
+- **秘匿情報は `~/.secrets` に置き、Git 管理しない**(`.zshrc` が読み込む)。リポジトリに書かないこと。
+- **自己更新する CLI(`claude`, `codex` など)は Nix で入れない**。npm / ベンダー配布のまま使う。Nix で入れると自己更新が read-only のストアに書けず壊れるため。
+- **AI ツールの設定ファイルは symlink にせず、activation でマージする**(`modules/core/{claude,codex,antigravity}.nix`)。`~/.claude/settings.json` や `~/.codex/config.toml` にはツール自身も書き込むので、`xdg.configFile` 等で read-only にすると壊れる。共有したい値は `dotfiles/<tool>/` のベースに書く。
+- **overlay に自前パッケージを足したら、`.github/workflows/update.yml` の `plan` の targets にも更新方法と cron を足す**(同じ cron を `on.schedule` と `workflow_dispatch` の選択肢にも)。足さないと bump されずに放置される。nixpkgs に同じものが入ったら overlay は消す。
 
-## 主要コマンド
+## 検証
 
-* 設定の適用 (初回 / 更新)
-    * 初回(Home Managerが未インストールの場合): `nix run home-manager/master -- switch --flake .#<profile>`
-    * 更新: `home-manager switch --flake .#<profile>`
-* メンテナンス
-    * 依存関係の更新: 通常は `.github/workflows/update.yml` が毎週 PR を作る(flake.lock と overlay の自前パッケージ)。手元で行うなら `nix flake update`
-    * overlay の自前パッケージを追加したら、`update.yml` の `plan` ジョブの targets に更新方法(nix-update か `scripts/update/` のスクリプト)と cron を足し、同じ cron を `on.schedule` と `workflow_dispatch` の選択肢にも足す
-    * 整形: `nixpkgs-fmt <file.nix>`(CI で `nixpkgs-fmt --check .` が走る)
-
-## HomeManagerのプロファイル
-
-Home Managerのプロファイルは、[`flake.nix`](./flake.nix)の`homeConfigurations`を確認すること。
-
-### モジュール構成
-
-`home.nix`が以下の4モジュールを読み込む。
-
-* core(`modules/core/`): 共通パッケージ、Git、環境変数
-* dev(`modules/dev/`): 各種プログラム言語, 開発ツール(例: K8s, OpenTofu)
-* shell(`modules/shell/`): シェル本体、シェルのプラグイン管理、拡張(例: Starship, Tmux, Sheldon, direnv)
-* editors(`modules/editors/`): Vim, Neovimなどのエディタ
-
-### 設定ファイル (Dotfiles) の扱い
-
-各nixファイルで`builtins.readFile`で文字列として設定を読み込む、もしくは`xdg.configFile`で`dotfiles/`下をシンボリックリンクとして`~/.config`下に配置する。
-
-### ツール管理
-
-* Nix管理: OS共通で再現性を重視するツール（例: `codex`, `jq`, `git` など）
-* Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `claude`, `cline`など）
-
-### 秘匿情報
-
-`~/.secrets`に記述し、`.zshrc`で読み込み、Git管理は禁止。
-
-## ルール
-- 作業前に `docs/progress.md` を読む
-- 作業後に `docs/progress.md` を更新する
-- 新規API追加時は ADR を確認する
+- 新規ファイルは `git add` するまで flake から見えない(評価エラーになる)。
+- switch せずに確認するなら `nix build .#homeConfigurations.<profile>.activationPackage`(他 OS のプロファイルは `nix eval ...drvPath` で評価だけ)。overlay のパッケージ単体は `nix build .#<name>`。
+- 整形は `nixpkgs-fmt`。CI(`.github/workflows/ci.yml`)が `nixpkgs-fmt --check .` と全プロファイルのビルドを行う。

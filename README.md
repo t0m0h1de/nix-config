@@ -217,8 +217,11 @@ nix flake show
 
 このリポジトリでは、自己更新前提のCLIはNix管理に含めない。
 
-- Nix管理: OS共通で再現性を重視するツール（例: `codex`, `jq`, `git` など）
-- Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `codex`, `gemini-cli`, `copilot`, `jules`, `claude`, `cline`, `antigravity`）
+- Nix管理: OS共通で再現性を重視するツール（例: `jq`, `git` など）
+- Nix管理外: ベンダー/ npm 管理で更新するCLI（例: `codex`, `gemini-cli`, `copilot`, `jules`, `claude`, `cline`）
+- 例外: Antigravity の TUI クライアント `agy` は nixpkgs の `antigravity-cli` を使う(Nix管理)
+
+どちらの場合も、設定ファイル(`~/.claude/settings.json` など)はリポジトリの共有ベースを activation でマージして管理する(`modules/core/{claude,codex,antigravity}.nix`)。
 
 理由:
 

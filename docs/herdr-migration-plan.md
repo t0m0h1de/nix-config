@@ -7,7 +7,7 @@
 
 ## 0. 実行者への必須指示
 
-- 作業前に `docs/progress.md` を読むこと。作業後(各フェーズ完了ごと)に更新すること(CLAUDE.md のルール)。
+- 各フェーズの結果と判断理由は、コミットメッセージに残すこと。
 - Nix ファイル編集後は必ず `nixpkgs-fmt <file>` で整形し、
   `nix eval .#homeConfigurations.work.activationPackage.drvPath` で評価が通ることを確認すること。
 - コミットは main 直接・**1論理変更=1コミット**(このリポジトリの慣習。`git log --oneline` を参照)。
@@ -146,7 +146,7 @@ herdr は tmux の外・素のターミナルで起動すること。herdr に�
 
 前提: `home-manager switch --flake .#work` 適用済みで `herdr` が PATH にあること(`herdr --version` → 0.7.1)。
 
-チェックリスト(結果を docs/progress.md に記録):
+チェックリスト(結果はユーザーに報告する):
 
 1. **tmux の外の**素のターミナルで `herdr` を起動 → ワークスペースが開くこと。
 2. ペインで `claude` を起動し、サイドバーの状態表示を確認:
@@ -302,7 +302,7 @@ kube-tmux(status-right)の代替候補を提示して選んでもらう:
    { mode = "n"; key = "<C-l>"; action = "<C-w>l"; }
    ```
 6. 残骸確認: `grep -rniE "tmux" modules/ dotfiles/ overlays/ home.nix flake.nix` を実行し、
-   ヒットが「意図して残すもの」(例: 過去の progress.md 記述)だけであること。
+   ヒットが「意図して残すもの」だけであること。
    `~/.tmux/resurrect/` のバックアップファイルは**消さない**(ユーザーの保険。言及だけしておく)。
 7. 検証: eval → switch → 新ターミナルで herdr 起動・主要動線(分割/タブ/デタッチ/Claude状態/hws)を一通り。
 8. コミット(分割推奨):
