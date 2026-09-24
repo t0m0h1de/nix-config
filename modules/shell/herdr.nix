@@ -1,29 +1,5 @@
 { pkgs, lib, ... }:
 let
-  # vim-herdr-navigation: Ctrl+h/j/k/l で herdr ペインと Vim/Neovim split をシームレスに移動
-  # する(vim-tmux-navigator の herdr 版)。herdr のプラグイン登録は ~/.config/herdr/plugins.json
-  # への書き込みで宣言的管理が難しいため、ソースだけ Nix で固定し activation で `herdr plugin link`
-  # する(plugin_root は渡したストアパスを参照するので、closure に入り GC 保護される)。
-  vim-herdr-navigation-src = pkgs.fetchFromGitHub {
-    owner = "paulbkim-dev";
-    repo = "vim-herdr-navigation";
-    rev = "53e318c772c4d3b7fbd904ac43bcf3e5b5d8b244";
-    hash = "sha256-vUUt46jiK6ZsPH8D13/+IIlqT3KbFliPJkNplsVqiQo=";
-  };
-
-  # navigate.sh の passthrough 既定を fzf に焼き込むパッチ。
-  # 上流は Ctrl+h/j/k/l を Vim/Neovim にしか転送せず、fzf 等の TUI 前面では herdr のペイン移動に
-  # 消費されてしまう(→ fzf の選択移動 Ctrl+j/k が効かない)。env HERDR_NAV_PASSTHROUGH_RE で
-  # opt-in できるが、herdr サーバへの env 継承は起動タイミング依存で不確実だったため、サーバが毎回
-  # 実行する navigate.sh 自体の既定を fzf にする(env が設定されていればそちらが優先されるまま)。
-  vim-herdr-navigation = pkgs.runCommand "vim-herdr-navigation" { } ''
-    cp -r ${vim-herdr-navigation-src} $out
-    chmod -R u+w $out
-    substituteInPlace $out/navigate.sh \
-      --replace-fail 'passthrough_re="''${HERDR_NAV_PASSTHROUGH_RE:-}"' \
-                     'passthrough_re="''${HERDR_NAV_PASSTHROUGH_RE:-fzf}"'
-  '';
-
   # --- フロート Spaces ピッカー (fzf, 自前 MRU) ---
   # サイドバー(Spaces一覧)の代替として prefix+s で fzf ピッカーを一時ペインに開き、
   # workspace を絞り込み → enter で focus する(ネイティブ workspace_picker は prefix+shift+s に退避)。
@@ -374,12 +350,15 @@ in
   # ただしサーバへの env 継承は起動タイミング依存なので、確実性はパッチ側に置いている。
   home.sessionVariables.HERDR_NAV_PASSTHROUGH_RE = "fzf";
 
-  # vim-herdr-navigation を herdr に登録する(plugins.json)。ソースは Nix ストアに固定する。
-  # パッチで navigate.sh を変えるとストアパスが変わるため、毎 switch で一旦 unlink → 現行パスへ
+  # vim-herdr-navigation を herdr に登録する(plugins.json)。ソース(と navigate.sh のパッチ)は
+  # overlays/default.nix で Nix ストアに固定している。herdr のプラグイン登録は plugins.json への
+  # 書き込みで宣言的管理が難しいため activation で link する(plugin_root は渡したストアパスを
+  # 参照するので、closure に入り GC 保護される)。
+  # bump やパッチでストアパスが変わるため、毎 switch で一旦 unlink → 現行パスへ
   # link し直す(link だけだと既存 id が古いストアパスのまま残り、パッチが反映されない)。
   # herdr サーバ未起動時は失敗し得るので best-effort(|| true)。反映後 `herdr plugin list` で確認。
   home.activation.herdrLinkNavPlugin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     ${pkgs.herdr}/bin/herdr plugin unlink vim-herdr-navigation > /dev/null 2>&1 || true
-    ${pkgs.herdr}/bin/herdr plugin link "${vim-herdr-navigation}" > /dev/null 2>&1 || true
+    ${pkgs.herdr}/bin/herdr plugin link "${pkgs.vim-herdr-navigation}" > /dev/null 2>&1 || true
   '';
 }

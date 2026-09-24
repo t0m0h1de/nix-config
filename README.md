@@ -134,16 +134,30 @@ home-manager switch --flake .#darwin  # macOS（個人用）
 
 ### パッケージの更新
 
-`flake.lock` を更新して、最新のパッケージを取得する。
+更新は GitHub Actions で行う。`.github/workflows/update.yml` が毎週月曜 03:00 JST(と手動実行時)に以下を更新し、対象ごとに PR(ブランチ `update/<name>`)を作る。PR では CI(`.github/workflows/ci.yml`)が全プロファイルをビルドする。
+
+| 対象 | 更新方法 |
+| --- | --- |
+| `flake.lock`(nixpkgs / home-manager / nixvim / hunk / nix-zenn-cli) | `nix flake update` |
+| `roots` | `nix-update --flake roots`(最新リリース) |
+| `kube-tmux` / `vim-herdr-navigation` | `nix-update --flake --version=branch <name>`(既定ブランチの最新コミット) |
+| `pup` | `scripts/update/pup.sh`(全 system 分の hash を `overlays/sources/pup.json` に書く) |
+| `terminal-browser` | `scripts/update/terminal-browser.sh`(公式インストーラから `overlays/sources/terminal-browser.json` を更新) |
+
+`nixpkgs-hunk` は意図的に rev を固定しているため更新対象外(`flake.nix` のコメント参照)。
+
+PR をマージしたら手元で pull して適用する。
 
 ```bash
-nix flake update
+git pull
 home-manager switch --flake .#linux   # Linux/WSL
 home-manager switch --flake .#work    # macOS（業務用・このマシン）
 home-manager switch --flake .#darwin  # macOS（個人用）
 ```
 
-> 💡 適用側は `nh home switch -c <profile>` に置き換えてもよい（`nix flake update` はそのまま）。
+> 💡 適用側は `nh home switch -c <profile>` に置き換えてもよい。
+>
+> 手元で更新する場合は `nix flake update` や上表のコマンドを直接実行する(nix-update は `nix run nixpkgs#nix-update -- ...`)。
 
 ### 世代の掃除（GC）
 

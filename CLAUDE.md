@@ -14,8 +14,9 @@ x86_64とaarch64など複数のCPUアーキテクチャ、linux, macOSなどの�
     * 初回(Home Managerが未インストールの場合): `nix run home-manager/master -- switch --flake .#<profile>`
     * 更新: `home-manager switch --flake .#<profile>`
 * メンテナンス
-    * 依存関係の更新: `nix flake update`
-    * 整形: `nixpkgs-fmt <file.nix>`
+    * 依存関係の更新: 通常は `.github/workflows/update.yml` が毎週 PR を作る(flake.lock と overlay の自前パッケージ)。手元で行うなら `nix flake update`
+    * overlay の自前パッケージを追加したら、`update.yml` の matrix にも更新方法を足す(nix-update か `scripts/update/` のスクリプト)
+    * 整形: `nixpkgs-fmt <file.nix>`(CI で `nixpkgs-fmt --check .` が走る)
 
 ## HomeManagerのプロファイル
 

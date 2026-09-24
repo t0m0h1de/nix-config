@@ -59,7 +59,7 @@
     bubblewrap
   ]
   # Apple Silicon macOS 専用パッケージ。
-  # terminal-browser は上流が arm64 darwin ビルドしか配布していない(overlays/default.nix 参照)。
+  # terminal-browser は arm64 darwin 版だけをパッケージしている(overlays/default.nix 参照)。
   ++ lib.optionals (stdenv.hostPlatform.system == "aarch64-darwin") [
     terminal-browser
   ];

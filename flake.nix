@@ -32,11 +32,12 @@
   outputs = { self, nixpkgs, home-manager, nixvim, nix-zenn-cli, hunk, ... }:
     let
       customOverlay = import ./overlays { inherit nix-zenn-cli hunk; };
+      mkPkgs = system: import nixpkgs {
+        inherit system;
+        overlays = [ customOverlay ];
+      };
       mkHome = { system, isWork ? false }: home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ customOverlay ];
-        };
+        pkgs = mkPkgs system;
         extraSpecialArgs = { inherit isWork; };
         modules = [
           nixvim.homeModules.nixvim
@@ -50,5 +51,16 @@
         darwin = mkHome { system = "aarch64-darwin"; };
         work = mkHome { system = "aarch64-darwin"; isWork = true; };
       };
+
+      # overlay で定義したパッケージを単体で公開する(その system で使えるものだけ)。
+      # nix-update(.github/workflows/update.yml の bump)が `packages.<system>.<name>` を参照するのと、
+      # `nix build .#<name>` で個別にビルド確認するため。
+      packages = nixpkgs.lib.genAttrs [ "x86_64-linux" "aarch64-darwin" ] (system:
+        let
+          pkgs = mkPkgs system;
+        in
+        nixpkgs.lib.filterAttrs
+          (_: nixpkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform)
+          (builtins.intersectAttrs (customOverlay pkgs pkgs) pkgs));
     };
 }

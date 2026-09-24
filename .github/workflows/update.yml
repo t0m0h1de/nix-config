@@ -1,0 +1,108 @@
+name: Update
+
+# flake.lock と overlay の自前パッケージを定期的に更新し、対象ごとに PR を作る。
+# PR は対象ごとに固定ブランチ(update/<name>)なので、未マージのまま新しい版が出ると同じ PR が更新される。
+#
+# トークン: secret BOT_TOKEN(PAT もしくは GitHub App トークン。contents / pull-requests の write 権限)を
+# 使う。GITHUB_TOKEN で作った PR では CI が起動しないため。未設定なら GITHUB_TOKEN で PR だけ作る
+# (その場合 CI は PR 画面から手動で再実行するか、workflow_dispatch で起動する)。
+# auto-merge: main に必須 status check を持つ branch protection がある時だけ有効化する。
+# 保護が無いと `gh pr merge --auto` は CI を待たずに即マージしてしまうため。
+
+on:
+  schedule:
+    - cron: "0 18 * * 0" # 毎週月曜 03:00 JST
+  workflow_dispatch:
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: update (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: flake-lock
+            title: "chore: update flake.lock"
+            run: nix flake update
+          - name: roots
+            run: nix run --inputs-from . nixpkgs#nix-update -- --flake roots
+          - name: kube-tmux
+            run: nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch kube-tmux
+          - name: vim-herdr-navigation
+            run: nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch vim-herdr-navigation
+          - name: pup
+            run: ./scripts/update/pup.sh
+          - name: terminal-browser
+            run: ./scripts/update/terminal-browser.sh
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ github.token }}
+
+      - name: Update
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          ${{ matrix.run }} 2>&1 | tee "$RUNNER_TEMP/update.log"
+
+      - name: Prepare pull request
+        id: meta
+        env:
+          NAME: ${{ matrix.name }}
+          TITLE: ${{ matrix.title }}
+        run: |
+          if [ -z "$TITLE" ]; then
+            # bump 後の版をタイトルに入れる。terminal-browser は darwin 専用なので aarch64-darwin で評価する
+            # (評価だけなのでビルドやダウンロードは走らない)。
+            version=$(nix eval --raw ".#packages.aarch64-darwin.${NAME}.version")
+            TITLE="chore(overlays): bump ${NAME} to ${version}"
+          fi
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          {
+            echo "\`${{ matrix.run }}\` の実行結果:"
+            echo
+            echo '```'
+            # nix の進捗表示など、差分の把握に不要な行は落とす。
+            grep -v -E '^(copying path|these [0-9]+ paths will be fetched|  /nix/store/)' "$RUNNER_TEMP/update.log" || true
+            echo '```'
+            echo
+            echo "このPRは [Update workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) が作成しました。"
+          } > "$RUNNER_TEMP/body.md"
+
+      - name: Create pull request
+        id: cpr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.BOT_TOKEN || github.token }}
+          branch: update/${{ matrix.name }}
+          delete-branch: true
+          commit-message: ${{ steps.meta.outputs.title }}
+          title: ${{ steps.meta.outputs.title }}
+          body-path: ${{ runner.temp }}/body.md
+          labels: dependencies
+
+      - name: Enable auto-merge
+        if: steps.cpr.outputs.pull-request-number != '' && steps.cpr.outputs.pull-request-operation != 'closed'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN || github.token }}
+          PR: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          protected=$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" --jq .protected)
+          if [ "$protected" != "true" ]; then
+            echo "::warning::main に branch protection が無いため auto-merge を有効化しません(CI を待たずにマージされるのを防ぐため)"
+            exit 0
+          fi
+          gh pr merge --auto --squash "$PR"

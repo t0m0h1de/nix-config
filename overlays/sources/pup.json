@@ -1,0 +1,21 @@
+{
+  "version": "1.6.2",
+  "assets": {
+    "aarch64-darwin": {
+      "suffix": "Darwin_arm64",
+      "hash": "sha256-er8nzA57pJbr667eWDdmWUC2nThWBor4lntnkGh/pvY="
+    },
+    "x86_64-darwin": {
+      "suffix": "Darwin_x86_64",
+      "hash": "sha256-dME8Xqby+BWVn3Go5WHEUTpuYOINvcCNMdCe0ILstEI="
+    },
+    "x86_64-linux": {
+      "suffix": "Linux_x86_64",
+      "hash": "sha256-7lAsWzx7PVZywOraiP25Y4+LgISfuP+6ai3p250pVy8="
+    },
+    "aarch64-linux": {
+      "suffix": "Linux_arm64",
+      "hash": "sha256-ADRtVg+3Eb0f3aU01bIQDe2Bae/1nnFsI1FVv3AcdvI="
+    }
+  }
+}

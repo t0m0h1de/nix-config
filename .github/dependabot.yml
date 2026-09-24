@@ -1,0 +1,9 @@
+# Workflow が使う GitHub Actions のバージョンを追従する(Nix 側の更新は .github/workflows/update.yml)。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies

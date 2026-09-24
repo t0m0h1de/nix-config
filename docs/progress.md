@@ -1,7 +1,7 @@
 # Progress Log
 
 ## Current Task
-- Repository-wide refactoring (completed).
+- CI 導入 + flake.lock / overlay の更新 Workflow 化(実装済み・GitHub 側の設定と初回実行が残り。Next 参照)。
 
 ## Done
 - Codex CLI の設定(`approval_policy` / `approvals_reviewer` / `sandbox_mode`)を宣言的に管理。`dotfiles/codex/config.toml`(ベース)と `modules/core/codex.nix`(activation)を新規作成し、`modules/core/default.nix` に import。
@@ -553,7 +553,47 @@
   「パッケージの更新」に同置換メモ、新規「世代の掃除(GC)」節(`nh clean all` + 自動 GC の説明)、
   「パッケージを探す」に `nh search` を追記。
 
+### CI 導入 + flake.lock / overlay の更新を Workflow 化 — 2026-09-24
+- `.github/workflows/ci.yml`: PR / main push で `nixpkgs-fmt --check .` と Home Manager 全プロファイルのビルド
+  (linux=ubuntu-latest、darwin+work=macos-latest の1ランナー)。switch はせず `activationPackage` を `nix build` するだけ。
+- `.github/workflows/update.yml`: 毎週月曜 03:00 JST + 手動実行。matrix で対象ごとに更新 → `peter-evans/create-pull-request` で
+  `update/<name>` ブランチの PR を作る(同じ PR が更新され続ける。変更がなければ PR は作られない)。
+  対象: flake-lock(`nix flake update`)/ roots(nix-update)/ kube-tmux・vim-herdr-navigation(`nix-update --version=branch`)/
+  pup・terminal-browser(`scripts/update/*.sh`)。`.github/dependabot.yml` で Actions 自体の版も追従。
+- トークン(ユーザー選択): secret `BOT_TOKEN`(PAT/App)があればそれで PR を作る。**GITHUB_TOKEN で作った PR では CI が起動しない**
+  (GitHub の仕様)ため。未設定時は GITHUB_TOKEN にフォールバックして PR だけ作る。
+- auto-merge(ユーザー選択: する): `gh pr merge --auto --squash`。ただし **main に branch protection が無いと `--auto` は CI を
+  待たずに即マージしてしまう**ので、`branches/main` の `.protected` が true の時だけ有効化するガードを入れた。
+- overlay 棚卸し(nixpkgs の現行版・キャッシュ有無を確認して判断):
+  - terragrunt: overlay は 0.99.5、nixpkgs は 1.1.3。固定の理由が記録に無く、ユーザー判断で **nixpkgs 版に切替**(overlay 削除)。
+  - gwq: nixpkgs に同じ 0.1.1 があり冗長 → **overlay 削除**。
+  - poetry: nixpkgs が 2.4.3 になり、aarch64-darwin / x86_64-linux とも cache.nixos.org にある → **doCheck 無効化の override を削除**
+    (残すと逆にローカルビルドになっていた)。
+  - md2pdf: nixpkgs 版がキャッシュ済み → weasyprint の doCheck 無効化を削除し、日本語用 `FONTCONFIG_FILE` ラッパーだけ残した。
+    変換して日本語フォントが埋め込まれることを pdffonts で確認(mac ではヒラギノが選ばれた)。
+  - vim-herdr-navigation: `modules/shell/herdr.nix` 内の fetchFromGitHub + runCommand パッチを overlay の
+    `stdenvNoCC.mkDerivation`(postPatch で同じ substituteInPlace、`dontFixup` で shebang 書き換えなし)へ移した。
+    nix-update で bump するには version / src を持つパッケージである必要があるため。現在 link 中のストアパスと `diff -r` で完全一致を確認。
+  - kube-tmux: version を `unstable` → `0-unstable-2026-05-25`(固定コミットの日付)に。nix-update の `--version=branch` 形式に合わせるため。
+    herdr Phase 3 で削除予定なのは変わらず。
+  - pup / terminal-browser: version と hash を `overlays/sources/*.json` に切り出し、bash + jq で書き換える。
+    pup は4 system 分の hash が要り、nix-update は実行中の1 system 分しか直せないため。
+    terminal-browser はインストーラ形式が変わっていた(先頭定数の DOWNLOAD_URL/SHA256 → `PLATFORMS` 表)ので、それに合わせてパースし、
+    overlay のコメントの手順も更新した。上流は linux / x64 darwin 版も出し始めたが、扱うのは引き続き arm64 darwin のみ。
+  - nixpkgs の `pup` は別物(HTML パーサ)で、overlay がそれを上書きしている点をコメントに明記。
+  - `nixpkgs-hunk` は意図的な rev 固定なので対象外(URL に rev があるので `nix flake update` でも動かない)。
+- `flake.nix` に `packages.<system>` を追加(overlay の attr 名を `intersectAttrs` で拾い、`availableOn` で system に絞る)。
+  nix-update が `packages.<system>.<name>` を参照するため。`nix build .#pup` などで個別ビルドもできる。
+- 検証: nixpkgs-fmt / actionlint / shellcheck いずれも指摘なし。darwin・work の activationPackage をビルド、linux は eval 成功。
+  更新処理はローカルで実行して確認後に差分を戻した: pup 1.6.2→1.23.2(`pup --version` OK)、terminal-browser 0.3.3→0.11.1
+  (ビルド OK、tarball 構成は同じ)、vim-herdr-navigation は新コミット(0.1.0-unstable-2026-08-23)でもパッチが当たりビルド OK、
+  roots / kube-tmux は最新で変更なし。**Workflow 自体は未 push のため GitHub 上では未実行**。
+
 ## Next
+- GitHub 側の設定(未実施): secret `BOT_TOKEN` の登録、Settings > Actions で「Allow GitHub Actions to create and approve pull requests」
+  (GITHUB_TOKEN フォールバック時に必要)、auto-merge の許可、main の branch protection(必須 check: `format` / `build (linux)` / `build (darwin)`)。
+- push 後に Update workflow を手動実行して、PR 作成・CI 起動・auto-merge を確認する。
+- `home-manager switch` 後に terragrunt 1.x の挙動(0.99 からの破壊的変更)を業務リポジトリで確認する。
 - Verify `prefix+a` now actually jumps: pick an agent in another workspace/tab and confirm focus lands on that pane (switch + reload-config already applied).
 - Run `home-manager switch --flake .#<profile>` + `herdr server reload-config`, then verify `prefix+s` / `prefix+a` open a floating popup (not a split pane) and that `enter:become(... focus ...)` still switches focus correctly from inside the popup.
 - Run `home-manager switch --flake .#darwin` and verify `~/.nix-profile/bin/roots` exists.
