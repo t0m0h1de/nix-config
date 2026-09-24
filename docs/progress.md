@@ -589,6 +589,16 @@
   (ビルド OK、tarball 構成は同じ)、vim-herdr-navigation は新コミット(0.1.0-unstable-2026-08-23)でもパッチが当たりビルド OK、
   roots / kube-tmux は最新で変更なし。**Workflow 自体は未 push のため GitHub 上では未実行**。
 
+### CI 高速化: coder から terraform 依存を外す — 2026-09-24
+- 初回 CI(run 35949300130)は全体 約18分(format 18秒 / linux 約11分 / darwin 約18分)。cache.nixos.org から 4.3〜4.8GB を取得し、
+  約1,070 drv をローカルビルド(大半は数秒の設定ファイル/vim プラグイン)。最後まで待たされていたのは **terraform のソースビルド(両 OS とも約6分)**。
+- 原因: nixpkgs の `coder` が postInstall で `wrapProgram $out/bin/coder --prefix PATH : terraform` しており、terraform は unfree(BSL)で
+  キャッシュに無いため毎回 Go ビルドになる。terraform が要るのは `coder server` のプロビジョニングだけで、クライアント用途には不要。
+- 対応(ユーザー承認済み。`coder server` は手元で使わない前提): overlay で `coder = prev.coder.overrideAttrs (_: { postInstall = ""; })`。
+  検証: `coder version` OK、work / linux の activationPackage のビルド時依存(drv closure)に `terraform-<ver>` が無いことを確認
+  (残るのは nvim の tree-sitter grammar だけで、これはキャッシュ済み)。手元でも flake update のたびの terraform ビルドが消える。
+- 他の自前ビルド(zenn-cli 約1〜1.5分 / hunk 約1分)は、必要になれば Cachix で再利用を検討する。
+
 ## Next
 - GitHub 側の設定(未実施): secret `BOT_TOKEN` の登録、Settings > Actions で「Allow GitHub Actions to create and approve pull requests」
   (GITHUB_TOKEN フォールバック時に必要)、auto-merge の許可、main の branch protection(必須 check: `format` / `build (linux)` / `build (darwin)`)。

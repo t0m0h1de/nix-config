@@ -188,6 +188,13 @@ final: prev:
       };
     };
 
+  # coder CLI。nixpkgs 版は postInstall で `coder` を terraform を PATH に足すラッパーにしているが、
+  # terraform が要るのは `coder server`(ワークスペースのプロビジョニング)だけで、ここで使う
+  # クライアント用途(`coder config-ssh` / `coder ssh` 等)には不要。terraform は unfree のため
+  # cache.nixos.org に無く、依存に入っているだけで毎回ソースビルド(CI で約6分)になるので、
+  # ラッパーを外して依存から落とす。
+  coder = prev.coder.overrideAttrs (_: { postInstall = ""; });
+
   # md2pdf (jmaupetit/md2pdf, Markdown→PDF)。weasyprint は fontconfig でフォント解決するが、
   # 既定では fontconfig 設定/CJK フォントが無く日本語が豆腐になる。Noto Sans CJK を含む
   # fontconfig を生成し FONTCONFIG_FILE で渡して日本語対応する。
