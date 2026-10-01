@@ -24,6 +24,7 @@
     diffnav
     hunk
     md2pdf
+    python3Packages.weasyprint
 
     nil
     nixpkgs-fmt
