@@ -59,6 +59,10 @@
     buildah
     bubblewrap
   ]
+  # macOS 標準の caffeinate コマンド。
+  ++ lib.optionals stdenv.isDarwin [
+    darwin.PowerManagement
+  ]
   # Apple Silicon macOS 専用パッケージ。
   # terminal-browser は arm64 darwin 版だけをパッケージしている(overlays/default.nix 参照)。
   ++ lib.optionals (stdenv.hostPlatform.system == "aarch64-darwin") [
