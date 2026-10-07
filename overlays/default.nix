@@ -59,17 +59,17 @@ final: prev:
 
   roots = final.buildGoModule rec {
     pname = "roots";
-    version = "0.4.1";
+    version = "0.4.2";
     subPackages = [ "." ];
 
     src = final.fetchFromGitHub {
       owner = "k1LoW";
       repo = "roots";
       rev = "v${version}";
-      hash = "sha256-ACMRfWY/lhc3C/KVhuUyS1rgkSHGWPxZrmYt+pXupJI=";
+      hash = "sha256-neK1K3Emam70LJR/oVi1Gn0dNM+OC6X5TyAufQJE7BQ=";
     };
 
-    vendorHash = "sha256-uxcT5VzlTCxxnx09p13mot0wVbbas/otoHdg7QSDt4E=";
+    vendorHash = "sha256-po/kY9zXId2qvk3oNgdrgFLEbVIWedYjfqMfdX4J5Ls=";
 
     ldflags = [
       "-s"
