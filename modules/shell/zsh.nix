@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, isWork ? false, ... }:
 {
   programs.zsh = {
     enable = true;
@@ -46,11 +46,13 @@
         if [ -f "$HOME/.secrets" ]; then
           source "$HOME/.secrets"
         fi
+        ${lib.optionalString isWork ''
 
         # Takumi Guard PyPI
         export PIP_INDEX_URL="https://token:''${TAKUMI_GUARD_API_KEY}@pypi.flatt.tech/simple/"
         export UV_INDEX_URL="https://token:''${TAKUMI_GUARD_API_KEY}@pypi.flatt.tech/simple/"
         export UV_EXCLUDE_NEWER="3 days"
+        ''}
 
         # 対話シェルでも `#` をコメントとして扱う。
         setopt interactivecomments
