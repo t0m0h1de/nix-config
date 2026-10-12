@@ -53,6 +53,7 @@
     ffmpeg
     imagemagick
     pdftk
+    aria2
   ]
   # Linux専用パッケージ
   ++ lib.optionals stdenv.isLinux [
