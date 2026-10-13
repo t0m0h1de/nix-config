@@ -13,6 +13,7 @@
     ghq
     gwq
     awscli2
+    google-cloud-sql-proxy
     cloudflared
     fzf
     ripgrep
