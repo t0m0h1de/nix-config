@@ -55,6 +55,7 @@
     imagemagick
     pdftk
     aria2
+    _7zz
   ]
   # Linux専用パッケージ
   ++ lib.optionals stdenv.isLinux [
