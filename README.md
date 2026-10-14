@@ -80,11 +80,12 @@ chmod 600 ~/.secrets
 
 ### 4\. 環境の適用 (Switch)
 
-利用するプロファイル (`flake.nix` の `homeConfigurations`) は3つ。
+利用するプロファイル (`flake.nix` の `homeConfigurations`) は4つ。
 
 | プロファイル | 用途 | `home.username` |
 |---|---|---|
 | `linux` | Linux / WSL | `t0m0h1de` |
+| `game` | Linux ゲーミング環境 | `sawada` |
 | `work` | 業務用 macOS（このマシン） | `tomohide.sawada` |
 | `darwin` | 個人用 macOS | `t0m0h1de` |
 
@@ -97,6 +98,9 @@ chmod 600 ~/.secrets
 ```bash
 # Linux / WSL
 nix run home-manager/master -- switch --flake .#linux -b backup
+
+# Linux（ゲーミング環境）
+nix run home-manager/master -- switch --flake .#game -b backup
 
 # macOS（業務用・このマシン）
 nix run home-manager/master -- switch --flake .#work -b backup
@@ -116,6 +120,7 @@ nix run home-manager/master -- switch --flake .#darwin -b backup
 ```bash
 # 2回目以降は home-manager コマンドが使用可能
 home-manager switch --flake .#linux   # Linux/WSL
+home-manager switch --flake .#game    # Linux（ゲーミング環境）
 home-manager switch --flake .#work    # macOS（業務用・このマシン）
 home-manager switch --flake .#darwin  # macOS（個人用）
 ```
@@ -126,6 +131,7 @@ home-manager switch --flake .#darwin  # macOS（個人用）
 >
 > ```bash
 > nh home switch -c linux    # Linux/WSL
+> nh home switch -c game     # Linux（ゲーミング環境）
 > nh home switch -c work     # macOS（業務用・このマシン）
 > nh home switch -c darwin   # macOS（個人用）
 > ```

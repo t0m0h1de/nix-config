@@ -36,18 +36,22 @@
         inherit system;
         overlays = [ customOverlay ];
       };
-      mkHome = { system, isWork ? false }: home-manager.lib.homeManagerConfiguration {
+      mkHome = { system, isWork ? false, homeUsername ? null }: home-manager.lib.homeManagerConfiguration {
         pkgs = mkPkgs system;
         extraSpecialArgs = { inherit isWork; };
         modules = [
           nixvim.homeModules.nixvim
           ./home.nix
+          ({ lib, ... }: lib.mkIf (homeUsername != null) {
+            home.username = homeUsername;
+          })
         ];
       };
     in
     {
       homeConfigurations = {
         linux = mkHome { system = "x86_64-linux"; };
+        game = mkHome { system = "x86_64-linux"; homeUsername = "sawada"; };
         darwin = mkHome { system = "aarch64-darwin"; };
         work = mkHome { system = "aarch64-darwin"; isWork = true; };
       };
