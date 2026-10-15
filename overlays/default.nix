@@ -37,12 +37,12 @@ final: prev:
   # 実行する navigate.sh 自体の既定を fzf にする(env が設定されていればそちらが優先されるまま)。
   vim-herdr-navigation = final.stdenvNoCC.mkDerivation {
     pname = "vim-herdr-navigation";
-    version = "0.1.0-unstable-2026-08-23";
+    version = "0.1.0-unstable-2026-10-10";
     src = final.fetchFromGitHub {
       owner = "paulbkim-dev";
       repo = "vim-herdr-navigation";
-      rev = "79679dacc791f70fc34de8b29a3cf9706c0f5b2f";
-      hash = "sha256-iF0DLRn56eLGqY2iKTb3lX5iyVgl9CtSX5O2E5/pHjM=";
+      rev = "742db891e7d1f9a550b16c01dc8a6763f2b1493a";
+      hash = "sha256-Yt82HBBOdY4tjvZVREpQzKoEklJY0aIYU5ZzISdf7fg=";
     };
     postPatch = ''
       substituteInPlace navigate.sh \
