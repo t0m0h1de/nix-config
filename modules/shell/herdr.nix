@@ -345,6 +345,17 @@ in
     description = "navigate right (vim/herdr)"
   '';
 
+  # セッション再起動後に Claude / Codex の会話を復元するには、Herdr integration が
+  # セッションIDを報告する必要がある。Claude/Codex の共有設定をマージした後に
+  # installer を実行し、毎回の Home Manager switch でも hook の世代を揃える。
+  home.activation.herdrAgentIntegrations = lib.hm.dag.entryAfter [
+    "claudeSharedSettings"
+    "codexSharedSettings"
+  ] ''
+    run ${pkgs.herdr}/bin/herdr integration install claude
+    run ${pkgs.herdr}/bin/herdr integration install codex
+  '';
+
   # fzf passthrough は上の navigate.sh パッチ(既定 fzf)で担保済み。この env は追加の TUI を
   # 増やしたい時の上書き用に残す(例: "fzf|lazygit")。設定するとパッチ既定より優先される。
   # ただしサーバへの env 継承は起動タイミング依存なので、確実性はパッチ側に置いている。
