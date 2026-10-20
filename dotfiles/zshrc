@@ -110,8 +110,5 @@ function hws() {
   herdr workspace create --cwd "$PWD" --label "$label" --focus
 }
 
-# Force redefine quietly so repeated sourcing (e.g. nested shells in tmux)
-# stays idempotent without duplicate definitions.
-abbr --force --quiet cdn='cd-nav'
-abbr --force --quiet kube='kubectl'
-abbr --force --quiet kub='kubectl'
+# Default abbreviations are merged into zsh-abbr's writable user file by
+# modules/shell/zsh.nix activation, so shell startup does not write to its job queue.

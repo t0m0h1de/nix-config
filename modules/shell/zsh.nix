@@ -28,6 +28,27 @@
     ];
 
     initContent = lib.mkMerge [
+      # zsh-abbr の job queue は強制終了時に stale な項目を残すことがある。
+      # プラグイン初期化前に、queue の timeout を超えた項目だけを除去する。
+      (lib.mkOrder 500 ''
+        _zsh_abbr_clear_stale_jobs() {
+          local job_queue_tmpdir=''${JOB_QUEUE_TMPDIR:-''${TMPDIR:-/tmp}/zsh-job-queue}
+          local abbr_queue_dir="''${job_queue_tmpdir%/}/zsh-abbr"
+          [[ -o interactive && -d "$abbr_queue_dir" ]] || return 0
+
+          zmodload zsh/datetime || return 0
+          local job_file job_timestamp
+          for job_file in "$abbr_queue_dir"/*(N); do
+            job_timestamp=''${''${job_file:t}%%-*}
+            job_timestamp=''${job_timestamp%%.*}
+            if [[ $job_timestamp == <-> ]] && (( EPOCHSECONDS - job_timestamp > ''${JOB_QUEUE_TIMEOUT_AGE_SECONDS:-30} )); then
+              command rm -f -- "$job_file"
+            fi
+          done
+        }
+        _zsh_abbr_clear_stale_jobs
+        unfunction _zsh_abbr_clear_stale_jobs
+      '')
       # compinit より前に実行する必要がある設定（mkOrder 550 = before compinit）。
       (lib.mkOrder 550 ''
         # Homebrew formula(docker など)が提供する zsh 補完を fpath に追加する。
@@ -78,4 +99,27 @@
       ''
     ];
   };
+
+  # zsh-abbr のユーザー略語は読み書き可能なファイルに保存する。
+  # 各シェル起動時に `abbr` を実行すると共有 job queue への書き込みが集中するため、
+  # Home Manager activation で不足分だけを一度追加しておく。
+  home.activation.zshAbbrDefaults = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    config_dir="''${XDG_CONFIG_HOME:-$HOME/.config}"
+    abbr_file="$config_dir/zsh-abbr/user-abbreviations"
+    legacy_abbr_file="$config_dir/zsh/abbreviations"
+    if [ -f "$legacy_abbr_file" ]; then
+      abbr_file="$legacy_abbr_file"
+    fi
+
+    run mkdir -p "$(dirname "$abbr_file")"
+    run touch "$abbr_file"
+    for abbreviation in cdn:cd-nav kube:kubectl kub:kubectl; do
+      name=''${abbreviation%%:*}
+      expansion=''${abbreviation#*:}
+      if ! grep -Fq "abbr \"$name\"=" "$abbr_file"; then
+        line="abbr \"$name\"=\"$expansion\""
+        run /bin/sh -c 'printf "%s\n" "$1" >> "$2"' sh "$line" "$abbr_file"
+      fi
+    done
+  '';
 }
