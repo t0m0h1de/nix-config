@@ -10,12 +10,13 @@ let
   # GC: ピッカーを開くたびに現存 workspace で MRU ファイルを刈り込んで書き戻すので肥大化しない。
   mruFile = ''"''${XDG_CACHE_HOME:-$HOME/.cache}/herdr/workspace-mru"'';
 
-  # Agent ピッカー用の MRU(pane_id 単位)。workspace-mru とは別ファイルにする:
-  # Spaces ピッカーは workspace 粒度が必要で、粒度を混ぜると双方の並びが壊れるため。
-  # 記録されるのは「ピッカーで選んで飛んだ先」と「ピッカーを開いた時点の現在地」の2点。
+  # Agent ピッカー用の MRU(tab_id 単位)。workspace-mru とは別ファイルにする:
+  # prefix+a ではWindowではなくTabを並べたいので、workspaceより細かい粒度で記録する。
+  # 記録されるのは「ピッカーで選んで飛んだ先」と「ピッカーを開いた時点の現在Tab」の2点。
   # (herdr の socket API には pane.focused イベント購読 `events.subscribe` もあり、常駐して
   #  購読すれば Ctrl+hjkl 等も含め完全な履歴が取れるが、常駐プロセスと再接続処理が必要なので
   #  採らない。上記2点で「A↔B を行き来する」実用ケースはほぼ拾える。)
+  tabMruFile = ''"''${XDG_CACHE_HOME:-$HOME/.cache}/herdr/tab-mru"'';
   agentMruFile = ''"''${XDG_CACHE_HOME:-$HOME/.cache}/herdr/agent-mru"'';
 
   # 一覧生成: 現存 workspace を「MRU ファイル順(現存のみ) → 未記録の現存を list 順」で並べ、
@@ -74,14 +75,10 @@ let
           --bind 'enter:become(${herdrWorkspaceFocus} {2})'
   '';
 
-  # --- フロート Agent ピッカー (fzf, エージェント単位 MRU 順) ---
+  # --- フロート Agent ピッカー (fzf, Tab 単位の MRU 順) ---
   # prefix+a で popup に fzf を開き、herdr が検知中のエージェントを一覧 → enter でそのペインへ focus。
-  # 並び順は pane_id 単位の MRU(agent-mru):
-  #   1. 訪問歴のあるエージェント … agent-mru 順(直近に居た/飛んだものほど上)
-  #   2. 訪問歴のないエージェント … workspace MRU 順(未記録 workspace は末尾)→ 各 workspace 内は list 順
-  # これで「同じ workspace の Agent 1/2」が塊で上位に来ることはなくなり、1 だけが上、2 は履歴どおりの
-  # 位置に出る。agent-mru へ書き戻すのは (1) の訪問済みだけ(未訪問を書くと「行っていないのに履歴上位」
-  # に居座り、以降ずっと workspace MRU フォールバックが効かなくなるため)。
+  # 並び順は tab-mru を第一キーにし、同じTab内だけ agent-mruを第二キーにする。
+  # workspace-mru は使わないため、同じWindowの別Tabをまとめて上位へ押し上げない。
   # ※1 対象は「herdr が現在検知しているエージェント」(`herdr agent list`)のみ。workspace list と違い
   #     全ペインではなく検知済みエージェントに限られる(サーバ再起動直後などは検知されるまで出ない)。
   # ※2 「今いるエージェント」の除外は .focused では不可。popup を開くと focus が picker 側へ移り、
@@ -91,26 +88,33 @@ let
   #     ——「今いる所」こそ最新の訪問先であり、次に prefix+a を開いた時の 1 位になるべきだから。
   herdrAgentList = pkgs.writeShellScript "herdr-agent-list" ''
     active="''${HERDR_ACTIVE_PANE_ID:-}"
-    wsmru=${mruFile}
+    tmru=${tabMruFile}
     amru=${agentMruFile}
     mkdir -p "$(dirname "$amru")"
-    touch "$wsmru" "$amru" 2>/dev/null || true
+    touch "$tmru" "$amru" 2>/dev/null || true
 
     # 検知中エージェント → <pane_id>\t<workspace_id>\t<表示ラベル>。
     # ※ focus 対象の識別子は pane_id。`herdr agent focus` は terminal_id を受け付けず
     #   agent_not_found になる(herdr 0.7.5 で確認)ので、必ず pane_id を渡すこと。
     # 今アクティブなペイン(HERDR_ACTIVE_PANE_ID。未設定時は .focused で近似)は除外。
-    wsjson=$(herdr workspace list)
-    agents=$(herdr agent list | jq -r --arg active "$active" --argjson ws "$wsjson" '
+    # workspace / tab / agent を同一 snapshot から取得し、agent の tab_id で tab 名を引く。
+    snapshot=$(herdr api snapshot)
+    agents=$(printf "%s\n" "$snapshot" | jq -r --arg active "$active" '
       def icon: if   .agent_status=="blocked" then "🔴"
                 elif .agent_status=="working" then "🟡"
+                elif .agent_status=="done" then "🔵"
                 elif .agent_status=="unknown" then "⚪"
                 else "🟢" end;
-      ($ws.result.workspaces | map({ key: .workspace_id, value: .label }) | from_entries) as $lbl
-      | .result.agents[]
+      .result.snapshot as $snapshot
+      | ($snapshot.workspaces | map({ key: .workspace_id, value: .label }) | from_entries) as $workspace_labels
+      | ($snapshot.tabs | map({ key: .tab_id, value: .label }) | from_entries) as $tab_labels
+      | $snapshot.agents[]
       | select( if $active != "" then (.pane_id != $active) else (.focused|not) end )
-      | [ .pane_id, .workspace_id,
-          ( icon + " " + ($lbl[.workspace_id] // .workspace_id)
+      | ($workspace_labels[.workspace_id] // .workspace_id) as $workspace
+      | ($tab_labels[.tab_id] // "") as $tab
+      | [ .pane_id, .workspace_id, .tab_id,
+          ( icon + " " + (if $tab != "" then $tab else $workspace end)
+            + (if $tab != "" then " · " + $workspace else "" end)
             + " · " + (.agent // "")
             + " · " + (((.foreground_cwd // .cwd // "") | split("/") | last) // "") ) ]
       | @tsv')
@@ -119,26 +123,37 @@ let
 
     # MRU ファイルは変数に読み込んでから使う(空ファイルだと awk の NR==FNR が第2入力側で
     # 誤って真になるため、必ず printf 経由で最低1行を渡す)。
+    tmru_lines=$(cat "$tmru")
     amru_lines=$(cat "$amru")
-    wsmru_lines=$(cat "$wsmru")
 
-    # (1) 訪問歴あり: agent-mru の順で、いま現存するエージェントだけを拾う。
+    # prefix+a を開く直前の現在TabをMRU先頭へ積み、現存エージェントのTabだけ残す。
+    # popupへフォーカスが移った後も、元のactive paneまたはsnapshotのfocused_tab_idから復元する。
+    active_tab=$(printf "%s\n" "$snapshot" | jq -r --arg active "$active" '
+      .result.snapshot.panes[]
+      | select(.pane_id == $active)
+      | .tab_id // empty' | sed -n '1p')
+    if [ -z "$active_tab" ]; then
+      active_tab=$(printf "%s\n" "$snapshot" | jq -r '.result.snapshot.focused_tab_id // empty')
+    fi
+    live_tabs=$(printf "%s\n" "$agents" | awk -F"\t" 'NF >= 3 { print $3 }')
+    if [ -n "$active_tab" ]; then
+      live_tabs=$(printf "%s\n%s\n" "$live_tabs" "$active_tab")
+      { printf "%s\n" "$active_tab"; printf "%s\n" "$tmru_lines" | grep -vxF "$active_tab"; } > "$tmru.tmp"
+    else
+      printf "%s\n" "$tmru_lines" > "$tmru.tmp"
+    fi
+    awk '
+      NR == FNR { if ($0 != "") keep[$0] = 1; next }
+      $0 != "" && keep[$0] && !seen[$0]++ { print }
+    ' <(printf "%s\n" "$live_tabs") "$tmru.tmp" > "$tmru.gc"
+    mv "$tmru.gc" "$tmru"
+    tmru_lines=$(cat "$tmru")
+
+    # 現存する訪問済みエージェントだけを拾い、agent-mru を刈り込む。
     visited=$(awk -F"\t" '
       NR==FNR { live[$1]=1; next }
       ($0 in live) && !seen[$0]++ { print }
     ' <(printf "%s\n" "$agents") <(printf "%s\n" "$amru_lines"))
-
-    # (2) 訪問歴なし: workspace MRU 順(未記録 workspace は末尾)→ 同一 workspace 内は list 順。
-    #     workspace 順位を各行に付けて安定ソートする(第2キー = 出現順)。
-    unvisited=$(awk -F"\t" '
-      NR==FNR { rec[$0]=1; next }
-      !($1 in rec) { print }
-    ' <(printf "%s\n" "$visited") <(printf "%s\n" "$agents") \
-      | awk -F"\t" '
-      NR==FNR { if ($0 != "" && !($0 in rank)) rank[$0] = ++r; next }
-      { rk = ($2 in rank) ? rank[$2] : 999999; printf "%d\t%d\t%s\n", rk, ++i, $1 }
-    ' <(printf "%s\n" "$wsmru_lines") - \
-      | sort -k1,1n -k2,2n | cut -f3)
 
     # GC 兼記録: agent-mru には「現在地 → 訪問済み(現存のみ)」だけを書き戻す。
     # active は agents から除外済みで visited にも入らないので、ここで明示的に先頭へ置く。
@@ -149,16 +164,35 @@ let
     fi
     mv "$amru.tmp" "$amru"
 
-    # fzf 行: 「<icon> <label> · <agent> · <cwd basename>\t<pane_id>\t<workspace_id>」
-    printf "%s\n%s\n" "$visited" "$unvisited" | awk -F"\t" '
-      NR==FNR { disp[$1] = $3 "\t" $1 "\t" $2; next }
-      NF && ($0 in disp) { print disp[$0] }
-    ' <(printf "%s\n" "$agents") -
+    # fzf 行: 「<icon> <tab label> · <workspace label> · <agent> · <cwd basename>\t<pane_id>\t<workspace_id>\t<tab_id>」
+    # 並び替えと表示行の生成を同じ awk で行い、別の awk で ID を再マッピングしない。
+    # (複数の process substitution と stdin を混ぜると、空入力時の NR==FNR 境界が曖昧になり
+    # 重複行の原因になるため。)
+    awk -F"\t" '
+      FNR == 1 { file++ }
+      file == 1 {
+        if ($0 != "" && !tab_rank[$0]) tab_rank[$0] = ++tab_count
+        next
+      }
+      file == 2 {
+        if ($0 != "" && !agent_rank[$0]) agent_rank[$0] = ++agent_count
+        next
+      }
+      {
+        tab = ($3 in tab_rank) ? tab_rank[$3] : 999999
+        agent = ($1 in agent_rank) ? agent_rank[$1] : 999999
+        rows[++row_count] = tab "\t" agent "\t" row_count "\t" $4 "\t" $1 "\t" $2 "\t" $3
+      }
+      END {
+        for (i = 1; i <= row_count; i++) print rows[i]
+      }
+    ' <(printf "%s\n" "$tmru_lines") <(printf "%s\n" "$amru_lines") <(printf "%s\n" "$agents") \
+      | sort -k1,1n -k2,2n -k3,3n | cut -f4-
   '';
 
   # 選択したエージェントへ focus し、あわせて MRU を更新する。become で fzf を置き換えて実行
-  # ({1}=pane_id, {2}=workspace_id)。pane は agent-mru の、workspace は workspace-mru の
-  # (Spaces ピッカーと共有)それぞれ先頭へ積む。
+  # ({1}=pane_id, {2}=workspace_id, {3}=tab_id)。pane は agent-mru、Tab は tab-mru、
+  # workspace は workspace-mru (Spaces ピッカーと共有) の先頭へそれぞれ積む。
   #
   # ★ popup 内では「UI を変える API 呼び出し」はスクリプトの最後の1回だけにすること。
   #   popup はセッションモーダルな一時端末なので、focus 系 API(changes_ui=true)を呼ぶと popup
@@ -175,6 +209,7 @@ let
   herdrAgentFocus = pkgs.writeShellScript "herdr-agent-focus" ''
     pane="''${1:-}"
     ws="''${2:-}"
+    tab="''${3:-}"
     [ -n "$pane" ] || exit 0
 
     amru=${agentMruFile}
@@ -182,6 +217,14 @@ let
     touch "$amru"
     { printf "%s\n" "$pane"; grep -vxF "$pane" "$amru" 2>/dev/null; } > "$amru.tmp"
     mv "$amru.tmp" "$amru"
+
+    if [ -n "$tab" ]; then
+      tmru=${tabMruFile}
+      mkdir -p "$(dirname "$tmru")"
+      touch "$tmru"
+      { printf "%s\n" "$tab"; grep -vxF "$tab" "$tmru" 2>/dev/null; } > "$tmru.tmp"
+      mv "$tmru.tmp" "$tmru"
+    fi
 
     # workspace MRU は Spaces ピッカーと共有。ファイル更新のみ(focus API は呼ばない)。
     if [ -n "$ws" ]; then
@@ -199,12 +242,12 @@ let
     fi
   '';
 
-  # ピッカー本体: enter で focus スクリプトへ置換({2}=pane_id, {3}=workspace_id)。
+  # ピッカー本体: enter で focus スクリプトへ置換({2}=pane_id, {3}=workspace_id, {4}=tab_id)。
   herdrAgentPicker = pkgs.writeShellScript "herdr-agent-picker" ''
     ${herdrAgentList} \
       | fzf --reverse --delimiter='\t' --with-nth=1 --nth=1 --prompt 'agent> ' \
           --header 'enter:focus' \
-          --bind 'enter:become(${herdrAgentFocus} {2} {3})'
+          --bind 'enter:become(${herdrAgentFocus} {2} {3} {4})'
   '';
 in
 {
@@ -304,14 +347,14 @@ in
     width = "70%"
     height = "70%"
 
-    # フロート Agent ピッカー(fzf, 注目度順)。prefix+a でフロート popup に開き、検知中のエージェントを
+    # フロート Agent ピッカー(fzf, Spaces と同じ MRU 順)。prefix+a でフロート popup に開き、検知中のエージェントを
     # 一覧 → enter でそのペインへ focus。対象は herdr が検知中のエージェントのみ(実装は先頭の let 参照)。
     # Spaces ピッカーと同じく herdr 0.7.4+ の type="popup" を利用。
     [[keys.command]]
     key = "prefix+a"
     type = "popup"
     command = "${herdrAgentPicker}"
-    description = "Agents picker (fzf, attention order)"
+    description = "Agents picker (fzf, MRU)"
     width = "70%"
     height = "70%"
 
