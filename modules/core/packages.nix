@@ -61,8 +61,6 @@
   ++ lib.optionals stdenv.isLinux [
     buildah
     bubblewrap
-    wineWow64Packages.stable
-    winetricks
   ]
   # macOS 標準の caffeinate コマンド。
   ++ lib.optionals stdenv.isDarwin [
