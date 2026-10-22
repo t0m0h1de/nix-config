@@ -29,7 +29,10 @@ alias codex='npx @openai/codex'
 alias gemini-cli='npx @google/gemini-cli'
 alias copilot='npx @github/copilot'
 alias jules='npx @google/jules'
-alias claude='npx @anthropic-ai/claude-code'
+# Claude Code(npm 版も中身は Bun 製のネイティブバイナリ)は NODE_OPTIONS=--use-openssl-ca と
+# SSL_CERT_FILE の組み合わせで証明書の検証に失敗するため、このプロセスだけ CA の上書きを外す。
+# 2.1.303 以降は同梱の CA ストアが修正済み(eMudhra 対応)なので、外しても安全。
+alias claude='env -u NODE_OPTIONS -u SSL_CERT_FILE npx @anthropic-ai/claude-code'
 
 # --- キーバインド (Plugin依存) ---
 # 注意: zaw が有効な環境でのみ Ctrl+h を zaw-history に割り当てる

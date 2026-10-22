@@ -12,6 +12,12 @@
     # 将来 upstream(hunk/bun2nix)が x86_64-darwin を systems から外したら follows に戻してよい。
     nixpkgs-hunk.url = "github:nixos/nixpkgs/c4013e501c048ae7c4a8940c92837636042bf6c3";
 
+    # 一時的: eMudhra 中間 CA 秘密鍵漏洩(2026-10-20 公表)の修正版(cacert 3.131.1, go 1.26.10,
+    # nodejs 26.12.1, uv 0.13.4, gh 2.102.1)が nixpkgs-unstable に来るまで、該当パッケージだけ master から取る。
+    # nixpkgs 全体を master にすると swift などのビルドが走るため、末端のパッケージだけに限っている。
+    # unstable が追いついたら、この input と extraSpecialArgs の pkgsMaster、各モジュールの参照を消す。
+    nixpkgs-master.url = "github:nixos/nixpkgs/master";
+
     # modem-dev/hunk: ターミナル差分ビューア CLI(バイナリ hunk)。独自 flake(bun2nix ビルド)を利用。
     hunk = {
       url = "github:modem-dev/hunk";
@@ -29,7 +35,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, nixvim, nix-zenn-cli, hunk, ... }:
+  outputs = { self, nixpkgs, nixpkgs-master, home-manager, nixvim, nix-zenn-cli, hunk, ... }:
     let
       customOverlay = import ./overlays { inherit nix-zenn-cli hunk; };
       mkPkgs = system: import nixpkgs {
@@ -38,7 +44,10 @@
       };
       mkHome = { system, isWork ? false, homeUsername ? null }: home-manager.lib.homeManagerConfiguration {
         pkgs = mkPkgs system;
-        extraSpecialArgs = { inherit isWork; };
+        extraSpecialArgs = {
+          inherit isWork;
+          pkgsMaster = nixpkgs-master.legacyPackages.${system};
+        };
         modules = [
           nixvim.homeModules.nixvim
           ./home.nix
