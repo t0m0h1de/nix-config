@@ -1,0 +1,18 @@
+// Renovate(Mend の GitHub App)の設定。
+//
+// 扱うのは GitHub Actions だけ。flake.lock と overlay の自前パッケージは
+// .github/workflows/update.yml が更新する(CLAUDE.md の約束事)。両方で flake.lock を触ると PR が二重になる。
+//
+// 自動マージは GitHub の auto-merge を使う。main のブランチ保護の必須チェック
+// (format / build (linux) / build (darwin))が通ったものだけがマージされる。
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: ['config:recommended'],
+  timezone: 'Asia/Tokyo',
+  enabledManagers: ['github-actions'],
+  labels: ['dependencies'],
+  // 公開直後の版を避ける(乗っ取られたリリースが取り下げられるまでの猶予)。
+  minimumReleaseAge: '3 days',
+  automerge: true,
+  platformAutomerge: true,
+}
