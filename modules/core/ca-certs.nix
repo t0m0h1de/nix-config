@@ -10,10 +10,14 @@ let
   # 通常の PEM ブロックだけを抜き出し、どの TLS 実装からもサーバー認証で信頼するものしか見えないようにする。
   # 公表サイトの NixOS 向け手順で外すルート 2 つ(Comodo AAA Services root、emSign ECC Root CA - G3)も
   # これで含まれない(後者は 3.131.1 で収録から消えている)。
-  caBundle = pkgs.runCommand "ca-bundle-server-auth-${cacert.version}.crt" { } ''
+  #
+  # ディレクトリにしているのは SSL_CERT_DIR にも使うため(下の SSL_CERT_DIR を参照)。
+  caCerts = pkgs.runCommand "ca-certs-server-auth-${cacert.version}" { } ''
+    mkdir $out
     awk '/^-----BEGIN CERTIFICATE-----$/ { p = 1 } p { print } /^-----END CERTIFICATE-----$/ { p = 0 }' \
-      ${cacert}/etc/ssl/certs/ca-bundle.crt > $out
+      ${cacert}/etc/ssl/certs/ca-bundle.crt > $out/ca-bundle.crt
   '';
+  caBundle = "${caCerts}/ca-bundle.crt";
 
   # Java 用の truststore。JDK は lib/security/cacerts を同梱していて OS や caBundle を見ないので、
   # caBundle から PKCS12 を作って差し替える。
@@ -45,6 +49,10 @@ in
     # Nix 以外の OpenSSL(mise の公式ビルドの node など)の既定の CA ファイル。下の --use-openssl-ca で必須。
     # Linux の Go 製ツールもこれを読む(macOS の Go は OS の検証機構を使うので、OS 側の対処で足りている)。
     SSL_CERT_FILE = caBundle;
+    # SSL_CERT_FILE を指定しても、Linux の Go は /etc/ssl/certs と /etc/pki/tls/certs の中のファイルを全部、
+    # OpenSSL は既定の CA ディレクトリを読み、ディストリが置いた個別の(修正前の)ルートを信頼してしまう。
+    # caBundle だけがあるディレクトリに差し替える(OpenSSL はハッシュ名でないファイルを読まないので実質空)。
+    SSL_CERT_DIR = "${caCerts}";
 
     # node は既定で自身に同梱した CA ストアを使い、修正前の版(yarn・pnpm・LSP などが使う nixpkgs の node、
     # mise の node)は侵害された中間 CA を信頼する。OpenSSL の CA(= 上の SSL_CERT_FILE)を使わせる。
