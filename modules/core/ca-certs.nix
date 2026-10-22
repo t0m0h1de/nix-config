@@ -61,6 +61,8 @@ in
     # pip と requests は pip で入れた certifi(venv や macOS 標準の pip3 に同梱)を読み、SSL_CERT_FILE を見ない。
     PIP_CERT = caBundle;
     REQUESTS_CA_BUNDLE = caBundle;
+    # grpcio(dbt-bigquery の BigQuery Storage Read API など)は同梱の roots.pem を読み、上のどれも見ない。
+    GRPC_DEFAULT_SSL_ROOTS_FILE_PATH = caBundle;
 
     # macOS 標準の /usr/bin/git は SSL_CERT_FILE を見ない。Nix の git もこれに従う。
     GIT_SSL_CAINFO = caBundle;
