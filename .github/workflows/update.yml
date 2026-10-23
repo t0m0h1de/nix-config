@@ -22,6 +22,7 @@ on:
     - cron: "0 18 * * 3" # 木 03:00 JST: roots
     - cron: "0 18 * * 4" # 金 03:00 JST: vim-herdr-navigation
     - cron: "0 18 * * 5" # 土 03:00 JST: kube-tmux
+    - cron: "0 18 * * 6" # 日 03:00 JST: mise
   workflow_dispatch:
     inputs:
       target:
@@ -36,6 +37,7 @@ on:
           - roots
           - vim-herdr-navigation
           - kube-tmux
+          - mise
 
 concurrency:
   group: update
@@ -70,7 +72,9 @@ jobs:
             { "name": "vim-herdr-navigation", "cron": "0 18 * * 4",
               "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch vim-herdr-navigation" },
             { "name": "kube-tmux", "cron": "0 18 * * 5",
-              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch kube-tmux" }
+              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch kube-tmux" },
+            { "name": "mise", "cron": "0 18 * * 6",
+              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --override-filename overlays/default.nix mise" }
           ]'
           matrix=$(jq -c --arg schedule "$SCHEDULE" --arg target "${TARGET:-all}" '
             map(select(
