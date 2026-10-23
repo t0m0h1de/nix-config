@@ -23,6 +23,12 @@ alias ls='ls --color=auto'
 alias ll='ls -alF'
 alias la='ls -A'
 alias j!=jbang
+# macOS の /etc/zprofile の path_helper が /usr/bin を PATH の先頭に戻すので、素の python3 は
+# macOS 付属の 3.9.6(pyyaml など無し)になる。PATH 全体を並べ直すと git・cc・java なども
+# Nix 版に変わるため、python だけ Nix 版(modules/dev/k8s.nix の python3.withPackages)に向ける。
+# `#!/usr/bin/env python3` のスクリプトを直接実行すると macOS 版が動くので、python3 経由で起動する。
+alias python3="$HOME/.nix-profile/bin/python3"
+alias python="$HOME/.nix-profile/bin/python"
 
 # --- AI CLI aliases (npx経由) ---
 alias codex='npx @openai/codex'
