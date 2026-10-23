@@ -188,6 +188,31 @@ final: prev:
       };
     };
 
+  # mise。nixpkgs(unstable / master とも)が 2026.10.3 のままで、eMudhra 対応の 2026.10.17 が
+  # 来ていないため version と src を差し替える(#25)。nixpkgs が 2026.10.17 以上になったら
+  # この override は消す。
+  # cargoDeps も作り直す: overrideAttrs で cargoHash を変えても、cargoDeps は nixpkgs 版の
+  # hash のまま作られる。
+  # テストは切る: nextest で数千件あり、上流のリリースで既に通っている。postPatch の
+  # substituteInPlace(--replace-fail)は nixpkgs 版のまま当たるので、置換先がずれたらビルドで気付ける。
+  mise = prev.mise.overrideAttrs (old: rec {
+    version = "2026.10.17";
+    # 2026.10.17 で入った libz-ng-sys がビルド時に cmake を呼ぶ(nixpkgs 版はテスト用にしか入れていない)。
+    nativeBuildInputs = old.nativeBuildInputs ++ [ final.cmake ];
+    src = final.fetchFromGitHub {
+      owner = "jdx";
+      repo = "mise";
+      tag = "v${version}";
+      hash = "sha256-3JBs2i+07hY27EpIrmbMu7D5p6rGV6wuerilx0BECjw=";
+    };
+    cargoDeps = final.rustPlatform.fetchCargoVendor {
+      inherit src;
+      name = "mise-${version}-vendor";
+      hash = "sha256-94BNmTVcJoY9ujO7boBzxMxaMy2tjLzpD+s+RLJxBEs=";
+    };
+    doCheck = false;
+  });
+
   # coder CLI。nixpkgs 版は postInstall で `coder` を terraform を PATH に足すラッパーにしているが、
   # terraform が要るのは `coder server`(ワークスペースのプロビジョニング)だけで、ここで使う
   # クライアント用途(`coder config-ssh` / `coder ssh` 等)には不要。terraform は unfree のため
