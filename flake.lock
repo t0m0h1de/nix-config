@@ -189,29 +189,13 @@
         "type": "github"
       }
     },
-    "nixpkgs-master": {
-      "locked": {
-        "lastModified": 1792630974,
-        "narHash": "sha256-yZ4MhecP46HU3wi4hjlm6rSqnUTdIrshd3QCvEh7a50=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "5dbeb6836fccb0346577121872166343eb46d5e0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "master",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1792116957,
-        "narHash": "sha256-EjZqHKObBfIOeHZnMRVV87HB3pPq/WBkmRJWyFxmZu8=",
+        "lastModified": 1792782095,
+        "narHash": "sha256-KtL+p7f7jY34cO5Mt0/hUZNE3spnINk7hwpYxM2XLC4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "f20cd90e28fe0403873f473b29e42662cd86e8c4",
+        "rev": "901c54c08bdc20e00c2b3c73716b97497b1b3c74",
         "type": "github"
       },
       "original": {
@@ -250,7 +234,6 @@
         "nix-zenn-cli": "nix-zenn-cli",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-hunk": "nixpkgs-hunk",
-        "nixpkgs-master": "nixpkgs-master",
         "nixvim": "nixvim"
       }
     },

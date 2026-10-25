@@ -1,9 +1,8 @@
-{ pkgs, pkgsMaster, lib, isWork ? false, ... }:
+{ pkgs, lib, isWork ? false, ... }:
 {
   home.packages = with pkgs; [
     gcc
-    # 一時的に master から(eMudhra 対応の修正版。flake.nix の nixpkgs-master を参照)。
-    pkgsMaster.nodejs_latest
+    nodejs_latest
     yarn
     jdk17
     coursier
@@ -14,7 +13,7 @@
     scala-cli
     cargo
     rustc
-    pkgsMaster.go # 一時的に master から(同上)
+    go
     bc
 
     # Python 3.12: 3.12 を要求するプロジェクト用。既定の python3 は k8s.nix の
