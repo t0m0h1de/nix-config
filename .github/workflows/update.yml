@@ -74,7 +74,7 @@ jobs:
             { "name": "kube-tmux", "cron": "0 18 * * 5",
               "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --version=branch kube-tmux" },
             { "name": "mise", "cron": "0 18 * * 6",
-              "run": "nix run --inputs-from . nixpkgs#nix-update -- --flake --override-filename overlays/default.nix mise" }
+              "run": "./scripts/update/mise.sh" }
           ]'
           matrix=$(jq -c --arg schedule "$SCHEDULE" --arg target "${TARGET:-all}" '
             map(select(
