@@ -196,7 +196,7 @@ final: prev:
   # テストは切る: nextest で数千件あり、上流のリリースで既に通っている。postPatch の
   # substituteInPlace(--replace-fail)は nixpkgs 版のまま当たるので、置換先がずれたらビルドで気付ける。
   mise = prev.mise.overrideAttrs (old: rec {
-    version = "fox-v2026.10.19";
+    version = "2026.10.19";
     # 2026.10.17 で入った libz-ng-sys がビルド時に cmake を呼ぶ(nixpkgs 版はテスト用にしか入れていない)。
     nativeBuildInputs = old.nativeBuildInputs ++ [ final.cmake ];
     src = final.fetchFromGitHub {
