@@ -1,7 +1,6 @@
-{ pkgs, pkgsMaster, lib, ... }:
+{ pkgs, lib, ... }:
 let
-  # pkgsMaster は一時的(flake.nix の nixpkgs-master を参照)。外すときは pkgs.cacert に戻す。
-  cacert = pkgsMaster.cacert;
+  inherit (pkgs) cacert;
 
   # cacert の ca-bundle.crt は、サーバー認証で信頼する証明書の通常の PEM ブロックに加えて、全証明書を
   # 用途ごとの信頼/拒否付きの "BEGIN TRUSTED CERTIFICATE" ブロックでも持つ。OpenSSL はこの拒否を守るが、

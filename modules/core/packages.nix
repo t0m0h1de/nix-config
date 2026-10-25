@@ -1,4 +1,4 @@
-{ pkgs, pkgsMaster, lib, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
     jq
@@ -9,7 +9,7 @@
     nmap
     openssl
     postgresql
-    pkgsMaster.gh # 一時的に master から(eMudhra 対応の修正版。flake.nix の nixpkgs-master を参照)
+    gh
     ghq
     gwq
     awscli2
@@ -30,7 +30,7 @@
     nil
     nixpkgs-fmt
     shellcheck
-    pkgsMaster.uv # 一時的に master から(同上)
+    uv
     poetry
     zenn-cli
     roots
