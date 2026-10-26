@@ -166,6 +166,28 @@ home-manager switch --flake .#darwin  # macOS（個人用）
 >
 > 手元で更新する場合は `nix flake update` や上表のコマンドを直接実行する(nix-update は `nix run nixpkgs#nix-update -- ...`)。
 
+### 開発ツールの追従（dev-refresh）
+
+`dev-refresh` は、このリポジトリの最新 main を `nh home switch` し、対象リポジトリの最新の既定ブランチで
+`mise install` する（mise.lock の修正版を入れる）。clone は `~/.local/share/dev-refresh` の専用のものを使い、
+`~/src` の作業用の checkout には触れない。定期実行はせず、手で `dev-refresh` を実行する。
+最後の成功から 7 日（`DEV_REFRESH_WARN_DAYS` で変更可）を超えるか、前回が失敗していると、
+端末で zsh を開いたときに警告が出る。
+
+対象はリポジトリに書かず、マシンごとに次のファイルで決める（無ければその手順を飛ばす）。
+
+```bash
+mkdir -p ~/.config/dev-refresh
+echo work > ~/.config/dev-refresh/home-profile   # switch するプロファイル
+cat > ~/.config/dev-refresh/repos <<'EOF'
+# clone の URL を 1 行に 1 つ
+ssh://git@github.com/<owner>/<repo>
+EOF
+```
+
+`home-profile` を置くと、`dev-refresh` は origin の main を switch する。手元の変更を push する前に
+実行すると、その変更を含まない main に戻るので注意。
+
 ### 世代の掃除（GC）
 
 古い世代を削除してディスクを空ける。`nh` を導入しているため、保持ポリシー付きで掃除できる。

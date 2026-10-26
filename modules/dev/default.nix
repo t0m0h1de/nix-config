@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./dev-refresh.nix
     ./docker.nix
     ./gcloud.nix
     ./k8s.nix
