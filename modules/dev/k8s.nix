@@ -12,10 +12,24 @@ let
   # `#!/usr/bin/env python3` で始まるスクリプト(pre-commit の zipapp や git の hook を含む)は
   # macOS 付属の 3.9.6 で動き、新しい virtualenv・filelock などが動かない。
   # PATH 全体を並べ直すと git・cc・java なども Nix 版に変わるので、python だけを前に出す。
+  # pip・pip3 は Nix の Python には無いので、そのままだと /usr/bin/pip3(macOS の 3.9 と LibreSSL)が動く。
+  # Nix の環境には書き込めない(読み取り専用)ので、macOS の pip が動く前に止めて、使う方法を案内する。
+  pipGuard = pkgs.writeShellScript "pip-guard" ''
+    cat >&2 <<'EOF'
+    pip は直接使わない(macOS 付属の 3.9 の pip が動くのを防ぐため、modules/dev/k8s.nix で止めている)。
+      リポジトリの依存: そのリポジトリの mise / uv / poetry を使う
+      使い捨ての環境:   python3 -m venv .venv && .venv/bin/pip install ...
+      単体のツール:     uv tool install <パッケージ>
+    EOF
+    exit 1
+  '';
+
   pythonShim = pkgs.runCommand "python3-path-shim" { } ''
     mkdir -p $out/bin
     ln -s ${pythonEnv}/bin/python3 $out/bin/python3
     ln -s ${pythonEnv}/bin/python $out/bin/python
+    ln -s ${pipGuard} $out/bin/pip
+    ln -s ${pipGuard} $out/bin/pip3
   '';
 in
 {
