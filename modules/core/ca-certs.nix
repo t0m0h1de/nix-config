@@ -21,15 +21,42 @@ let
   # Java 用の truststore。JDK は lib/security/cacerts を同梱していて OS や caBundle を見ないので、
   # caBundle から PKCS12 を作って差し替える。
   # パスワードは keytool の既定の changeit(公開の値で、秘匿情報ではない)。
+  #
+  # OpenJDK の 2026-10-24 のアドバイザリ(CVE-2026-114820、https://openjdk.org/emudhra)は、修正版の JDK が
+  # 出るまで、次の 4 つのルートを Java の信頼ストアから外すよう案内している。NSS 3.131.1 でも G1 は残るので、
+  # caBundle とは別に、Java 用からだけ外す(OS や他のツールは Mozilla の判断どおり G1 を信頼したまま)。
+  # 判定用の CheckCerts.java(https://cr.openjdk.org/~mr/CheckCerts.java)が見るルートと同じ。
+  javaExcludedRoots = [
+    "emSign ECC Root CA - G3"
+    "AAA Certificate Services"
+    "emSign Root CA - G1"
+    "emSign Root CA - G2"
+  ];
   javaTrustStore = pkgs.runCommand "java-truststore-${cacert.version}"
     {
-      nativeBuildInputs = [ pkgs.jdk17 ];
+      nativeBuildInputs = [ pkgs.jdk17 pkgs.openssl ];
     } ''
     mkdir certs
     awk '/-----BEGIN CERTIFICATE-----/ { n++; p = 1 } p { print > ("certs/" n ".pem") } /-----END CERTIFICATE-----/ { p = 0 }' ${caBundle}
     for f in certs/*.pem; do
+      subject=$(openssl x509 -noout -subject -nameopt RFC2253 -in $f)
+      case "$subject" in
+        ${lib.concatMapStringsSep " | " (cn: "*${lib.escapeShellArg "CN=${cn},"}*") javaExcludedRoots})
+          echo "skip: $subject"
+          continue
+          ;;
+      esac
       keytool -importcert -noprompt -storetype PKCS12 -keystore $out \
         -storepass changeit -alias "$(basename $f .pem)" -file $f > /dev/null
+    done
+
+    # 外したはずのルートが残っていたらビルドを落とす(CN の書き方が変わって素通りするのを防ぐ)
+    keytool -list -v -storetype PKCS12 -keystore $out -storepass changeit > list.txt
+    for cn in ${lib.escapeShellArgs javaExcludedRoots}; do
+      if grep -q "CN=$cn," list.txt; then
+        echo "truststore に $cn が残っている" >&2
+        exit 1
+      fi
     done
   '';
 in
