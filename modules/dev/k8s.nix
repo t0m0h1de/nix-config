@@ -1,5 +1,30 @@
 { pkgs, config, ... }:
+let
+  pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+    ps."ansible-core"
+    kubernetes
+    openshift
+    pyyaml
+  ]);
+
+  # python3・python だけを置いたディレクトリ。下の initContent で PATH の先頭に足す。
+  # macOS の /etc/zprofile の path_helper が /usr/bin を ~/.nix-profile/bin より前に並べるので、
+  # `#!/usr/bin/env python3` で始まるスクリプト(pre-commit の zipapp や git の hook を含む)は
+  # macOS 付属の 3.9.6 で動き、新しい virtualenv・filelock などが動かない。
+  # PATH 全体を並べ直すと git・cc・java なども Nix 版に変わるので、python だけを前に出す。
+  pythonShim = pkgs.runCommand "python3-path-shim" { } ''
+    mkdir -p $out/bin
+    ln -s ${pythonEnv}/bin/python3 $out/bin/python3
+    ln -s ${pythonEnv}/bin/python $out/bin/python
+  '';
+in
 {
+  # .zshrc は /etc/zprofile(path_helper)より後に読まれるので、ここで足せば並べ直されない。
+  # mise が有効なリポジトリでは、mise が自分の python をさらに前に足すので、そちらが優先される。
+  programs.zsh.initContent = ''
+    path=(${pythonShim}/bin $path)
+  '';
+
   home.file.".kube/kubie.yaml".text = ''
     behavior:
       selector: fzf
@@ -27,12 +52,7 @@
   '';
 
   home.packages = with pkgs; [
-    (python3.withPackages (ps: with ps; [
-      ps."ansible-core"
-      kubernetes
-      openshift
-      pyyaml
-    ]))
+    pythonEnv
     kubectl
     kustomize # 以前は gcloud SDK 同梱版が PATH に居た(modules/dev/gcloud.nix の移行で単体化)
     k9s
