@@ -58,12 +58,12 @@
     _7zz
   ]
   # Linux専用パッケージ
-  ++ lib.optionals stdenv.isLinux [
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
     buildah
     bubblewrap
   ]
   # macOS 標準の caffeinate コマンド。
-  ++ lib.optionals stdenv.isDarwin [
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
     darwin.PowerManagement
   ]
   # Apple Silicon macOS 専用パッケージ。

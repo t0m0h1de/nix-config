@@ -23,7 +23,7 @@
         IdentityFile = "~/.ssh/github.com";
         IdentitiesOnly = true;
         AddKeysToAgent = "yes";
-      } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      } // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         UseKeychain = "yes";
       };
     };

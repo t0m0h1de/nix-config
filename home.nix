@@ -14,7 +14,7 @@
     if isWork then "tomohide.sawada" else "t0m0h1de"
   );
   home.homeDirectory = lib.mkDefault (
-    if pkgs.stdenv.isDarwin
+    if pkgs.stdenv.hostPlatform.isDarwin
     then "/Users/${config.home.username}"
     else "/home/${config.home.username}"
   );
