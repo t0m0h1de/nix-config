@@ -61,6 +61,10 @@
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     buildah
     bubblewrap
+    # クリップボード。herdr / Neovim は WAYLAND_DISPLAY なら wl-copy、DISPLAY なら xclip を
+    # 自動で選ぶ。どちらも無いと OSC 52 に落ち、非対応端末(GNOME Terminal 等)ではコピーできない。
+    wl-clipboard
+    xclip
   ]
   # macOS 標準の caffeinate コマンド。
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
