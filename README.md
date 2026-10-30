@@ -185,6 +185,19 @@ ssh://git@github.com/<owner>/<repo>
 EOF
 ```
 
+Home Manager の外で `nix profile` に入れるもの（このリポジトリに書けない flake など）も、一覧で管理できる。
+一覧にあって入っていないものは `nix profile add`、入っているものは `nix profile upgrade` する。中身が変わったら
+`after/<項目名>`（実行ファイル）を動かす。一覧に無い項目は知らせるだけで、消さない。
+
+```bash
+cat > ~/.config/dev-refresh/profile-packages <<'EOF'
+# flake の参照を 1 行に 1 つ（nix profile list の Original flake URL と同じ書き方）
+git+https://github.com/<owner>/<repo>?dir=<path>
+EOF
+mkdir -p ~/.config/dev-refresh/after
+printf '#!/bin/sh\n<常駐の再起動など>\n' > ~/.config/dev-refresh/after/<項目名> && chmod +x ~/.config/dev-refresh/after/<項目名>
+```
+
 `home-profile` を置くと、`dev-refresh` は origin の main を switch する。手元の変更を push する前に
 実行すると、その変更を含まない main に戻るので注意。
 
@@ -282,6 +295,20 @@ claude='npx @anthropic-ai/claude-code'
 type -a codex
 claude --version
 ```
+
+### AI CLI のスキルの共有
+
+`~/.config/agent-skills/<name>/SKILL.md` に置いたスキルを、switch のときに Claude Code（`~/.claude/skills`）・
+Codex（`~/.codex/skills`）・agy（`~/.gemini/config/skills`）へリンクする（`modules/core/agent-skills.nix`）。
+スキルの中身はこのリポジトリに置かない。非公開のリポジトリにある本体へのリンクを置けばよい。
+
+```bash
+mkdir -p ~/.config/agent-skills
+ln -s ~/src/github.com/<owner>/<private-repo>/skills/<name> ~/.config/agent-skills/<name>
+home-manager switch --flake .#<profile>   # または dev-refresh
+```
+
+同じ名前の実ディレクトリが各ツールの側にあれば触らない。`~/.config/agent-skills` から消したスキルは、リンクだけ外す。
 
 ### Neovim の GitHub Copilot セットアップ
 
