@@ -32,6 +32,8 @@
   # Declarative npm global prefix (replaces `npm config set prefix ~/.local`).
   # `force = true` avoids collision with an existing ~/.npmrc.
   # takumi (npm supply chain guard) settings: _authToken is expanded at runtime from ~/.secrets (work only).
+  # cooldown は npm の設定名 min-release-age(日)で書く。minimum-release-age は pnpm の名前で、npm は無視する
+  # (npx @anthropic-ai/claude-code が公開直後の版を入れてしまった)。
   home.file.".npmrc" = {
     force = true;
     text = ''
@@ -39,7 +41,7 @@
     '' + lib.optionalString isWork ''
       registry=https://npm.flatt.tech/
       //npm.flatt.tech/:_authToken=''${TAKUMI_GUARD_API_KEY}
-      minimum-release-age=3
+      min-release-age=3
     '';
   };
 }
