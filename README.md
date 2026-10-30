@@ -166,6 +166,23 @@ home-manager switch --flake .#darwin  # macOS（個人用）
 >
 > 手元で更新する場合は `nix flake update` や上表のコマンドを直接実行する(nix-update は `nix run nixpkgs#nix-update -- ...`)。
 
+### ディスクの掃除（disk-cleanup）
+
+`disk-cleanup` は、再生成できるものだけを消してディスクを空ける。既定は見積もりだけで何も消さず、`-y` で消す。
+対象（省略すると全部）:
+
+- `nix`: 古い世代を消して GC し（`nh clean` と同じ保持数）、`nix store optimise` する
+- `caches`: npm・Go・pnpm・uv・pre-commit・mise・pip・poetry・Coursier・grype・trivy のキャッシュ（入っているツールだけ）
+- `src`: `ghq root` 配下の `.terragrunt-cache`・`.terraform`・`node_modules`・ビルドの `target`（次回は再 install・フルビルドになる）
+
+```bash
+disk-cleanup             # 見積もり
+disk-cleanup -y caches   # キャッシュだけ消す
+```
+
+古い世代の GC は `nh clean` が毎週自動で行う。macOS では、起動したことのある `.app` をストアから消せずに GC が止まることがある
+（`com.apple.macl` が付き、フルディスクアクセスの無い nix-daemon は消せない）。`disk-cleanup -y nix` はそのとき退避の手順を表示する。
+
 ### 開発ツールの追従（dev-refresh）
 
 `dev-refresh` は、このリポジトリの最新 main を `nh home switch` し、対象リポジトリの最新の既定ブランチで

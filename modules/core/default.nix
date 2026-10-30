@@ -11,5 +11,6 @@
     ./codex.nix
     ./agent-skills.nix
     ./nh.nix
+    ./disk-cleanup.nix
   ];
 }
