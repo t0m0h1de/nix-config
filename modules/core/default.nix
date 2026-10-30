@@ -9,6 +9,7 @@
     ./claude.nix
     ./antigravity.nix
     ./codex.nix
+    ./agent-skills.nix
     ./nh.nix
   ];
 }
