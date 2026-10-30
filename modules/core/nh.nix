@@ -11,10 +11,12 @@
     flake = "${config.home.homeDirectory}/src/github.com/t0m0h1de/nix-config";
 
     # 古い世代を定期 GC する。Linux は systemd user timer、macOS は launchd agent が自動選択される。
+    # extraArgs はリストで書く。文字列だと launchd の ProgramArguments に 1 要素として入り、
+    # nh が引数を解釈できず失敗する(macOS で世代が消えずに溜まっていた)。
     clean = {
       enable = true;
       dates = "weekly";
-      extraArgs = "--keep 5 --keep-since 7d";
+      extraArgs = [ "--keep" "5" "--keep-since" "7d" ];
     };
   };
 }
