@@ -6,7 +6,6 @@
   "language": "Japanese",
   "permissions": {
     "defaultMode": "auto",
-    "disableBypassPermissionsMode": "disable",
     "allow": [
       "List(*)",
       "Bash(ls:*)",
