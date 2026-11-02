@@ -149,7 +149,7 @@ let
             name="$(profile_name "$installed" "$ref")"
             if [ -z "$name" ]; then
               log "profile: 追加 $ref"
-              if ! nix profile add "$ref"; then
+              if ! nix profile add --refresh "$ref"; then
                 log "!!! 失敗: $ref"
                 fail=1
                 continue
@@ -161,7 +161,8 @@ let
             fi
             before="$(profile_paths "$installed" "$name")"
             log "profile: 更新 $name"
-            if ! nix profile upgrade "$name"; then
+            # --refresh: nix は git の取り込み結果を tarball-ttl(既定 1 時間)使い回すので、直前に入った main を見落とす。
+            if ! nix profile upgrade --refresh "$name"; then
               log "!!! 失敗: $name"
               fail=1
               continue
