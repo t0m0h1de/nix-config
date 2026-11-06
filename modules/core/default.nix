@@ -12,5 +12,6 @@
     ./agent-skills.nix
     ./nh.nix
     ./disk-cleanup.nix
+    ./herdr-gc.nix
   ];
 }

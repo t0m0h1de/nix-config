@@ -183,6 +183,10 @@ disk-cleanup -y caches   # キャッシュだけ消す
 古い世代の GC は `nh clean` が毎週自動で行う。macOS では、起動したことのある `.app` をストアから消せずに GC が止まることがある
 （`com.apple.macl` が付き、フルディスクアクセスの無い nix-daemon は消せない）。`disk-cleanup -y nix` はそのとき退避の手順を表示する。
 
+### herdr のペインの掃除（herdr-gc）
+
+`herdr-gc` は、herdr のペインを一覧から選んで、まとめて閉じる。作業していたディレクトリが消えたペイン（✗）・シェルだけのペインを上に並べ、fzf で選ぶ（Tab で複数、Enter で決める）。右にはそのペインの今の画面が出る。閉じる前にもう一度確かめる。打ったペイン自身は候補に出さない。
+
 ### 開発ツールの追従（dev-refresh）
 
 `dev-refresh` は、このリポジトリの最新 main を `nh home switch` し、対象リポジトリの最新の既定ブランチで
