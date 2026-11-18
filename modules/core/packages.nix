@@ -41,6 +41,7 @@
     pre-commit
     herdr
     pup
+    gws
     coder
     # Google Antigravity の TUI エージェントクライアント。コマンド名は antigravity ではなく `agy`。
     # unfree(Google 配布のプリビルドバイナリを再パッケージ)なので cache.nixos.org には無く、
