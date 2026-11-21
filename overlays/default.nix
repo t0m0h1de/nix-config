@@ -196,19 +196,19 @@ final: prev:
   # テストは切る: nextest で数千件あり、上流のリリースで既に通っている。postPatch の
   # substituteInPlace(--replace-fail)は nixpkgs 版のまま当たるので、置換先がずれたらビルドで気付ける。
   mise = prev.mise.overrideAttrs (old: rec {
-    version = "2026.11.8";
+    version = "2026.11.12";
     # 2026.10.17 で入った libz-ng-sys がビルド時に cmake を呼ぶ(nixpkgs 版はテスト用にしか入れていない)。
     nativeBuildInputs = old.nativeBuildInputs ++ [ final.cmake ];
     src = final.fetchFromGitHub {
       owner = "jdx";
       repo = "mise";
       tag = "v${version}";
-      hash = "sha256-24Cu/xlfijza18I84X4wX62j6DQJVjky/vDRcyrO7PY=";
+      hash = "sha256-E2EvYzBHj+OW3midr+GWjnsn4WbaX2XGvwNNCXVX9h4=";
     };
     cargoDeps = final.rustPlatform.fetchCargoVendor {
       inherit src;
       name = "mise-${version}-vendor";
-      hash = "sha256-tXW/bGkUfceUVY/XFwu+HUuOqhUrJzrH7Q8T2M65ygs=";
+      hash = "sha256-xIHFPb+SOrdJU664/uw9F8/pUcm2ezOnu1YYboUwf04=";
     };
     doCheck = false;
   });
